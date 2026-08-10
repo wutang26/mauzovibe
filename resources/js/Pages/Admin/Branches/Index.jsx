@@ -1,14 +1,17 @@
 import { Link } from "@inertiajs/react";
+import AdminLayout from "@/Layouts/AdminLayout";
 
 import {
     BuildingStorefrontIcon,
     MapPinIcon,
     UsersIcon,
-    PencilSquareIcon
+    PencilSquareIcon,
+    UserPlusIcon,
+    EyeIcon
 } from "@heroicons/react/24/outline";
 
 
-export default function Index({ branches }) {
+function Index({ branches }) {
 
 
     return (
@@ -17,7 +20,6 @@ export default function Index({ branches }) {
 
 
             {/* Header */}
-
 
             <div className="
                 flex
@@ -28,7 +30,6 @@ export default function Index({ branches }) {
 
 
                 <div>
-
 
                     <h1 className="
                         text-3xl
@@ -52,8 +53,6 @@ export default function Index({ branches }) {
 
 
                 </div>
-
-
 
 
 
@@ -90,9 +89,7 @@ export default function Index({ branches }) {
 
 
 
-
-            {/* Branch Table */}
-
+            {/* Table */}
 
 
             <div className="
@@ -102,7 +99,6 @@ export default function Index({ branches }) {
                 border
                 overflow-hidden
             ">
-
 
 
                 <table className="w-full">
@@ -128,8 +124,13 @@ export default function Index({ branches }) {
                             </th>
 
 
-                            <th className="p-4 text-left">
+                            <th className="p-4 text-center">
                                 Users
+                            </th>
+
+
+                            <th className="p-4 text-center">
+                                Assign User
                             </th>
 
 
@@ -147,103 +148,137 @@ export default function Index({ branches }) {
 
 
 
-
                     <tbody>
 
 
-                    {
-                        branches.map(branch => (
+                        {
 
 
-                            <tr
-
-                                key={branch.id}
-
-                                className="
-                                border-t
-                                hover:bg-gray-50
-                                transition
-                                "
-
-                            >
+                            branches.map(branch => (
 
 
+                                <tr
+
+                                    key={branch.id}
+
+                                    className="
+                        border-t
+                        hover:bg-gray-50
+                        transition
+                        "
+
+                                >
 
 
 
-                                {/* Branch Name */}
+                                    {/* Branch */}
 
 
-                                <td className="p-4">
-
-
-                                    <div className="
-                                        flex
-                                        items-center
-                                        gap-3
-                                    ">
+                                    <td className="p-4">
 
 
                                         <div className="
-                                            w-12
-                                            h-12
-                                            rounded-xl
-                                            bg-blue-100
-                                            flex
-                                            items-center
-                                            justify-center
+                                    flex
+                                    items-center
+                                    gap-3
+                                ">
+
+
+                                            <div className="
+                                        w-12
+                                        h-12
+                                        rounded-xl
+                                        bg-blue-100
+                                        flex
+                                        items-center
+                                        justify-center
+                                    ">
+
+
+                                                <BuildingStorefrontIcon
+
+                                                    className="
+                                        w-7
+                                        h-7
+                                        text-blue-600
+                                        "
+
+                                                />
+
+
+                                            </div>
+
+
+
+                                            <div>
+
+
+                                                <p className="
+                                            font-semibold
+                                            text-gray-800
                                         ">
 
+                                                    {branch.name}
 
-                                            <BuildingStorefrontIcon
+                                                </p>
+
+
+                                                <p className="
+                                            text-xs
+                                            text-gray-500
+                                        ">
+
+                                                    Branch ID #{branch.id}
+
+                                                </p>
+
+
+                                            </div>
+
+
+                                        </div>
+
+
+                                    </td>
+
+
+
+
+
+
+
+                                    {/* Location */}
+
+
+                                    <td className="p-4">
+
+
+                                        <div className="
+                                    flex
+                                    items-center
+                                    gap-2
+                                    text-gray-600
+                                ">
+
+
+                                            <MapPinIcon
 
                                                 className="
-                                                w-7
-                                                h-7
-                                                text-blue-600
-                                                "
+                                    w-5
+                                    h-5
+                                    text-red-500
+                                    "
 
                                             />
 
 
-                                        </div>
-
-
-
-
-                                        <div>
-
-
-                                            <p className="
-                                                font-semibold
-                                                text-gray-800
-                                            ">
-
-                                                {branch.name}
-
-                                            </p>
-
-
-
-                                            <p className="
-                                                text-xs
-                                                text-gray-500
-                                            ">
-
-                                                Branch ID #{branch.id}
-
-                                            </p>
+                                            {branch.location ?? "No Location"}
 
 
                                         </div>
 
 
-
-                                    </div>
-
-
-
-                                </td>
+                                    </td>
 
 
 
@@ -251,166 +286,227 @@ export default function Index({ branches }) {
 
 
 
+                                    {/* Users */}
 
 
-                                {/* Location */}
+                                    <td className="
+                                p-4
+                                text-center
+                            ">
 
 
-
-                                <td className="p-4">
-
-
-                                    <div className="
-                                        flex
-                                        items-center
-                                        gap-2
-                                        text-gray-600
-                                    ">
-
-
-                                        <MapPinIcon
-
-                                            className="
-                                            w-5
-                                            h-5
-                                            text-red-500
-                                            "
-
-                                        />
-
-
-                                        {
-
-                                        branch.location
-
-                                        ?
-
-                                        branch.location
-
-                                        :
-
-                                        "No Location"
-
-                                        }
-
-
-                                    </div>
-
-
-                                </td>
-
-
-
-
-
-
-
-
-
-                                {/* Users */}
-
-
-
-                                <td className="p-4">
-
-
-                                    <span className="
-                                        inline-flex
-                                        items-center
-                                        gap-2
-                                        bg-green-100
-                                        text-green-700
-                                        px-3
-                                        py-1
-                                        rounded-full
-                                        text-sm
-                                        font-semibold
-                                    ">
-
-
-                                        <UsersIcon
-
-                                            className="
-                                            w-4
-                                            h-4
-                                            "
-
-                                        />
-
-
-                                        {branch.users_count} -
-                                        Users
-
-
-                                    </span>
-
-
-                                </td>
-
-
-                                {/* Action */}
-
-
-
-                                <td className="
-                                    p-4
-                                    text-center
+                                        <span className="
+                                    inline-flex
+                                    items-center
+                                    gap-2
+                                    bg-green-100
+                                    text-green-700
+                                    px-3
+                                    py-1
+                                    rounded-full
+                                    text-sm
+                                    font-semibold
                                 ">
 
 
+                                            <UsersIcon
 
-                                    <Link
+                                                className="
+                                    w-4
+                                    h-4
+                                    "
 
-                                        href={`/admin/branches/${branch.id}/edit`}
-
-                                        className="
-                                        inline-flex
-                                        items-center
-                                        gap-2
-                                        bg-green-600
-                                        hover:bg-green-700
-                                        text-white
-                                        px-4
-                                        py-2
-                                        rounded-xl
-                                        font-medium
-                                        transition
-                                        "
-
-                                    >
+                                            />
 
 
-                                        <PencilSquareIcon
+                                            {branch.users_count} Users
+
+
+                                        </span>
+
+
+                                    </td>
+
+
+
+
+
+
+
+                                    {/* Assign User */}
+
+
+                                    <td className="
+                                p-4
+                                text-center
+                            ">
+
+
+                                        <Link
+
+                                            href={`/admin/branches/${branch.id}/assign-user`}
+
 
                                             className="
-                                            w-5
-                                            h-5
-                                            "
-
-                                        />
-
-
-                                        Manage
-
-
-                                    </Link>
-
-
-
-                                </td>
+                                inline-flex
+                                items-center
+                                gap-2
+                                bg-purple-600
+                                hover:bg-purple-700
+                                text-white
+                                px-4
+                                py-2
+                                rounded-xl
+                                font-medium
+                                transition
+                                "
 
 
+                                        >
+
+
+                                            <UserPlusIcon
+
+                                                className="
+                                    w-5
+                                    h-5
+                                    "
+
+                                            />
+
+
+                                            Assign User
+
+
+                                        </Link>
+
+
+                                    </td>
 
 
 
 
-                            </tr>
 
 
 
-                        ))
 
-                    }
+                                    {/* Action */}
+
+
+                                    {/* Action */}
+
+                                    <td className="
+    p-4
+    text-center
+">
+
+
+                                        <div className="
+flex
+justify-center
+gap-2
+">
+
+
+                                            {/* View Branch */}
+
+                                            <Link
+
+                                                href={route('branches.show', branch.id)}
+
+                                                className="
+inline-flex
+items-center
+gap-2
+bg-blue-600
+hover:bg-blue-700
+text-white
+px-4
+py-2
+rounded-xl
+font-medium
+transition
+"
+
+
+                                            >
+
+
+                                                <EyeIcon
+
+                                                    className="
+w-5
+h-5
+"
+
+                                                />
+
+
+                                                View
+
+
+                                            </Link>
+
+
+
+
+
+                                            {/* Manage Branch */}
+
+                                            <Link
+
+                                                href={`/admin/branches/${branch.id}/edit`}
+
+
+                                                className="
+inline-flex
+items-center
+gap-2
+bg-green-600
+hover:bg-green-700
+text-white
+px-4
+py-2
+rounded-xl
+font-medium
+transition
+"
+
+
+                                            >
+
+
+                                                <PencilSquareIcon
+
+                                                    className="
+w-5
+h-5
+"
+
+                                                />
+
+
+                                                Manage
+
+
+                                            </Link>
+
+
+                                        </div>
+
+
+                                    </td>
+
+
+
+
+                                </tr>
+
+
+                            ))
+
+
+                        }
 
 
 
@@ -419,7 +515,6 @@ export default function Index({ branches }) {
 
 
                 </table>
-
 
 
 
@@ -435,3 +530,20 @@ export default function Index({ branches }) {
 
 
 }
+
+
+
+
+
+Index.layout = page => (
+
+    <AdminLayout>
+
+        {page}
+
+    </AdminLayout>
+
+);
+
+
+export default Index;

@@ -1,4 +1,6 @@
 import { useForm } from "@inertiajs/react";
+import AdminLayout from "@/Layouts/AdminLayout";
+
 import {
     ShieldCheckIcon,
     KeyIcon,
@@ -6,7 +8,7 @@ import {
 } from "@heroicons/react/24/outline";
 
 
-export default function Manage({
+function Manage({
     user,
     roles,
     permissions
@@ -492,3 +494,13 @@ export default function Manage({
     );
 
 }
+
+// Extend a dashboard Page
+Manage.layout = page => (
+    <AdminLayout>
+        {page}
+    </AdminLayout>
+);
+
+
+export default Manage;

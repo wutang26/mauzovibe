@@ -1,4 +1,5 @@
 import { useForm, Link } from "@inertiajs/react";
+import AdminLayout from "@/Layouts/AdminLayout";
 
 import {
     BuildingStorefrontIcon,
@@ -6,7 +7,7 @@ import {
 } from "@heroicons/react/24/outline";
 
 
-export default function Edit({ branch }) {
+function Edit({ branch }) {
 
 
     const form = useForm({
@@ -107,9 +108,6 @@ export default function Edit({ branch }) {
 
 
                 </div>
-
-
-
 
 
                 <Link
@@ -465,31 +463,26 @@ export default function Edit({ branch }) {
 
                             </Link>
 
-
-
-
                         </div>
-
-
-
-
 
                     </form>
 
-
-
                 </div>
-
-
 
             </div>
 
-
-
         </div>
-
 
     );
 
-
 }
+
+// Extend a dashboard Page
+Edit.layout = page => (
+    <AdminLayout>
+        {page}
+    </AdminLayout>
+);
+
+
+export default Edit;

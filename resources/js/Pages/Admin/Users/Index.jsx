@@ -1,4 +1,6 @@
 import { Link } from "@inertiajs/react";
+import AdminLayout from "@/Layouts/AdminLayout";
+
 import {
     UserIcon,
     ShieldCheckIcon,
@@ -6,7 +8,7 @@ import {
 } from "@heroicons/react/24/outline";
 
 
-export default function Index({ users }) {
+function Index({ users }) {
 
 
     return (
@@ -413,3 +415,13 @@ export default function Index({ users }) {
     );
 
 }
+
+// Extend a dashboard Page
+Index.layout = page => (
+    <AdminLayout>
+        {page}
+    </AdminLayout>
+);
+
+
+export default Index;

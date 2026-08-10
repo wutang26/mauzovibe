@@ -1,5 +1,7 @@
+
 import { useState } from "react";
-// import { Link } from "@inertiajs/react";
+
+import { Link } from "@inertiajs/react";
 
 import {
     HomeIcon,
@@ -10,257 +12,406 @@ import {
     Cog6ToothIcon,
     ChevronDownIcon,
     BuildingStorefrontIcon,
-    UserGroupIcon
+    UserGroupIcon,
+    DocumentChartBarIcon,
+    ArchiveBoxIcon,
+    ClipboardDocumentListIcon,
+    ArrowPathRoundedSquareIcon,
 } from "@heroicons/react/24/outline";
 
-
-import { Link } from "@inertiajs/react";
-
-
 export default function Sidebar({ open }) {
+    const [openMenus, setOpenMenus] = useState({});
 
-
-    const [settingsOpen, setSettingsOpen] = useState(false);
-
+    const toggleMenu = (menu) => {
+        setOpenMenus((prev) => ({
+            ...prev,
+            [menu]: !prev[menu],
+        }));
+    };
 
     const menu = [
-
         {
             name: "Dashboard",
             icon: HomeIcon,
-            link: "dashboard"
+            link: route("dashboard"),
         },
 
         {
-            name: "Mauzo",
+            name: "Mauzo (POS)",
             icon: ShoppingCartIcon,
-            link: "sales.index"
+            children: [
+                {
+                    name: "New Sale",
+                    icon: ShoppingCartIcon,
+                    link: route("admin.sales.create"),
+                },
+                {
+                    name: "Sales History",
+                    icon: ClipboardDocumentListIcon,
+                    link: route("admin.sales.index"),
+                },
+                {
+                    name: "Returns",
+                    icon: ArrowPathRoundedSquareIcon,
+                    link: route("admin.returns.index"),
+                },
+            ],
         },
 
         {
-            name: "Bidhaa",
+            name: "Inventory",
             icon: CubeIcon,
-            link: "products.index"
+            children: [
+                {
+                    name: "Products",
+                    icon: CubeIcon,
+                    link: route("admin.products.index"),
+                },
+                {
+                    name: "Categories",
+                    icon: ArchiveBoxIcon,
+                    link: route("admin.categories.index"),
+                },
+                {
+                    name: "Stock In",
+                    icon: BuildingStorefrontIcon,
+                    link: route("admin.stockin.index"),
+                },
+                {
+                    name: "Stock Out",
+                    icon: BuildingStorefrontIcon,
+                    link: route("admin.stockout.index"),
+                },
+                {
+                    name: "Low Stock",
+                    icon: CubeIcon,
+                    link: route("admin.lowstock.index"),
+                },
+            ],
         },
 
         {
-            name: "Ripoti",
-            icon: ChartBarIcon,
-            link: "#"
-        },
-
-        {
-            name: "Wateja",
+            name: "Customers",
             icon: UsersIcon,
-            link: "#"
+            children: [
+                {
+                    name: "Customer List",
+                    icon: UsersIcon,
+                },
+                {
+                    name: "Credit Sales",
+                    icon: ShoppingCartIcon,
+                },
+                {
+                    name: "Debtors",
+                    icon: UsersIcon,
+                },
+                {
+                    name: "Payment History",
+                    icon: ClipboardDocumentListIcon,
+                },
+            ],
         },
 
+        {
+            name: "Reports",
+            icon: ChartBarIcon,
+            children: [
+                {
+                    name: "Daily Report",
+                    icon: DocumentChartBarIcon,
+                },
+                {
+                    name: "Weekly Report",
+                    icon: DocumentChartBarIcon,
+                },
+                {
+                    name: "Monthly Report",
+                    icon: DocumentChartBarIcon,
+                },
+                {
+                    name: "Profit Report",
+                    icon: ChartBarIcon,
+                },
+                {
+                    name: "Stock Report",
+                    icon: CubeIcon,
+                },
+            ],
+        },
+
+        {
+            name: "Settings",
+            icon: Cog6ToothIcon,
+            children: [
+                {
+                    name: "Branches",
+                    icon: BuildingStorefrontIcon,
+                    link: route("admin.branches.index"),
+                },
+                {
+                    name: "Users",
+                    icon: UserGroupIcon,
+                    link: route("admin.users.index"),
+                },
+            ],
+        },
     ];
 
-
     return (
-
-        <div
+        <aside
             className={`
-            fixed top-0 left-0 h-screen
-            bg-slate-900 text-white
-            transition-all duration-300
-            ${open ? "w-64" : "w-20"}
+                fixed
+                left-0
+                top-0
+                h-screen
+                bg-emerald-950
+                text-white
+                shadow-xl
+                transition-all
+                duration-300
+                z-50
+                ${
+                    open
+                        ? "w-64"
+                        : "w-20"
+                }
             `}
         >
-
-
             {/* Logo */}
 
-            <div className="p-5 text-xl font-bold">
-                {
-                    open ? "MauzoVibe" : "MV"
-                }
+            <div
+                className="
+                    h-16
+                    flex
+                    items-center
+                    justify-center
+                    border-b
+                    border-emerald-800
+                    bg-emerald-900
+                "
+            >
+                <h1
+                    className="
+                        text-xl
+                        font-bold
+                        tracking-wide
+                        text-white
+                    "
+                >
+                    {open ? (
+                        <>
+                            Mauzo
+                            <span className="text-emerald-300">
+                                Vibe
+                            </span>
+                        </>
+                    ) : (
+                        <span className="text-emerald-300">
+                            MV
+                        </span>
+                    )}
+                </h1>
             </div>
 
+            {/* Navigation */}
 
+            <nav
+                className="
+                    mt-4
+                    overflow-y-auto
+                    h-[calc(100vh-100px)]
+                    px-2
+                "
+            >
+                {menu.map((item) => {
+                    const Icon = item.icon;
 
-            <nav className="mt-5">
+                    /* NORMAL LINK */
 
-
-                {
-                    menu.map((item, index) => {
-
-
-                        const Icon = item.icon;
-
-
+                    if (!item.children) {
                         return (
-
                             <Link
-                                key={index}
+                                key={item.name}
                                 href={item.link}
                                 className="
-                                flex items-center gap-3
-                                px-5 py-3
-                                hover:bg-slate-800
-                                transition
+                                    flex
+                                    items-center
+                                    gap-3
+                                    rounded-lg
+                                    px-4
+                                    py-3
+                                    mb-1
+                                    text-emerald-50
+                                    hover:bg-emerald-700
+                                    hover:text-white
+                                    transition-all
+                                    duration-200
+                                    group
                                 "
                             >
+                                <Icon
+                                    className="
+                                        h-5
+                                        w-5
+                                        text-emerald-300
+                                        group-hover:text-white
+                                    "
+                                />
 
-                                <Icon className="w-6 h-6" />
-
-
-                                {
-                                    open &&
+                                {open && (
                                     <span>
                                         {item.name}
                                     </span>
-                                }
-
-
+                                )}
                             </Link>
-
-                        )
-
-
-                    })
-                }
-
-
-
-                {/* SETTINGS DROPDOWN */}
-
-                <div>
-
-
-                    <button
-
-                        onClick={() => setSettingsOpen(!settingsOpen)}
-
-                        className="
-                    w-full flex items-center justify-between
-                    px-5 py-3
-                    hover:bg-slate-800
-                    transition
-                    "
-                    >
-
-
-                        <div className="flex items-center gap-3">
-
-                            <Cog6ToothIcon
-                                className="w-6 h-6"
-                            />
-
-
-                            {
-                                open &&
-                                <span>
-                                    Settings
-                                </span>
-                            }
-
-
-                        </div>
-
-
-
-                        {
-                            open &&
-                            <ChevronDownIcon
-                                className={`
-                            w-5 h-5
-                            transition
-                            ${settingsOpen ? "rotate-180" : ""}
-                            `}
-                            />
-                        }
-
-
-                    </button>
-
-
-
-
-                    {/* CHILD MENU */}
-
-                    {
-                        settingsOpen && open && (
-
-                            <div className="
-                            ml-10
-                            border-l
-                            border-slate-700
-                            ">
-
-
-                                <Link
-                                    href={route('admin.branches.index')}
-                                    className="
-    flex items-center gap-2
-    px-4 py-2
-    text-sm
-    hover:bg-slate-800
-    "
-                                >
-
-                                    <BuildingStorefrontIcon
-                                        className="w-5 h-5"
-                                    />
-
-                                    Branches
-
-                                </Link>
-
-
-                                <Link
-                                    href={route('admin.users.index')}
-                                    className="
-    flex items-center gap-2
-    px-4 py-2
-    text-sm
-    hover:bg-slate-800
-    "
-                                >
-
-                                    <UserGroupIcon
-                                        className="w-5 h-5"
-                                    />
-
-                                    Users
-
-                                </Link>
-
-
-
-                            </div>
-
-                        )
+                        );
                     }
 
+                    /* DROPDOWN */
 
-                </div>
+                    return (
+                        <div
+                            key={item.name}
+                            className="mb-1"
+                        >
+                            <button
+                                onClick={() =>
+                                    toggleMenu(item.name)
+                                }
+                                className="
+                                    w-full
+                                    flex
+                                    items-center
+                                    justify-between
+                                    rounded-lg
+                                    px-4
+                                    py-3
+                                    text-emerald-50
+                                    hover:bg-emerald-700
+                                    hover:text-white
+                                    transition-all
+                                    duration-200
+                                    group
+                                "
+                            >
+                                <div className="flex items-center gap-3">
+                                    <Icon
+                                        className="
+                                            h-5
+                                            w-5
+                                            text-emerald-300
+                                            group-hover:text-white
+                                        "
+                                    />
 
+                                    {open && (
+                                        <span>
+                                            {item.name}
+                                        </span>
+                                    )}
+                                </div>
 
+                                {open && (
+                                    <ChevronDownIcon
+                                        className={`
+                                            h-4
+                                            w-4
+                                            text-emerald-300
+                                            transition-transform
+                                            duration-300
+                                            ${
+                                                openMenus[item.name]
+                                                    ? "rotate-180"
+                                                    : ""
+                                            }
+                                        `}
+                                    />
+                                )}
+                            </button>
 
+                            {open &&
+                                openMenus[item.name] && (
+                                    <div
+                                        className="
+                                            ml-6
+                                            mt-1
+                                            border-l
+                                            border-emerald-700
+                                            pl-1
+                                        "
+                                    >
+                                        {item.children.map(
+                                            (child) => {
+                                                const ChildIcon =
+                                                    child.icon;
+
+                                                return (
+                                                    <Link
+                                                        key={
+                                                            child.name
+                                                        }
+                                                        href={
+                                                            child.link ||
+                                                            "#"
+                                                        }
+                                                        className="
+                                                            flex
+                                                            items-center
+                                                            gap-3
+                                                            py-2.5
+                                                            px-4
+                                                            text-sm
+                                                            text-emerald-200
+                                                            rounded-r-lg
+                                                            hover:bg-emerald-800
+                                                            hover:text-white
+                                                            transition-all
+                                                            duration-200
+                                                            group
+                                                        "
+                                                    >
+                                                        <ChildIcon
+                                                            className="
+                                                                h-4
+                                                                w-4
+                                                                text-emerald-400
+                                                                group-hover:text-white
+                                                            "
+                                                        />
+
+                                                        {child.name}
+                                                    </Link>
+                                                );
+                                            }
+                                        )}
+                                    </div>
+                                )}
+                        </div>
+                    );
+                })}
             </nav>
 
+            {/* Footer */}
 
-
-            <div className="absolute bottom-5 w-full">
-
-
-                <div className="
-                px-5
-                text-xs
-                text-gray-400
-                ">
-                    MauzoVibe v1.0
-                </div>
-
-
+            <div
+                className="
+                    absolute
+                    bottom-0
+                    left-0
+                    w-full
+                    border-t
+                    border-emerald-800
+                    bg-emerald-950
+                    p-4
+                    text-center
+                    text-xs
+                    text-emerald-400
+                "
+            >
+                {open && "MauzoVibe v1.0"}
             </div>
-
-
-
-        </div>
-
-    )
-
+        </aside>
+    );
 }
+

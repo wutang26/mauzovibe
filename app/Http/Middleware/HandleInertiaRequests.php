@@ -27,13 +27,58 @@ class HandleInertiaRequests extends Middleware
      *
      * @return array<string, mixed>
      */
+    // public function share(Request $request): array
+    // {
+    //     // return [
+    //     //     ...parent::share($request),
+    //     //     'auth' => [
+    //     //         'user' => $request->user(),
+    //     //     ],
+    //     // ];
+
+    //       return array_merge(parent::share($request), [
+
+    //     // 'auth' => [
+
+    //     //     'user' => $request->user()
+
+    //     // ],
+    //     'auth' => [
+    //         'user' => $request->user()
+    //             ? $request->user()
+    //                 ->load([
+    //                     'branches',
+    //                     'roles'
+    //                 ])
+    //             : null
+    //     ],
+
+    // ]);
+
+
     public function share(Request $request): array
-    {
-        return [
-            ...parent::share($request),
-            'auth' => [
-                'user' => $request->user(),
-            ],
-        ];
-    }
+{
+    return [
+        ...parent::share($request),
+
+        'auth' => [
+
+            'user' => $request->user()
+                ? $request->user()
+                    ->load([
+                        'branches',
+                        'roles'
+                    ])
+                : null,
+
+
+            'active_branch' => session('branch_id')
+                ? \App\Models\Branch::find(session('branch_id'))
+                : null,
+
+        ],
+    ];
 }
+    
+    }
+

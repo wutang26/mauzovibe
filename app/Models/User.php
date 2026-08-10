@@ -6,6 +6,7 @@ use App\Models\Branch;
 use Database\Factories\UserFactory;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Foundation\Auth\User as Authenticatable;
+
 //Manage Spatie permissions
 use Illuminate\Notifications\Notifiable;
 use Spatie\Permission\Traits\HasRoles;
@@ -24,7 +25,7 @@ class User extends Authenticatable
         'name',
         'email',
         'password',
-        // 'branch_id',
+        'branch_id',
     ];
 
     /**
@@ -51,11 +52,38 @@ class User extends Authenticatable
     }
 
     #Manage Branch Shops
-    public function branches()
+      public function branches()
     {
         return $this->belongsToMany(
             Branch::class,
-            'branch_user'
-        )->withPivot('is_default');
+            'branch_user',
+            'user_id',
+            'branch_id'
+        );
     }
+    
+    // public function branches()
+    // {
+    //     return $this->belongsToMany(
+    //         Branch::class,
+    //         'branch_user'
+    //     )->withPivot('is_default');
+    // }
+
+    
+
+// public function branch()
+// {
+//     return $this->belongsTo(
+//         Branch::class,
+//         'branch_id'
+//     );
+// }
+
+//User hasMany Sales
+public function sales()
+{
+    return $this->hasMany(Sale::class);
+}
+
 }

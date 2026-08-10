@@ -16,8 +16,7 @@ class RegisterController extends Controller
 
     public function store(Request $request)
     {
-
-
+        
         $request->validate([
 
             'name'=>'required|string|max:255',
@@ -32,16 +31,9 @@ class RegisterController extends Controller
 
         ]);
 
-
-
         DB::transaction(function() use($request){
-
-
-
             // Create User
-
             $user = User::create([
-
                 'name'=>$request->name,
 
                 'email'=>$request->email,
@@ -52,9 +44,6 @@ class RegisterController extends Controller
 
             ]);
 
-
-
-
             // Create First Business Branch
 
             $branch = Branch::create([
@@ -64,9 +53,6 @@ class RegisterController extends Controller
                 'location'=>$request->location,
 
             ]);
-
-
-
 
             // Attach user to branch
 
@@ -82,14 +68,9 @@ class RegisterController extends Controller
 
             );
 
-
-
-
             // Login user automatically
 
             auth()->login($user);
-
-
 
             // Set active branch
 
@@ -98,17 +79,10 @@ class RegisterController extends Controller
                 'branch_id'=>$branch->id
 
             ]);
-
-
-
         });
-
-
 
         return redirect()
                 ->route('dashboard');
-
-
     }
 
 
