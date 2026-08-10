@@ -97,6 +97,7 @@ export default function Sidebar({ open }) {
                 {
                     name: "Customer List",
                     icon: UsersIcon,
+                    link: route("admin.customers.index"),
                 },
                 {
                     name: "Credit Sales",

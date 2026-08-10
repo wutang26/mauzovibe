@@ -2,6 +2,7 @@
 
 use App\Http\Controllers\Admin\BranchController;
 use App\Http\Controllers\Admin\CategoryController;
+use App\Http\Controllers\Admin\CustomerController;
 use App\Http\Controllers\Admin\LowStockController;
 use App\Http\Controllers\Admin\SaleController;
 use App\Http\Controllers\Admin\SaleReturnController;
@@ -481,3 +482,57 @@ Route::post(
     '/branches/register',
     [BranchController::class, 'storeRegisteredBranch']
 )->name('branches.register.store');
+
+/*
+|--------------------------------------------------------------------------
+| CUSTOMERS
+|--------------------------------------------------------------------------
+*/
+
+Route::prefix('admin/customers')
+    ->name('admin.customers.')
+    ->middleware('branch')
+    ->group(function () {
+
+        // Customer List
+        Route::get(
+            '/',
+            [CustomerController::class, 'index']
+        )->name('index');
+
+        // Create Customer
+        Route::get(
+            '/create',
+            [CustomerController::class, 'create']
+        )->name('create');
+
+        // Store Customer
+        Route::post(
+            '/',
+            [CustomerController::class, 'store']
+        )->name('store');
+
+        // View Customer
+        Route::get(
+            '/{customer}',
+            [CustomerController::class, 'show']
+        )->name('show');
+
+        // Edit Customer
+        Route::get(
+            '/{customer}/edit',
+            [CustomerController::class, 'edit']
+        )->name('edit');
+
+        // Update Customer
+        Route::put(
+            '/{customer}',
+            [CustomerController::class, 'update']
+        )->name('update');
+
+        // Delete Customer
+        Route::delete(
+            '/{customer}',
+            [CustomerController::class, 'destroy']
+        )->name('destroy');
+});
