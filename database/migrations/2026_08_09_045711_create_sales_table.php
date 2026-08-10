@@ -27,8 +27,13 @@ return new class extends Migration
 
             // Customer will be added later
             // when the Customers module is built.
-            $table->unsignedBigInteger('customer_id')
-                ->nullable();
+            // $table->unsignedBigInteger('customer_id')
+            //     ->nullable();
+            // Customer
+            $table->foreignId('customer_id')
+                ->nullable()
+                ->constrained('customers')
+                ->nullOnDelete();
 
             // Unique invoice/receipt number
             $table->string('invoice_number')
