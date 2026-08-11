@@ -1,3 +1,4 @@
+```php
 <?php
 
 use Illuminate\Database\Migrations\Migration;
@@ -12,60 +13,59 @@ return new class extends Migration
     public function up(): void
     {
         Schema::create('products', function (Blueprint $table) {
-           
-        $table->id();
-        // Branch owner
-        $table->foreignId('branch_id')
-            ->constrained()
-            ->cascadeOnDelete();
-        // Category
-        $table->foreignId('category_id')
-            ->constrained()
-            ->cascadeOnDelete();
-        $table->string('name');
-        // Barcode / SKU
-        $table->string('sku')
-            ->nullable();
-        $table->string('barcode')
-            ->nullable();
-        // Pricing
-        $table->decimal(
-            'cost_price',
-            10,
-            2
-        )
-        ->default(0);
-        $table->decimal(
-            'selling_price',
-            10,
-            2
-        )
-        ->default(0);
-        // Current stock
-        $table->integer('quantity')
-            ->default(0);
-        $table->string('unit')
-            ->default('pcs');
-        $table->string('image')
-            ->nullable();
-        $table->enum(
-            'status',
-            [
+            $table->id();
+
+            // Branch owner
+            $table->foreignId('branch_id')
+                ->constrained()
+                ->cascadeOnDelete();
+
+            // Category
+            $table->foreignId('category_id')
+                ->constrained()
+                ->cascadeOnDelete();
+
+            // Product name
+            $table->string('name');
+
+            // Barcode / SKU
+            $table->string('sku')->nullable();
+            $table->string('barcode')->nullable();
+
+            // Pricing
+            $table->decimal('cost_price', 10, 2)
+                ->default(0);
+
+            $table->decimal('selling_price', 10, 2)
+                ->default(0);
+
+            // Current stock
+            $table->integer('quantity')
+                ->default(0);
+
+            // Low stock alert limit
+            $table->integer('low_stock_limit')
+                ->default(5);
+
+            // Unit
+            $table->string('unit')
+                ->default('pcs');
+
+            // Product image
+            $table->string('image')
+                ->nullable();
+
+            // Product status
+            $table->enum('status', [
                 'active',
                 'inactive'
-            ]
-        )
-        ->default('active');
-        $table->timestamps();
-        $table->softDeletes();
+            ])->default('active');
 
-        // Alert for low stock
-        $table->integer('low_stock_limit')
-            ->default(5)
-            ->after('quantity');
+            $table->timestamps();
 
-    });
-     
+            // Soft delete
+            $table->softDeletes();
+        });
     }
 
     /**
@@ -76,3 +76,4 @@ return new class extends Migration
         Schema::dropIfExists('products');
     }
 };
+```
