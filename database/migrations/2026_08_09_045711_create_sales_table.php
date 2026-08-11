@@ -11,6 +11,11 @@ return new class extends Migration
      */
     public function up(): void
     {
+        // Do not recreate the table if it already exists.
+        if (Schema::hasTable('sales')) {
+            return;
+        }
+
         Schema::create('sales', function (Blueprint $table) {
 
             $table->id();
@@ -25,10 +30,6 @@ return new class extends Migration
                 ->constrained()
                 ->restrictOnDelete();
 
-            // Customer will be added later
-            // when the Customers module is built.
-            // $table->unsignedBigInteger('customer_id')
-            //     ->nullable();
             // Customer
             $table->foreignId('customer_id')
                 ->nullable()
@@ -76,7 +77,6 @@ return new class extends Migration
             ])->default('completed');
 
             $table->timestamps();
-
         });
     }
 
@@ -88,3 +88,4 @@ return new class extends Migration
         Schema::dropIfExists('sales');
     }
 };
+
