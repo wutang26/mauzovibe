@@ -124,14 +124,22 @@ export default function Sidebar({ open }) {
                 {
                     name: "Daily Report",
                     icon: DocumentChartBarIcon,
+                    link: route("admin.reports.daily")
                 },
                 {
                     name: "Weekly Report",
                     icon: DocumentChartBarIcon,
+                    link: route("admin.reports.weekly")
                 },
                 {
                     name: "Monthly Report",
                     icon: DocumentChartBarIcon,
+                    link: route("admin.reports.monthly")
+                },
+                {
+                    name: "Yearly Report",
+                    icon: DocumentChartBarIcon,
+                    link: route("admin.reports.yearly")
                 },
                 {
                     name: "Profit Report",

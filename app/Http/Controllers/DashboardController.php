@@ -92,8 +92,8 @@ class DashboardController extends Controller
         |--------------------------------------------------------------------------
         */
 
-        // $totalCustomers = Customer::where('branch_id', $branchId)
-        //     ->count();
+        $totalCustomers = Customer::where('branch_id', $branchId)
+            ->count();
 
 
         /*
@@ -272,8 +272,8 @@ class DashboardController extends Controller
                 'lowStock' =>
                     $lowStock,
 
-                // 'totalCustomers' =>
-                //     $totalCustomers,
+                'totalCustomers' =>
+                    $totalCustomers,
 
                 'todayTransactions' =>
                     $todayTransactions,
@@ -313,8 +313,8 @@ class DashboardController extends Controller
                 'totalProducts' =>
                     $totalProducts,
 
-                // 'totalCustomers' =>
-                //     $totalCustomers,
+                'totalCustomers' =>
+                    $totalCustomers,
 
                 'todayTransactions' =>
                     $todayTransactions,
