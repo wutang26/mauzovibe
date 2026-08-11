@@ -12,14 +12,7 @@ return new class extends Migration
     public function up(): void
     {
         Schema::create('branches', function (Blueprint $table) {
-
             $table->id();
-
-            $table->foreignId('branch_id')
-            ->nullable()
-            ->after('id')
-            ->constrained()
-            ->nullOnDelete();
 
             $table->string('name');
 
@@ -28,7 +21,6 @@ return new class extends Migration
             $table->text('description')->nullable();
 
             $table->timestamps();
-
         });
     }
 
