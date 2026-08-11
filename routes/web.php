@@ -2,6 +2,7 @@
 
 use App\Http\Controllers\Admin\BranchController;
 use App\Http\Controllers\Admin\CategoryController;
+use App\Http\Controllers\Admin\CustomerController;
 use App\Http\Controllers\Admin\LowStockController;
 use App\Http\Controllers\Admin\SaleController;
 use App\Http\Controllers\Admin\SaleReturnController;
@@ -12,7 +13,10 @@ use App\Http\Controllers\BranchSelectionController;
 use App\Http\Controllers\DashboardController;
 use App\Http\Controllers\ProductController;
 use App\Http\Controllers\ProfileController;
+use App\Http\Controllers\Admin\CreditSaleController;
 use Illuminate\Support\Facades\Route;
+use App\Http\Controllers\Admin\DebtorController;
+use App\Http\Controllers\Admin\PaymentHistoryController;
 use Inertia\Inertia;
 
 
@@ -481,3 +485,180 @@ Route::post(
     '/branches/register',
     [BranchController::class, 'storeRegisteredBranch']
 )->name('branches.register.store');
+
+/*
+|--------------------------------------------------------------------------
+| CUSTOMERS
+|--------------------------------------------------------------------------
+*/
+
+Route::prefix('admin/customers')
+    ->name('admin.customers.')
+    ->middleware('branch')
+    ->group(function () {
+
+        // Customer List
+        Route::get(
+            '/',
+            [CustomerController::class, 'index']
+        )->name('index');
+
+        // Create Customer
+        Route::get(
+            '/create',
+            [CustomerController::class, 'create']
+        )->name('create');
+
+        // Store Customer
+        Route::post(
+            '/',
+            [CustomerController::class, 'store']
+        )->name('store');
+
+        // View Customer
+        Route::get(
+            '/{customer}',
+            [CustomerController::class, 'show']
+        )->name('show');
+
+        // Edit Customer
+        Route::get(
+            '/{customer}/edit',
+            [CustomerController::class, 'edit']
+        )->name('edit');
+
+        // Update Customer
+        Route::put(
+            '/{customer}',
+            [CustomerController::class, 'update']
+        )->name('update');
+
+        // Delete Customer
+        Route::delete(
+            '/{customer}',
+            [CustomerController::class, 'destroy']
+        )->name('destroy');
+});
+
+/*
+|--------------------------------------------------------------------------
+| CREDIT SALES
+|--------------------------------------------------------------------------
+*/
+
+Route::prefix('admin/credit-sales')
+    ->name('admin.credit-sales.')
+    ->middleware('branch')
+    ->group(function () {
+
+        // Credit Sales List
+        Route::get(
+            '/',
+            [CreditSaleController::class, 'index']
+        )->name('index');
+
+        // Create Credit Sale
+        Route::get(
+            '/create',
+            [CreditSaleController::class, 'create']
+        )->name('create');
+
+        // Store Credit Sale
+        Route::post(
+            '/',
+            [CreditSaleController::class, 'store']
+        )->name('store');
+
+        // View Credit Sale
+        Route::get(
+            '/{creditSale}',
+            [CreditSaleController::class, 'show']
+        )->name('show');
+
+        // Edit Credit Sale
+        Route::get(
+            '/{creditSale}/edit',
+            [CreditSaleController::class, 'edit']
+        )->name('edit');
+
+        // Update Credit Sale
+        Route::put(
+            '/{creditSale}',
+            [CreditSaleController::class, 'update']
+        )->name('update');
+
+        // Delete Credit Sale
+        Route::delete(
+            '/{creditSale}',
+            [CreditSaleController::class, 'destroy']
+        )->name('destroy');
+
+    });
+
+    /*
+|--------------------------------------------------------------------------
+| DEBTORS
+|--------------------------------------------------------------------------
+*/
+
+// Route::prefix('admin/debtors')
+//     ->name('admin.Debtors.')
+//     ->middleware('branch')
+//     ->group(function () {
+
+//         // Debtors List
+//         Route::get(
+//             '/',
+//             [DebtorController::class, 'index']
+//         )->name('index');
+
+//         // Debtor Details
+//         Route::get(
+//             '/{sale}',
+//             [DebtorController::class, 'show']
+//         )->name('show');
+
+//  });
+
+Route::prefix('admin/debtors')
+    ->name('admin.debtors.')
+    ->middleware('branch')
+    ->group(function () {
+
+    // Debtors List
+    Route::get(
+        '/',
+        [DebtorController::class, 'index']
+    )->name('index');
+
+    // Debtor Details
+    Route::get(
+        '/{sale}',
+        [DebtorController::class, 'show']
+    )->name('show');
+
+});
+
+
+/*
+|--------------------------------------------------------------------------
+| PAYMENT HISTORY
+|--------------------------------------------------------------------------
+*/
+
+Route::prefix('admin/payment-history')
+    ->name('admin.payment-history.')
+    ->middleware('branch')
+    ->group(function () {
+
+        Route::get(
+            '/',
+            [PaymentHistoryController::class, 'index']
+        )->name('index');
+
+        Route::get(
+            '/{sale}',
+            [PaymentHistoryController::class, 'show']
+        )->name('show');
+
+});

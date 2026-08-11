@@ -97,18 +97,22 @@ export default function Sidebar({ open }) {
                 {
                     name: "Customer List",
                     icon: UsersIcon,
+                    link: route("admin.customers.index"),
                 },
                 {
                     name: "Credit Sales",
                     icon: ShoppingCartIcon,
+                    link: route("admin.credit-sales.index"),
                 },
                 {
                     name: "Debtors",
                     icon: UsersIcon,
+                    link: route("admin.debtors.index"),
                 },
                 {
                     name: "Payment History",
                     icon: ClipboardDocumentListIcon,
+                    link: route("admin.payment-history.index"),
                 },
             ],
         },
