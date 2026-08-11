@@ -17,6 +17,7 @@ use App\Http\Controllers\Admin\CreditSaleController;
 use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\Admin\DebtorController;
 use App\Http\Controllers\Admin\PaymentHistoryController;
+use App\Http\Controllers\Admin\ReportController;
 use Inertia\Inertia;
 
 
@@ -660,5 +661,40 @@ Route::prefix('admin/payment-history')
             '/{sale}',
             [PaymentHistoryController::class, 'show']
         )->name('show');
+
+});
+
+/*
+|--------------------------------------------------------------------------
+| REPORTS
+|--------------------------------------------------------------------------
+*/
+
+Route::prefix('admin/reports')
+    ->name('admin.reports.')
+    ->middleware('branch')
+    ->group(function () {
+
+        // Daily Report
+        Route::get(
+            '/daily',
+            [ReportController::class, 'daily']
+        )->name('daily');
+
+        // Weekly Report
+        Route::get(
+            '/weekly',
+            [ReportController::class, 'weekly']
+        )->name('weekly');
+
+        //Monthly Report
+       Route::get('/admin/reports/monthly', [ReportController::class, 'monthly'])
+    ->name('monthly');
+
+      // Yearly Report
+     Route::get(
+            '/yearly',
+            [ReportController::class, 'yearly']
+        )->name('yearly');
 
 });
