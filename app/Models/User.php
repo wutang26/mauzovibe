@@ -6,6 +6,7 @@ use App\Models\Branch;
 use Database\Factories\UserFactory;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Foundation\Auth\User as Authenticatable;
+use App\Models\Audit;
 
 //Manage Spatie permissions
 use Illuminate\Notifications\Notifiable;
@@ -84,6 +85,12 @@ class User extends Authenticatable
 public function sales()
 {
     return $this->hasMany(Sale::class);
+}
+
+//Audit
+public function audits()
+{
+    return $this->hasMany(Audit::class);
 }
 
 }

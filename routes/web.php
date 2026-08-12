@@ -18,6 +18,7 @@ use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\Admin\DebtorController;
 use App\Http\Controllers\Admin\PaymentHistoryController;
 use App\Http\Controllers\Admin\ReportController;
+use App\Http\Controllers\Admin\AuditController;
 use Inertia\Inertia;
 
 
@@ -707,4 +708,12 @@ Route::prefix('admin/reports')
     [ReportController::class, 'stock'])->name('stock');
 });
 
+Route::prefix('admin')->name('admin.')->middleware(['auth'])->group(function () {
+
+    // Audit Checking
+    Route::get('/audit', [AuditController::class, 'index'])
+        ->name('audit.index');
+
+});
+    
 require __DIR__.'/auth.php';
