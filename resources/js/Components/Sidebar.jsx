@@ -17,6 +17,7 @@ import {
     ArchiveBoxIcon,
     ClipboardDocumentListIcon,
     ArrowPathRoundedSquareIcon,
+    DocumentMagnifyingGlassIcon,
 } from "@heroicons/react/24/outline";
 
 export default function Sidebar({ open }) {
@@ -167,6 +168,11 @@ export default function Sidebar({ open }) {
                     name: "Users",
                     icon: UserGroupIcon,
                     link: route("admin.users.index"),
+                },
+                 {
+                    name: "System Audit",
+                    icon: DocumentMagnifyingGlassIcon,
+                    link: route("admin.audit.index"),
                 },
             ],
         },

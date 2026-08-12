@@ -6,6 +6,7 @@ use App\Models\Category;
 use App\Models\Product;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Storage;
+use App\Helpers\AuditHelper;
 use Inertia\Inertia;
 
 class ProductController extends Controller
@@ -104,40 +105,48 @@ class ProductController extends Controller
 
         }
 
-        Product::create([
+       
+        $product = Product::create([
+    'branch_id'     => session('branch_id'),
+    'category_id'   => $request->category_id,
+    'name'          => $request->name,
+    'sku'           => $request->sku,
+    'barcode'       => $request->barcode,
+    'image'         => $imagePath,
+    'cost_price'    => $request->cost_price ?? 0,
+    'selling_price' => $request->selling_price,
+    'quantity'      => $request->quantity ?? 0,
+    'unit'          => $request->unit ?? 'pcs',
+]);
 
-            'branch_id'     => session('branch_id'),
+    // AUDIT LOG
+    AuditHelper::log(
+        'created',
+        'Product',
+        $product->id,
+        "Created product: {$product->name}",
+        null,
+        $product->toArray()
+    );
 
-            'category_id'   => $request->category_id,
+    return redirect()
+        ->route('admin.products.index')
+        ->with(
+            'success',
+            'Product created successfully'
+        );
+            
 
-            'name'          => $request->name,
+        // return redirect()
 
-            'sku'           => $request->sku,
+        //     ->route(
+        //         'admin.products.index'
+        //     )
 
-            'barcode'       => $request->barcode,
-
-            'image'         => $imagePath,
-
-            'cost_price'    => $request->cost_price ?? 0,
-
-            'selling_price' => $request->selling_price,
-
-            'quantity'      => $request->quantity ?? 0,
-
-            'unit'          => $request->unit ?? 'pcs',
-
-        ]);
-
-        return redirect()
-
-            ->route(
-                'admin.products.index'
-            )
-
-            ->with(
-                'success',
-                'Product created successfully'
-            );
+        //     ->with(
+        //         'success',
+        //         'Product created successfully'
+        //     );
 
     }
 
