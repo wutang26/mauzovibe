@@ -144,10 +144,12 @@ export default function Sidebar({ open }) {
                 {
                     name: "Profit Report",
                     icon: ChartBarIcon,
+                    link: route("admin.reports.profit")
                 },
                 {
                     name: "Stock Report",
                     icon: CubeIcon,
+                    link: route("admin.reports.stock")
                 },
             ],
         },

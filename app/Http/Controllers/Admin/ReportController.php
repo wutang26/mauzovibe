@@ -1900,5 +1900,753 @@ public function yearly(Request $request)
     );
 }
 
+/**
+ * Profit Report
+ */
+public function profit(Request $request)
+{
+    $branchId = session('branch_id');
+
+    if (!$branchId) {
+        abort(403, 'No active branch selected.');
+    }
+
+    /*
+    |--------------------------------------------------------------------------
+    | Selected Date Range
+    |--------------------------------------------------------------------------
+    */
+
+    $startDate = $request->input(
+        'start_date',
+        now()->startOfMonth()->toDateString()
+    );
+
+    $endDate = $request->input(
+        'end_date',
+        now()->toDateString()
+    );
+
+    /*
+    |--------------------------------------------------------------------------
+    | Get Completed Sales
+    |--------------------------------------------------------------------------
+    */
+
+    $sales = Sale::with([
+        'user:id,name',
+        'customer:id,name',
+        'items.product:id,name,sku',
+    ])
+        ->where('branch_id', $branchId)
+        ->where('status', 'completed')
+        ->whereBetween('created_at', [
+            Carbon::parse($startDate)->startOfDay(),
+            Carbon::parse($endDate)->endOfDay(),
+        ])
+        ->latest()
+        ->get();
+
+    /*
+    |--------------------------------------------------------------------------
+    | Profit Calculations
+    |--------------------------------------------------------------------------
+    */
+
+    $grossRevenue = 0;
+    $totalDiscount = 0;
+    $netSales = 0;
+    $totalCost = 0;
+    $totalProfit = 0;
+    $totalItemsSold = 0;
+
+    foreach ($sales as $sale) {
+
+        $grossRevenue += (float) $sale->subtotal;
+
+        $totalDiscount += (float) $sale->discount;
+
+        $netSales += (float) $sale->total;
+
+        foreach ($sale->items as $item) {
+
+            $quantity = (float) $item->quantity;
+            $costPrice = (float) $item->cost_price;
+            $itemTotal = (float) $item->total;
+
+            $totalCost += $quantity * $costPrice;
+
+            $totalItemsSold += $quantity;
+        }
+    }
+
+    /*
+    |--------------------------------------------------------------------------
+    | Gross Profit
+    |--------------------------------------------------------------------------
+    */
+
+    $totalProfit = $netSales - $totalCost;
+
+    /*
+    |--------------------------------------------------------------------------
+    | Profit Margin
+    |--------------------------------------------------------------------------
+    */
+
+    $profitMargin = $netSales > 0
+        ? ($totalProfit / $netSales) * 100
+        : 0;
+
+    /*
+    |--------------------------------------------------------------------------
+    | Payment
+    |--------------------------------------------------------------------------
+    */
+
+    $totalPaid = $sales->sum(function ($sale) {
+
+        return max(
+            0,
+            (float) $sale->paid_amount -
+            (float) $sale->change_amount
+        );
+    });
+
+    /*
+    |--------------------------------------------------------------------------
+    | Outstanding
+    |--------------------------------------------------------------------------
+    */
+
+    $totalOutstanding = max(
+        0,
+        $netSales - $totalPaid
+    );
+
+    /*
+    |--------------------------------------------------------------------------
+    | Product Profit Breakdown
+    |--------------------------------------------------------------------------
+    */
+
+    $productProfits = collect();
+
+    foreach ($sales as $sale) {
+
+        foreach ($sale->items as $item) {
+
+            $quantity = (float) $item->quantity;
+            $costPrice = (float) $item->cost_price;
+            $sellingPrice = (float) $item->unit_price;
+
+            $revenue = $quantity * $sellingPrice;
+            $cost = $quantity * $costPrice;
+            $profit = $revenue - $cost;
+
+            $productId = $item->product_id;
+
+            if (!$productProfits->has($productId)) {
+
+                $productProfits->put($productId, [
+                    'product_id' => $productId,
+                    'product' => $item->product?->name ?? 'Unknown Product',
+                    'sku' => $item->product?->sku ?? '-',
+                    'quantity' => 0,
+                    'revenue' => 0,
+                    'cost' => 0,
+                    'profit' => 0,
+                ]);
+            }
+
+            $product = $productProfits->get($productId);
+
+            $product['quantity'] += $quantity;
+            $product['revenue'] += $revenue;
+            $product['cost'] += $cost;
+            $product['profit'] += $profit;
+
+            $productProfits->put($productId, $product);
+        }
+    }
+
+    /*
+    |--------------------------------------------------------------------------
+    | Format Product Profit Data
+    |--------------------------------------------------------------------------
+    */
+
+    $productProfits = $productProfits
+        ->map(function ($product) {
+
+            $margin = $product['revenue'] > 0
+                ? (
+                    $product['profit'] /
+                    $product['revenue']
+                ) * 100
+                : 0;
+
+            return [
+                'product_id' => $product['product_id'],
+
+                'product' => $product['product'],
+
+                'sku' => $product['sku'],
+
+                'quantity' => round(
+                    $product['quantity'],
+                    2
+                ),
+
+                'revenue' => round(
+                    $product['revenue'],
+                    2
+                ),
+
+                'cost' => round(
+                    $product['cost'],
+                    2
+                ),
+
+                'profit' => round(
+                    $product['profit'],
+                    2
+                ),
+
+                'margin' => round(
+                    $margin,
+                    2
+                ),
+            ];
+        })
+        ->sortByDesc('profit')
+        ->values();
+
+    /*
+    |--------------------------------------------------------------------------
+    | Sales Profit Breakdown
+    |--------------------------------------------------------------------------
+    */
+
+    $salesData = $sales->map(function ($sale) {
+
+        $cost = $sale->items->sum(function ($item) {
+
+            return
+                (float) $item->quantity *
+                (float) $item->cost_price;
+        });
+
+        $profit = (float) $sale->total - $cost;
+
+        $margin = (float) $sale->total > 0
+            ? (
+                $profit /
+                (float) $sale->total
+            ) * 100
+            : 0;
+
+        return [
+            'id' => $sale->id,
+
+            'invoice_number' =>
+                $sale->invoice_number,
+
+            'date' =>
+                $sale->created_at?->format('d M Y'),
+
+            'time' =>
+                $sale->created_at?->format('H:i'),
+
+            'customer' =>
+                $sale->customer?->name
+                ?? 'Walk-in Customer',
+
+            'cashier' =>
+                $sale->user?->name
+                ?? 'Unknown',
+
+            'sales' =>
+                (float) $sale->total,
+
+            'cost' =>
+                round($cost, 2),
+
+            'profit' =>
+                round($profit, 2),
+
+            'margin' =>
+                round($margin, 2),
+        ];
+    })->values();
+
+    /*
+    |--------------------------------------------------------------------------
+    | Return Profit Report
+    |--------------------------------------------------------------------------
+    */
+
+    return Inertia::render(
+        'Admin/Reports/Profit',
+        [
+
+            'startDate' => $startDate,
+
+            'endDate' => $endDate,
+
+            'summary' => [
+
+                'grossRevenue' =>
+                    round($grossRevenue, 2),
+
+                'totalDiscount' =>
+                    round($totalDiscount, 2),
+
+                'netSales' =>
+                    round($netSales, 2),
+
+                'totalCost' =>
+                    round($totalCost, 2),
+
+                'totalProfit' =>
+                    round($totalProfit, 2),
+
+                'profitMargin' =>
+                    round($profitMargin, 2),
+
+                'totalPaid' =>
+                    round($totalPaid, 2),
+
+                'totalOutstanding' =>
+                    round($totalOutstanding, 2),
+
+                'totalTransactions' =>
+                    $sales->count(),
+
+                'totalItemsSold' =>
+                    round($totalItemsSold, 2),
+            ],
+
+            'products' =>
+                $productProfits,
+
+            'sales' =>
+                $salesData,
+        ]
+    );
+}
+
+/**
+ * Stock Report
+ */
+public function stock(Request $request)
+{
+    /*
+    |--------------------------------------------------------------------------
+    | Active Branch
+    |--------------------------------------------------------------------------
+    */
+
+    $branchId = session('branch_id');
+
+    if (!$branchId) {
+        abort(403, 'No active branch selected.');
+    }
+
+    /*
+    |--------------------------------------------------------------------------
+    | Get Branch Products
+    |--------------------------------------------------------------------------
+    */
+
+    $products = \App\Models\Product::with([
+        'category:id,name',
+    ])
+        ->where('branch_id', $branchId)
+        ->where('status', 'active')
+        ->orderBy('name')
+        ->get();
+
+    /*
+    |--------------------------------------------------------------------------
+    | Stock Summary
+    |--------------------------------------------------------------------------
+    */
+
+    $totalProducts = $products->count();
+
+    $totalQuantity = $products->sum(function ($product) {
+        return (float) $product->quantity;
+    });
+
+    /*
+    |--------------------------------------------------------------------------
+    | Stock Cost Value
+    |--------------------------------------------------------------------------
+    */
+
+    $totalCostValue = $products->sum(function ($product) {
+        return
+            (float) $product->quantity *
+            (float) $product->cost_price;
+    });
+
+    /*
+    |--------------------------------------------------------------------------
+    | Stock Selling Value
+    |--------------------------------------------------------------------------
+    */
+
+    $totalSellingValue = $products->sum(function ($product) {
+        return
+            (float) $product->quantity *
+            (float) $product->selling_price;
+    });
+
+    /*
+    |--------------------------------------------------------------------------
+    | Expected Profit
+    |--------------------------------------------------------------------------
+    */
+
+    $expectedProfit =
+        $totalSellingValue -
+        $totalCostValue;
+
+    /*
+    |--------------------------------------------------------------------------
+    | Profit Margin
+    |--------------------------------------------------------------------------
+    */
+
+    $profitMargin = $totalSellingValue > 0
+        ? ($expectedProfit / $totalSellingValue) * 100
+        : 0;
+
+    /*
+    |--------------------------------------------------------------------------
+    | Low Stock
+    |--------------------------------------------------------------------------
+    */
+
+    $lowStockProducts = $products->filter(function ($product) {
+
+        return
+            (float) $product->quantity > 0 &&
+            (float) $product->quantity <=
+            (float) $product->low_stock_limit;
+
+    });
+
+    /*
+    |--------------------------------------------------------------------------
+    | Out Of Stock
+    |--------------------------------------------------------------------------
+    */
+
+    $outOfStockProducts = $products->filter(function ($product) {
+
+        return (float) $product->quantity <= 0;
+
+    });
+
+    /*
+    |--------------------------------------------------------------------------
+    | Stock Value By Product
+    |--------------------------------------------------------------------------
+    */
+
+    $stockData = $products->map(function ($product) {
+
+        $quantity = (float) $product->quantity;
+        $costPrice = (float) $product->cost_price;
+        $sellingPrice = (float) $product->selling_price;
+
+        $costValue = $quantity * $costPrice;
+
+        $sellingValue = $quantity * $sellingPrice;
+
+        $expectedProfit =
+            $sellingValue - $costValue;
+
+        $margin = $sellingValue > 0
+            ? ($expectedProfit / $sellingValue) * 100
+            : 0;
+
+        /*
+        |--------------------------------------------------------------------------
+        | Stock Status
+        |--------------------------------------------------------------------------
+        */
+
+        if ($quantity <= 0) {
+
+            $stockStatus = 'out_of_stock';
+
+        } elseif (
+            $quantity <=
+            (float) $product->low_stock_limit
+        ) {
+
+            $stockStatus = 'low_stock';
+
+        } else {
+
+            $stockStatus = 'in_stock';
+        }
+
+        return [
+
+            'id' => $product->id,
+
+            'name' => $product->name,
+
+            'sku' => $product->sku,
+
+            'barcode' => $product->barcode,
+
+            'category' =>
+                $product->category?->name ??
+                'Uncategorized',
+
+            'quantity' => $quantity,
+
+            'unit' => $product->unit,
+
+            'costPrice' => $costPrice,
+
+            'sellingPrice' => $sellingPrice,
+
+            'costValue' =>
+                round($costValue, 2),
+
+            'sellingValue' =>
+                round($sellingValue, 2),
+
+            'expectedProfit' =>
+                round($expectedProfit, 2),
+
+            'margin' =>
+                round($margin, 2),
+
+            'lowStockLimit' =>
+                (float) $product->low_stock_limit,
+
+            'status' => $stockStatus,
+        ];
+
+    })->values();
+
+    /*
+    |--------------------------------------------------------------------------
+    | Stock Movements
+    |--------------------------------------------------------------------------
+    */
+
+    $movements = \App\Models\StockMovement::with([
+        'product:id,name,sku',
+        'user:id,name',
+    ])
+        ->where('branch_id', $branchId)
+        ->latest()
+        ->limit(100)
+        ->get();
+
+    /*
+    |--------------------------------------------------------------------------
+    | Movement Summary
+    |--------------------------------------------------------------------------
+    */
+
+    $stockIn = $movements
+        ->whereIn('type', [
+            'in',
+            'stock_in',
+            'purchase',
+        ])
+        ->sum(function ($movement) {
+
+            return (float) $movement->quantity;
+
+        });
+
+    $stockOut = $movements
+        ->whereIn('type', [
+            'out',
+            'stock_out',
+            'sale',
+        ])
+        ->sum(function ($movement) {
+
+            return (float) $movement->quantity;
+
+        });
+
+    /*
+    |--------------------------------------------------------------------------
+    | Movement Data
+    |--------------------------------------------------------------------------
+    */
+
+    $movementData = $movements->map(function ($movement) {
+
+        return [
+
+            'id' => $movement->id,
+
+            'product' =>
+                $movement->product?->name ??
+                'Unknown Product',
+
+            'sku' =>
+                $movement->product?->sku,
+
+            'type' =>
+                $movement->type,
+
+            'quantity' =>
+                (float) $movement->quantity,
+
+            'reference' =>
+                $movement->reference,
+
+            'note' =>
+                $movement->note,
+
+            'user' =>
+                $movement->user?->name ??
+                'Unknown',
+
+            'date' =>
+                $movement->created_at?->format(
+                    'd M Y'
+                ),
+
+            'time' =>
+                $movement->created_at?->format(
+                    'H:i'
+                ),
+        ];
+
+    })->values();
+
+    /*
+    |--------------------------------------------------------------------------
+    | Return Stock Report
+    |--------------------------------------------------------------------------
+    */
+
+    return Inertia::render(
+        'Admin/Reports/Stock',
+        [
+
+            /*
+            |--------------------------------------------------------------------------
+            | Summary
+            |--------------------------------------------------------------------------
+            */
+
+            'summary' => [
+
+                'totalProducts' =>
+                    $totalProducts,
+
+                'totalQuantity' =>
+                    round(
+                        $totalQuantity,
+                        2
+                    ),
+
+                'totalCostValue' =>
+                    round(
+                        $totalCostValue,
+                        2
+                    ),
+
+                'totalSellingValue' =>
+                    round(
+                        $totalSellingValue,
+                        2
+                    ),
+
+                'expectedProfit' =>
+                    round(
+                        $expectedProfit,
+                        2
+                    ),
+
+                'profitMargin' =>
+                    round(
+                        $profitMargin,
+                        2
+                    ),
+
+                'lowStock' =>
+                    $lowStockProducts->count(),
+
+                'outOfStock' =>
+                    $outOfStockProducts->count(),
+
+                'stockIn' =>
+                    round(
+                        $stockIn,
+                        2
+                    ),
+
+                'stockOut' =>
+                    round(
+                        $stockOut,
+                        2
+                    ),
+            ],
+
+            /*
+            |--------------------------------------------------------------------------
+            | Products
+            |--------------------------------------------------------------------------
+            */
+
+            'products' =>
+                $stockData,
+
+            /*
+            |--------------------------------------------------------------------------
+            | Low Stock Products
+            |--------------------------------------------------------------------------
+            */
+
+            'lowStockProducts' =>
+                $stockData
+                    ->where(
+                        'status',
+                        'low_stock'
+                    )
+                    ->values(),
+
+            /*
+            |--------------------------------------------------------------------------
+            | Out Of Stock Products
+            |--------------------------------------------------------------------------
+            */
+
+            'outOfStockProducts' =>
+                $stockData
+                    ->where(
+                        'status',
+                        'out_of_stock'
+                    )
+                    ->values(),
+
+            /*
+            |--------------------------------------------------------------------------
+            | Movements
+            |--------------------------------------------------------------------------
+            */
+
+            'movements' =>
+                $movementData,
+        ]
+    );
+}
 
 }

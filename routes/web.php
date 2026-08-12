@@ -696,7 +696,15 @@ Route::prefix('admin/reports')
             '/yearly',
             [ReportController::class, 'yearly']
         )->name('yearly');
+    
+    //Profit Report
+    Route::get('/profit', [ReportController::class, 'profit'])
+    ->name('profit');
 
+    //Stock Report
+    Route::get(
+    '/stock',
+    [ReportController::class, 'stock'])->name('stock');
 });
 
 require __DIR__.'/auth.php';
