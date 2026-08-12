@@ -521,8 +521,9 @@ export default function Topbar({ toggleSidebar }) {
                                 PASSWORD
                             ================================================= */}
 
-                            <a
-                                href="/password"
+                           <a
+                                href="/profile#password"
+                                onClick={() => setOpen(false)}
                                 className="
                                     block
                                     px-4

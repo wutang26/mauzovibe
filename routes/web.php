@@ -698,3 +698,5 @@ Route::prefix('admin/reports')
         )->name('yearly');
 
 });
+
+require __DIR__.'/auth.php';

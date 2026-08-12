@@ -37,7 +37,7 @@ class AuthenticatedSessionController extends Controller
     // }
 
     //For multiple branch selection 
-    public function store(LoginRequest $request): RedirectResponse
+  public function store(LoginRequest $request): RedirectResponse
 {
     $request->authenticate();
 
@@ -47,18 +47,42 @@ class AuthenticatedSessionController extends Controller
 
     $branches = $user->branches;
 
+    /*
+    |--------------------------------------------------------------------------
+    | No Branch
+    |--------------------------------------------------------------------------
+    */
+
+    if ($branches->isEmpty()) {
+        return redirect()->route('dashboard');
+    }
+
+    /*
+    |--------------------------------------------------------------------------
+    | Single Branch
+    |--------------------------------------------------------------------------
+    */
+
     if ($branches->count() === 1) {
 
-        session([
-            'branch_id' => $branches->first()->id
-        ]);
+        $request->session()->put(
+            'branch_id',
+            $branches->first()->id
+        );
 
         return redirect()->route('dashboard');
     }
 
-    return redirect()->route('branches.choose');
-}
+    /*
+    |--------------------------------------------------------------------------
+    | Multiple Branches
+    |--------------------------------------------------------------------------
+    */
 
+    $request->session()->forget('branch_id');
+
+    return redirect()->route('choose.branch');
+}
     /**
      * Destroy an authenticated session.
      */
