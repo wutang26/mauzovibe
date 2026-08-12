@@ -158,9 +158,13 @@ Route::middleware('auth')->group(function () {
     |--------------------------------------------------------------------------
     */
 
+    // Route::prefix('admin/users')
+    //     ->name('admin.users.')
+    //     ->group(function () {
     Route::prefix('admin/users')
-        ->name('admin.users.')
-        ->group(function () {
+    ->name('admin.users.')
+    ->middleware('role:Super Admin|Admin')
+    ->group(function () {
 
             Route::get(
                 '/',
@@ -191,9 +195,13 @@ Route::middleware('auth')->group(function () {
     |--------------------------------------------------------------------------
     */
 
+    // Route::prefix('admin')
+    //     ->name('admin.')
+    //     ->group(function () {
     Route::prefix('admin')
-        ->name('admin.')
-        ->group(function () {
+    ->name('admin.')
+    ->middleware('role:Super Admin|Admin')
+    ->group(function () {
 
             Route::resource(
                 'branches',
@@ -209,6 +217,18 @@ Route::middleware('auth')->group(function () {
     |--------------------------------------------------------------------------
     */
 
+    // Route::get(
+    //     '/admin/branches/{branch}/assign-user',
+    //     [BranchController::class, 'assignUser']
+    // )->name('branches.assign-user');
+
+    // Route::post(
+    //     '/admin/branches/{branch}/assign-user',
+    //     [BranchController::class, 'storeAssignedUser']
+    // )->name('branches.store-assigned-user');
+
+    Route::middleware('role:Super Admin|Admin')->group(function () {
+
     Route::get(
         '/admin/branches/{branch}/assign-user',
         [BranchController::class, 'assignUser']
@@ -219,6 +239,7 @@ Route::middleware('auth')->group(function () {
         [BranchController::class, 'storeAssignedUser']
     )->name('branches.store-assigned-user');
 
+});
 
     /*
     |--------------------------------------------------------------------------
@@ -226,10 +247,15 @@ Route::middleware('auth')->group(function () {
     |--------------------------------------------------------------------------
     */
 
+    // Route::get(
+    //     '/branches/{branch}/view',
+    //     [BranchController::class, 'show']
+    // )->name('branches.show');
+
     Route::get(
-        '/branches/{branch}/view',
-        [BranchController::class, 'show']
-    )->name('branches.show');
+    '/branches/{branch}/view',
+    [BranchController::class, 'show'])->middleware('role:Super Admin|Admin')
+->name('branches.show');
 
 
     /*
@@ -708,12 +734,24 @@ Route::prefix('admin/reports')
     [ReportController::class, 'stock'])->name('stock');
 });
 
-Route::prefix('admin')->name('admin.')->middleware(['auth'])->group(function () {
+// Route::prefix('admin')->name('admin.')->middleware(['auth'])->group(function () {
 
-    // Audit Checking
-    Route::get('/audit', [AuditController::class, 'index'])
-        ->name('audit.index');
+//     // Audit Checking
+//     Route::get('/audit', [AuditController::class, 'index'])
+//         ->name('audit.index');
 
-});
+// });
+
+Route::prefix('admin')
+    ->name('admin.')
+    ->middleware(['auth', 'role:Super Admin|Admin'])
+    ->group(function () {
+
+        Route::get(
+            '/audit',
+            [AuditController::class, 'index']
+        )->name('audit.index');
+
+    });
     
 require __DIR__.'/auth.php';
