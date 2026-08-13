@@ -1,9 +1,71 @@
-import { useState } from "react";
-import { Head, Link, useForm } from "@inertiajs/react";
+import { useEffect, useState } from "react";
+import { Head, Link, useForm, usePage } from "@inertiajs/react";
 
+// export default function Welcome({ canLogin, canRegister }) {
+//     const [showPassword, setShowPassword] = useState(false);
 export default function Welcome({ canLogin, canRegister }) {
+
+    const { auth } = usePage().props;
+
     const [showPassword, setShowPassword] = useState(false);
 
+    // ==========================================================
+    // FREE TRIAL COUNTDOWN
+    // ==========================================================
+
+    const trialEndsAt = auth?.trial?.trial_ends_at;
+
+    const [daysRemaining, setDaysRemaining] = useState(
+        auth?.trial?.days_remaining ?? null
+    );
+
+    useEffect(() => {
+
+        if (!trialEndsAt) {
+            return;
+        }
+
+        const calculateDaysRemaining = () => {
+
+            const now = new Date();
+
+            const trialEnd = new Date(trialEndsAt);
+
+            const difference = trialEnd.getTime() - now.getTime();
+
+            const days = Math.max(
+                0,
+                Math.ceil(
+                    difference / (1000 * 60 * 60 * 24)
+                )
+            );
+
+            setDaysRemaining(days);
+        };
+
+        // Calculate immediately
+        calculateDaysRemaining();
+
+        // Update every minute
+        const interval = setInterval(
+            calculateDaysRemaining,
+            60000
+        );
+
+        return () => clearInterval(interval);
+
+    }, [trialEndsAt]);
+
+    // ==========================================================
+    // TRIAL BUTTON TEXT
+    // ==========================================================
+
+const trialButtonText =
+        auth?.trial?.is_expired || daysRemaining === 0
+            ? "Trial Expired"
+            : daysRemaining !== null
+                ? `${daysRemaining} Days Left`
+                : "Start Free Trial";
     const form = useForm({
         email: "",
         password: "",
@@ -494,7 +556,7 @@ export default function Welcome({ canLogin, canRegister }) {
                                                     "
                                                 >
 
-                                                    Start Free Trial
+                                                    {trialButtonText}
 
                                                     <svg
                                                         className="w-5 h-5 transition-transform duration-200 group-hover:translate-x-1"

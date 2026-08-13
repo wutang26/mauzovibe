@@ -4,86 +4,145 @@ namespace App\Http\Controllers\Auth;
 
 use App\Http\Controllers\Controller;
 use App\Models\User;
+use App\Models\Business;
 use App\Models\Branch;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\DB;
-
+use Carbon\Carbon;
 
 class RegisterController extends Controller
 {
-
-
     public function store(Request $request)
     {
-        
         $request->validate([
+            'name' => 'required|string|max:255',
 
-            'name'=>'required|string|max:255',
+            'email' => 'required|email|unique:users',
 
-            'email'=>'required|email|unique:users',
+            'password' => 'required|min:8',
 
-            'password'=>'required|min:8',
+            'business_name' => 'required|string|max:255',
 
-            'business_name'=>'required|string|max:255',
-
-            'location'=>'nullable|string',
-
+            'location' => 'nullable|string',
         ]);
 
-        DB::transaction(function() use($request){
-            // Create User
+        $user = DB::transaction(function () use ($request) {
+
+            /*
+            |--------------------------------------------------------------------------
+            | 1. Create User
+            |--------------------------------------------------------------------------
+            */
+
             $user = User::create([
-                'name'=>$request->name,
+                'name' => $request->name,
 
-                'email'=>$request->email,
+                'email' => $request->email,
 
-                'password'=>Hash::make(
+                'password' => Hash::make(
                     $request->password
                 ),
-
             ]);
 
-            // Create First Business Branch
+
+            /*
+            |--------------------------------------------------------------------------
+            | 2. Create Business
+            |--------------------------------------------------------------------------
+            */
+
+            $business = Business::create([
+                'name' => $request->business_name,
+            ]);
+
+
+            /*
+            |--------------------------------------------------------------------------
+            | 3. Create First Branch
+            |--------------------------------------------------------------------------
+            */
 
             $branch = Branch::create([
+                'business_id' => $business->id,
 
-                'name'=>$request->business_name,
+                'name' => $request->business_name,
 
-                'location'=>$request->location,
-
+                'location' => $request->location,
             ]);
 
-            // Attach user to branch
+
+            /*
+            |--------------------------------------------------------------------------
+            | 4. Attach User To Branch
+            |--------------------------------------------------------------------------
+            */
 
             $user->branches()->attach(
-
                 $branch->id,
-
                 [
-
-                    'is_default'=>true
-
+                    'is_default' => true,
                 ]
-
             );
 
-            // Login user automatically
 
-            auth()->login($user);
+            /*
+            |--------------------------------------------------------------------------
+            | 5. Create 30-Day Free Trial
+            |--------------------------------------------------------------------------
+            */
 
-            // Set active branch
+            $trialStartedAt = now();
 
-            session([
+            $trialEndsAt = now()->addDays(30);
 
-                'branch_id'=>$branch->id
+            $branch->subscription()->create([
+                'plan' => 'monthly',
 
+                'amount' => 10000,
+
+                'status' => 'trial',
+
+                'trial_started_at' => $trialStartedAt,
+
+                'trial_ends_at' => $trialEndsAt,
             ]);
+
+
+            return $user;
         });
 
-        return redirect()
-                ->route('dashboard');
+
+        /*
+        |--------------------------------------------------------------------------
+        | 6. Login User
+        |--------------------------------------------------------------------------
+        */
+
+        auth()->login($user);
+
+
+        /*
+        |--------------------------------------------------------------------------
+        | 7. Set Active Branch
+        |--------------------------------------------------------------------------
+        */
+
+        $branch = $user->branches()
+            ->wherePivot('is_default', true)
+            ->first();
+
+        session([
+            'branch_id' => $branch->id,
+        ]);
+
+
+        /*
+        |--------------------------------------------------------------------------
+        | 8. Redirect
+        |--------------------------------------------------------------------------
+        */
+
+        return redirect()->route('dashboard');
     }
-
-
 }

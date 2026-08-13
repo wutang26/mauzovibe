@@ -10,6 +10,7 @@ use App\Http\Controllers\Admin\StockController;
 use App\Http\Controllers\Admin\UserManagementController;
 use App\Http\Controllers\Auth\LoginController;
 use App\Http\Controllers\BranchSelectionController;
+use App\Http\Controllers\SubscriptionController;
 use App\Http\Controllers\DashboardController;
 use App\Http\Controllers\ProductController;
 use App\Http\Controllers\ProfileController;
@@ -754,4 +755,51 @@ Route::prefix('admin')
 
     });
     
+//Subscription Route
+/*
+|--------------------------------------------------------------------------
+| SUBSCRIPTION
+|--------------------------------------------------------------------------
+| Only Super Admin and Admin can manage branch subscriptions.
+|--------------------------------------------------------------------------
+*/
+
+ /*
+|--------------------------------------------------------------------------
+| SUBSCRIPTION
+|--------------------------------------------------------------------------
+| All authenticated users can view subscription status.
+| Only Super Admin and Admin can subscribe/renew.
+|--------------------------------------------------------------------------
+*/
+
+Route::middleware(['auth'])->group(function () {
+
+    // Everyone can view subscription
+    Route::get(
+        '/subscription',
+        [SubscriptionController::class, 'index']
+    )->name('subscription.index');
+
+
+    // Only Admin and Super Admin can subscribe
+    Route::post(
+        '/subscription/subscribe',
+        [SubscriptionController::class, 'subscribe']
+    )
+        ->middleware('role:Super Admin|Admin')
+        ->name('subscription.subscribe');
+
+
+    // Temporary payment testing endpoint
+    // Only Admin and Super Admin can use it
+    Route::post(
+        '/subscription/payment-success',
+        [SubscriptionController::class, 'paymentSuccess']
+    )
+        ->middleware('role:Super Admin|Admin')
+        ->name('subscription.payment.success');
+
+});
+
 require __DIR__.'/auth.php';

@@ -6,11 +6,13 @@ use App\Models\Branch;
 use Database\Factories\UserFactory;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Foundation\Auth\User as Authenticatable;
+use Illuminate\Database\Eloquent\Relations\BelongsToMany;
 use App\Models\Audit;
 
 //Manage Spatie permissions
 use Illuminate\Notifications\Notifiable;
 use Spatie\Permission\Traits\HasRoles;
+use Illuminate\Database\Eloquent\Relations\BelongsTo;
 
 class User extends Authenticatable
 {
@@ -93,4 +95,9 @@ public function audits()
     return $this->hasMany(Audit::class);
 }
 
+//bussiness
+   public function business(): BelongsTo
+    {
+        return $this->belongsTo(Business::class);
+    }
 }

@@ -10,6 +10,7 @@ use Inertia\Inertia;
 use Spatie\Permission\Models\Role;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
+use App\Models\Subscription;
 
 
 class BranchController extends Controller
@@ -251,6 +252,37 @@ public function register()
 /**
  * Store another branch for logged-in user.
  */
+// public function storeRegisteredBranch(Request $request)
+// {
+//     $request->validate([
+//         'name' => 'required|string|max:255',
+//         'location' => 'nullable|string|max:255',
+//     ]);
+
+//     DB::transaction(function () use ($request) {
+
+//         $user = Auth::user();
+
+//         // Create new branch
+//         $branch = Branch::create([
+//             'name' => $request->name,
+//             'location' => $request->location,
+//         ]);
+
+//         // Attach branch to current user
+//         $user->branches()->attach(
+//             $branch->id,
+//             [
+//                 'is_default' => false,
+//             ]
+//         );
+//     });
+
+//     return redirect()
+//         ->route('dashboard')
+//         ->with('success', 'Branch imeongezwa kikamilifu.');
+// }
+
 public function storeRegisteredBranch(Request $request)
 {
     $request->validate([
@@ -262,23 +294,49 @@ public function storeRegisteredBranch(Request $request)
 
         $user = Auth::user();
 
-        // Create new branch
+        // Get current user's business through existing branch
+        $currentBranch = $user->branches()
+            ->with('business')
+            ->firstOrFail();
+
+        $business = $currentBranch->business;
+
+        // Create new branch under the SAME business
         $branch = Branch::create([
+            'business_id' => $business->id,
             'name' => $request->name,
             'location' => $request->location,
         ]);
 
-        // Attach branch to current user
+        // Attach new branch to current user
         $user->branches()->attach(
             $branch->id,
             [
                 'is_default' => false,
             ]
         );
+
+        // Create 30-day free trial for the NEW branch
+        $trialStartedAt = now();
+
+        $trialEndsAt = now()->addDays(30);
+
+        $branch->subscription()->create([
+            'plan' => 'monthly',
+            'amount' => 10000,
+            'status' => 'trial',
+            'trial_started_at' => $trialStartedAt,
+            'trial_ends_at' => $trialEndsAt,
+        ]);
+
+        // Make the newly created branch the active branch
+        session([
+            'branch_id' => $branch->id,
+        ]);
     });
 
     return redirect()
         ->route('dashboard')
-        ->with('success', 'Branch imeongezwa kikamilifu.');
+        ->with('success', 'Branch imeongezwa na trial ya siku 30 imeanza.');
 }
 }

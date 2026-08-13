@@ -9,7 +9,7 @@ import {
     PlusIcon,
 } from "@heroicons/react/24/outline";
 
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { router, usePage } from "@inertiajs/react";
 
 export default function Topbar({ toggleSidebar }) {
@@ -22,9 +22,72 @@ export default function Topbar({ toggleSidebar }) {
 
     const [open, setOpen] = useState(false);
 
-    const [darkMode, setDarkMode] = useState(false);
+    // =====================================================
+// FREE TRIAL COUNTDOWN
+// =====================================================
 
-    const [language, setLanguage] = useState("EN");
+const trialEndsAt = auth?.trial?.trial_ends_at;
+
+const [daysRemaining, setDaysRemaining] = useState(
+    auth?.trial?.days_remaining ?? null
+);
+
+useEffect(() => {
+
+    if (!trialEndsAt) {
+        return;
+    }
+
+    const calculateDaysRemaining = () => {
+
+        const now = new Date();
+        const trialEnd = new Date(trialEndsAt);
+
+        const difference =
+            trialEnd.getTime() - now.getTime();
+
+        const days = Math.max(
+            0,
+            Math.ceil(
+                difference / (1000 * 60 * 60 * 24)
+            )
+        );
+
+        setDaysRemaining(days);
+    };
+
+    calculateDaysRemaining();
+
+    // Update countdown every minute
+    const interval = setInterval(
+        calculateDaysRemaining,
+        60000
+    );
+
+    return () => clearInterval(interval);
+
+    }, [trialEndsAt]);
+
+    //End of free trial
+
+   const [darkMode, setDarkMode] = useState(() => {
+    return localStorage.getItem("mauzovibe_theme") === "dark";
+});
+
+
+   const [language, setLanguage] = useState(() => {
+    return localStorage.getItem("mauzovibe_language") || "EN";
+});
+
+//Change Dark
+useEffect(() => {
+    document.documentElement.classList.toggle("dark", darkMode);
+
+    localStorage.setItem(
+        "mauzovibe_theme",
+        darkMode ? "dark" : "light"
+    );
+}, [darkMode]);
 
 
     // =====================================================
@@ -43,29 +106,26 @@ export default function Topbar({ toggleSidebar }) {
     // =====================================================
 
     function toggleDarkMode() {
-
-        setDarkMode(!darkMode);
-
-        document.documentElement.classList.toggle(
-            "dark"
-        );
-
-    }
+    setDarkMode((previous) => !previous);
+}
 
 
     // =====================================================
     // CHANGE LANGUAGE
     // =====================================================
 
-    function changeLanguage() {
+   function changeLanguage() {
+    const newLanguage = language === "EN"
+        ? "SW"
+        : "EN";
 
-        setLanguage(
-            language === "EN"
-                ? "SW"
-                : "EN"
-        );
+    setLanguage(newLanguage);
 
-    }
+    localStorage.setItem(
+        "mauzovibe_language",
+        newLanguage
+    );
+}
 
 
     // =====================================================
@@ -155,6 +215,123 @@ export default function Topbar({ toggleSidebar }) {
                 "
             >
 
+                {/* =================================================
+    FREE TRIAL REMINDER
+================================================= */}
+
+{auth?.trial?.status === "trial" && daysRemaining > 0 && (
+
+    <button
+        type="button"
+        className="
+            hidden
+            sm:flex
+            items-center
+            gap-2
+            px-3
+            py-2
+            rounded-lg
+            bg-emerald-50
+            border
+            border-emerald-200
+            text-emerald-700
+            hover:bg-emerald-100
+            transition
+            font-semibold
+            text-sm
+        "
+    >
+
+        <span
+            className="
+                relative
+                flex
+                h-2.5
+                w-2.5
+            "
+        >
+
+            <span
+                className="
+                    absolute
+                    inline-flex
+                    h-full
+                    w-full
+                    rounded-full
+                    bg-emerald-400
+                    opacity-75
+                    animate-ping
+                "
+            />
+
+            <span
+                className="
+                    relative
+                    inline-flex
+                    h-2.5
+                    w-2.5
+                    rounded-full
+                    bg-emerald-600
+                "
+            />
+
+        </span>
+
+        {daysRemaining}{" "}
+        {daysRemaining === 1
+            ? "Day Left"
+            : "Days Left"}
+
+    </button>
+
+)}
+
+{/* =================================================
+    TRIAL EXPIRED
+================================================= */}
+
+{(
+    auth?.trial?.status === "expired" ||
+    daysRemaining === 0
+) && (
+
+    <button
+        type="button"
+        className="
+            hidden
+            sm:flex
+            items-center
+            gap-2
+            px-3
+            py-2
+            rounded-lg
+            bg-red-50
+            border
+            border-red-200
+            text-red-600
+            hover:bg-red-100
+            transition
+            font-semibold
+            text-sm
+        "
+    >
+
+        <span
+            className="
+                w-2.5
+                h-2.5
+                rounded-full
+                bg-red-500
+            "
+        />
+
+        Trial Expired
+
+    </button>
+
+)}
+
+{/* end of  Trial Expired */}
 
                 {/* =================================================
                     LANGUAGE
