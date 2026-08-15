@@ -35,9 +35,13 @@ class BranchSelectionController extends Controller
         }
 
         // User has multiple branches
-        return Inertia::render('ChooseBranch', [
-            'branches' => $branches,
-        ]);
+        // return Inertia::render('ChooseBranch', [
+        //     'branches' => $branches,
+        // ]);
+
+            return Inertia::render('Admin/Branches/ChooseBranch', [
+        'branches' => $branches,
+    ]);
     }
 
     /**

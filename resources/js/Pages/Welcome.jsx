@@ -286,18 +286,18 @@ const trialButtonText =
                                             Home
                                         </a>
 
-                                        <a
+                                        {/* <a
                                             href="#features"
                                             className="hover:text-emerald-600 transition"
                                         >
                                             Features
-                                        </a>
+                                        </a> */}
 
                                         <a
                                             href="#solutions"
                                             className="hover:text-emerald-600 transition"
                                         >
-                                            Solutions
+                                            Faq
                                         </a>
 
                                         <a
