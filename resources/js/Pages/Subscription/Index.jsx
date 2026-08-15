@@ -305,7 +305,7 @@ export default function Index({
 
                     </div>
                         
-                        Temporary test thr payment gate
+                        {/* Temporary test thr payment gate */}
 
                     {/* =====================================================
                         BACK
