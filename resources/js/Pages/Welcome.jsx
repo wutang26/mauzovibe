@@ -1,5 +1,7 @@
 import { useEffect, useState } from "react";
 import { Head, Link, useForm, usePage } from "@inertiajs/react";
+const [showPassword, setShowPassword] = useState(false);
+const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
 import {
     FaFacebookF,
     FaInstagram,
@@ -306,26 +308,46 @@ export default function Welcome({ canLogin, canRegister }) {
                         {/* =================================================
                             NAVBAR
                         ================================================== */}
-                        <nav className="border-b border-slate-200/70 bg-white/95 backdrop-blur-xl shadow-sm">
+                        {/* =================================================
+    NAVBAR
+================================================= */}
+                        <nav className="sticky top-0 z-50 border-b border-slate-200/70 bg-white/95 backdrop-blur-xl shadow-sm">
 
-                            <div className="max-w-7xl mx-auto px-5 sm:px-6 xl:px-8">
+                            <div className="max-w-7xl mx-auto px-4 sm:px-6 xl:px-8">
 
-                                <div className="h-20 flex items-center justify-between">
-
+                                <div className="min-h-[72px] flex items-center justify-between gap-4">
 
                                     {/* =================================================
-                                        LOGO
-                                    ================================================== */}
+                LOGO
+            ================================================= */}
                                     <Link
                                         href="/"
-                                        className="flex items-center gap-3 group"
+                                        onClick={() => setMobileMenuOpen(false)}
+                                        className="flex items-center gap-2.5 group shrink-0"
                                     >
 
-                                        {/* Logo Icon */}
-                                        <div className="relative flex items-center justify-center w-11 h-11 rounded-xl bg-emerald-600 shadow-lg shadow-emerald-600/20 transition-all duration-200 group-hover:-translate-y-0.5 group-hover:shadow-emerald-600/30">
+                                        <div
+                                            className="
+                        relative
+                        flex
+                        items-center
+                        justify-center
+                        w-10
+                        h-10
+                        sm:w-11
+                        sm:h-11
+                        rounded-xl
+                        bg-emerald-600
+                        shadow-lg
+                        shadow-emerald-600/20
+                        transition-all
+                        duration-200
+                        group-hover:-translate-y-0.5
+                    "
+                                        >
 
                                             <svg
-                                                className="w-7 h-7 text-white"
+                                                className="w-6 h-6 sm:w-7 sm:h-7 text-white"
                                                 fill="none"
                                                 viewBox="0 0 24 24"
                                                 stroke="currentColor"
@@ -352,11 +374,9 @@ export default function Welcome({ canLogin, canRegister }) {
 
                                         </div>
 
-
-                                        {/* Logo Text */}
                                         <div className="leading-none">
 
-                                            <div className="text-2xl sm:text-3xl font-extrabold tracking-tight text-slate-900">
+                                            <div className="text-xl sm:text-2xl lg:text-3xl font-extrabold tracking-tight text-slate-900">
 
                                                 Mauzo
                                                 <span className="text-emerald-600">
@@ -371,9 +391,9 @@ export default function Welcome({ canLogin, canRegister }) {
 
 
                                     {/* =================================================
-                                        DESKTOP NAVIGATION
-                                    ================================================== */}
-                                    <div className="hidden lg:flex items-center gap-9 text-sm font-medium text-slate-700">
+                DESKTOP MENU
+            ================================================= */}
+                                    <div className="hidden lg:flex items-center gap-7 xl:gap-9 text-sm font-semibold text-slate-700">
 
                                         <a
                                             href="#home"
@@ -382,91 +402,283 @@ export default function Welcome({ canLogin, canRegister }) {
                                             Home
                                         </a>
 
-                                        {/* <a
-                                            href="#features"
-                                            className="hover:text-emerald-600 transition"
-                                        >
-                                            Features
-                                        </a> */}
-
-                                        <a
+                                        <Link
                                             href={route("faq")}
                                             className="hover:text-emerald-600 transition"
                                         >
-                                            Faq
-                                        </a>
+                                            FAQ
+                                        </Link>
 
-                                        <a
+                                        <Link
                                             href={route("pricing")}
                                             className="hover:text-emerald-600 transition"
                                         >
                                             Pricing
-                                        </a>
+                                        </Link>
 
-                                        <a
+                                        <Link
                                             href={route("about")}
                                             className="hover:text-emerald-600 transition"
                                         >
                                             About Us
-                                        </a>
+                                        </Link>
 
                                     </div>
 
 
                                     {/* =================================================
-                                        NAVBAR LOGIN BUTTON
-                                    ================================================== */}
-                                    {canLogin && (
-                                        <Link
-                                            href={route("login")}
-                                            className="
-                                                group
-                                                inline-flex
-                                                items-center
-                                                gap-2
-                                                rounded-xl
-                                                bg-emerald-600
-                                                px-6
-                                                py-3
-                                                text-sm
-                                                font-bold
-                                                text-white
-                                                shadow-lg
-                                                shadow-emerald-600/20
-                                                transition-all
-                                                duration-200
-                                                hover:-translate-y-0.5
-                                                hover:bg-emerald-700
-                                                hover:shadow-xl
-                                                hover:shadow-emerald-600/25
-                                            "
-                                        >
+                DESKTOP LOGIN
+            ================================================= */}
+                                    <div className="hidden lg:block shrink-0">
 
-                                            Sign In
-
-                                            <svg
-                                                className="w-4 h-4 transition-transform duration-200 group-hover:translate-x-1"
-                                                fill="none"
-                                                viewBox="0 0 24 24"
-                                                stroke="currentColor"
-                                                strokeWidth="2"
+                                        {canLogin && (
+                                            <Link
+                                                href={route("login")}
+                                                className="
+                            group
+                            inline-flex
+                            items-center
+                            gap-2
+                            rounded-xl
+                            bg-emerald-600
+                            px-5
+                            xl:px-6
+                            py-3
+                            text-sm
+                            font-bold
+                            text-white
+                            shadow-lg
+                            shadow-emerald-600/20
+                            transition-all
+                            duration-200
+                            hover:-translate-y-0.5
+                            hover:bg-emerald-700
+                            hover:shadow-xl
+                        "
                                             >
-                                                <path
-                                                    strokeLinecap="round"
-                                                    strokeLinejoin="round"
-                                                    d="M5 12h14M13 6l6 6-6 6"
-                                                />
-                                            </svg>
 
-                                        </Link>
-                                    )}
+                                                Sign In
+
+                                                <svg
+                                                    className="w-4 h-4 transition-transform group-hover:translate-x-1"
+                                                    fill="none"
+                                                    viewBox="0 0 24 24"
+                                                    stroke="currentColor"
+                                                    strokeWidth="2"
+                                                >
+                                                    <path
+                                                        strokeLinecap="round"
+                                                        strokeLinejoin="round"
+                                                        d="M5 12h14M13 6l6 6-6 6"
+                                                    />
+                                                </svg>
+
+                                            </Link>
+                                        )}
+
+                                    </div>
+
+
+                                    {/* =================================================
+                MOBILE MENU BUTTON
+            ================================================= */}
+                                    <button
+                                        type="button"
+                                        onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
+                                        className="
+                    lg:hidden
+                    flex
+                    items-center
+                    justify-center
+                    w-11
+                    h-11
+                    rounded-xl
+                    border
+                    border-slate-200
+                    bg-white
+                    text-slate-700
+                    shadow-sm
+                    hover:border-emerald-300
+                    hover:text-emerald-600
+                    transition-all
+                "
+                                        aria-label="Toggle navigation menu"
+                                        aria-expanded={mobileMenuOpen}
+                                    >
+
+                                        {mobileMenuOpen ? (
+                                            <XMarkIcon className="w-6 h-6" />
+                                        ) : (
+                                            <Bars3Icon className="w-6 h-6" />
+                                        )}
+
+                                    </button>
 
                                 </div>
+
+
+                                {/* =================================================
+            MOBILE MENU
+        ================================================= */}
+                                {mobileMenuOpen && (
+                                    <div
+                                        className="
+                    lg:hidden
+                    border-t
+                    border-slate-100
+                    py-4
+                    animate-in
+                    fade-in
+                    slide-in-from-top-2
+                    duration-200
+                "
+                                    >
+
+                                        <div className="flex flex-col gap-1">
+
+                                            <a
+                                                href="#home"
+                                                onClick={() => setMobileMenuOpen(false)}
+                                                className="
+                            flex
+                            items-center
+                            justify-between
+                            px-4
+                            py-3
+                            rounded-xl
+                            text-sm
+                            font-semibold
+                            text-slate-700
+                            hover:bg-emerald-50
+                            hover:text-emerald-600
+                            transition
+                        "
+                                            >
+                                                <span>Home</span>
+                                                <ChevronRightIcon className="w-4 h-4" />
+                                            </a>
+
+
+                                            <Link
+                                                href={route("faq")}
+                                                onClick={() => setMobileMenuOpen(false)}
+                                                className="
+                            flex
+                            items-center
+                            justify-between
+                            px-4
+                            py-3
+                            rounded-xl
+                            text-sm
+                            font-semibold
+                            text-slate-700
+                            hover:bg-emerald-50
+                            hover:text-emerald-600
+                            transition
+                        "
+                                            >
+                                                <span>FAQ</span>
+                                                <ChevronRightIcon className="w-4 h-4" />
+                                            </Link>
+
+
+                                            <Link
+                                                href={route("pricing")}
+                                                onClick={() => setMobileMenuOpen(false)}
+                                                className="
+                            flex
+                            items-center
+                            justify-between
+                            px-4
+                            py-3
+                            rounded-xl
+                            text-sm
+                            font-semibold
+                            text-slate-700
+                            hover:bg-emerald-50
+                            hover:text-emerald-600
+                            transition
+                        "
+                                            >
+                                                <span>Pricing</span>
+                                                <ChevronRightIcon className="w-4 h-4" />
+                                            </Link>
+
+
+                                            <Link
+                                                href={route("about")}
+                                                onClick={() => setMobileMenuOpen(false)}
+                                                className="
+                            flex
+                            items-center
+                            justify-between
+                            px-4
+                            py-3
+                            rounded-xl
+                            text-sm
+                            font-semibold
+                            text-slate-700
+                            hover:bg-emerald-50
+                            hover:text-emerald-600
+                            transition
+                        "
+                                            >
+                                                <span>About Us</span>
+                                                <ChevronRightIcon className="w-4 h-4" />
+                                            </Link>
+
+
+                                            {/* Mobile Sign In */}
+                                            {canLogin && (
+                                                <Link
+                                                    href={route("login")}
+                                                    onClick={() => setMobileMenuOpen(false)}
+                                                    className="
+                                mt-3
+                                flex
+                                items-center
+                                justify-center
+                                gap-2
+                                w-full
+                                rounded-xl
+                                bg-emerald-600
+                                px-5
+                                py-3
+                                text-sm
+                                font-bold
+                                text-white
+                                shadow-lg
+                                shadow-emerald-600/20
+                                hover:bg-emerald-700
+                                transition
+                            "
+                                                >
+                                                    Sign In
+
+                                                    <svg
+                                                        className="w-4 h-4"
+                                                        fill="none"
+                                                        viewBox="0 0 24 24"
+                                                        stroke="currentColor"
+                                                        strokeWidth="2"
+                                                    >
+                                                        <path
+                                                            strokeLinecap="round"
+                                                            strokeLinejoin="round"
+                                                            d="M5 12h14M13 6l6 6-6 6"
+                                                        />
+                                                    </svg>
+                                                </Link>
+                                            )}
+
+                                        </div>
+
+                                    </div>
+                                )}
 
                             </div>
 
                         </nav>
-
 
                         {/* =================================================
                             HERO CONTENT
@@ -1310,7 +1522,7 @@ export default function Welcome({ canLogin, canRegister }) {
                         {/* =================================================
                             BOTTOM INFO
                         ================================================== */}
-                        <div className="hidden md:block pb-5">
+                        {/* <div className="hidden md:block pb-5">
 
                             <div className="max-w-7xl mx-auto px-6 xl:px-8">
 
@@ -1351,7 +1563,70 @@ export default function Welcome({ canLogin, canRegister }) {
 
                             </div>
 
-                        </div>
+                        </div> */}
+
+                        {/* =================================================
+    FOOTER
+================================================= */}
+                        <footer className="mt-auto border-t border-slate-200/70 bg-white/90 backdrop-blur-md">
+
+                            <div className="max-w-7xl mx-auto px-5 sm:px-6 xl:px-8 py-5">
+
+                                <div className="
+            flex
+            flex-col
+            sm:flex-row
+            items-center
+            justify-between
+            gap-4
+            text-xs
+            text-slate-500
+        ">
+
+                                    {/* Copyright */}
+                                    <span className="text-center sm:text-left">
+                                        © {new Date().getFullYear()} MauzoVibe.
+                                        All rights reserved.
+                                    </span>
+
+                                    {/* Footer Links */}
+                                    <div className="
+                flex
+                items-center
+                justify-center
+                flex-wrap
+                gap-x-5
+                gap-y-2
+            ">
+
+                                        <Link
+                                            href={route("privacy")}
+                                            className="font-medium hover:text-emerald-600 transition"
+                                        >
+                                            Privacy
+                                        </Link>
+
+                                        <Link
+                                            href={route("terms")}
+                                            className="font-medium hover:text-emerald-600 transition"
+                                        >
+                                            Terms
+                                        </Link>
+
+                                        <Link
+                                            href={route("support")}
+                                            className="font-medium hover:text-emerald-600 transition"
+                                        >
+                                            Support
+                                        </Link>
+
+                                    </div>
+
+                                </div>
+
+                            </div>
+
+                        </footer>
 
                     </div>
 
