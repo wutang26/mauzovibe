@@ -1,7 +1,13 @@
+
 import { useEffect, useState } from "react";
 import { Head, Link, useForm, usePage } from "@inertiajs/react";
-const [showPassword, setShowPassword] = useState(false);
-const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
+
+import {
+    Bars3Icon,
+    XMarkIcon,
+    ChevronRightIcon,
+} from "@heroicons/react/24/outline";
+
 import {
     FaFacebookF,
     FaInstagram,
@@ -10,13 +16,21 @@ import {
     FaWhatsapp,
 } from "react-icons/fa";
 
-// export default function Welcome({ canLogin, canRegister }) {
-//     const [showPassword, setShowPassword] = useState(false);
 export default function Welcome({ canLogin, canRegister }) {
 
     const { auth } = usePage().props;
 
     const [showPassword, setShowPassword] = useState(false);
+    const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
+
+    // kuendelea na code yako...
+// export default function Welcome({ canLogin, canRegister }) {
+//     const [showPassword, setShowPassword] = useState(false);
+//export default function Welcome({ canLogin, canRegister }) {
+
+    //const { auth } = usePage().props;
+
+    //const [showPassword, setShowPassword] = useState(false);
 
     // ==========================================================
     // FREE TRIAL COUNTDOWN
