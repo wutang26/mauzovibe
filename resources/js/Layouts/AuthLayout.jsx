@@ -153,21 +153,21 @@ export default function AuthLayout({ children, title, subtitle }) {
                             </a> */}
 
                             <a
-                                href="/#solutions"
+                                 href={route("faq")}
                                 className="hover:text-emerald-600 transition"
                             >
                                 Faq
                             </a>
 
                             <a
-                                href="/#pricing"
+                                 href={route("pricing")}
                                 className="hover:text-emerald-600 transition"
                             >
                                 Pricing
                             </a>
 
                             <a
-                                href="/#about"
+                                href={route("about")}
                                 className="hover:text-emerald-600 transition"
                             >
                                 About Us
@@ -303,21 +303,21 @@ export default function AuthLayout({ children, title, subtitle }) {
                             </Link>
 
                             <a
-                                href="/#privacy"
+                                href={route("privacy")}
                                 className="hover:text-emerald-600 transition"
                             >
                                 Privacy
                             </a>
 
                             <a
-                                href="/#terms"
+                                 href={route("terms")}
                                 className="hover:text-emerald-600 transition"
                             >
                                 Terms
                             </a>
 
                             <a
-                                href="/#support"
+                                 href={route("support")}
                                 className="hover:text-emerald-600 transition"
                             >
                                 Support

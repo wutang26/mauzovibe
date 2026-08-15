@@ -802,4 +802,31 @@ Route::middleware(['auth'])->group(function () {
 
 });
 
+
+//Home Page routes
+Route::get('/about', function () {
+    return Inertia::render('About');
+})->name('about');
+
+Route::get('/pricing', function () {
+    return Inertia::render('Pricing');
+})->name('pricing');
+
+Route::get('/faq', function () {
+    return Inertia::render('Faq');
+})->name('faq');
+
+Route::get('/privacy', function () {
+    return Inertia::render('Privacy');
+})->name('privacy');
+
+
+Route::get('/terms', function () {
+    return Inertia::render('Terms');
+})->name('terms');
+
+Route::get('/support', function () {
+    return Inertia::render('Support');
+})->name('support');
+
 require __DIR__.'/auth.php';

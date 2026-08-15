@@ -63,15 +63,16 @@ export default function Sidebar({ open }) {
             name: "Inventory",
             icon: CubeIcon,
             children: [
-                {
-                    name: "Products",
-                    icon: CubeIcon,
-                    link: route("admin.products.index"),
-                },
+              
                 {
                     name: "Categories",
                     icon: ArchiveBoxIcon,
                     link: route("admin.categories.index"),
+                },
+                  {
+                    name: "Products",
+                    icon: CubeIcon,
+                    link: route("admin.products.index"),
                 },
                 {
                     name: "Stock In",
