@@ -1,9 +1,10 @@
 import AdminLayout from "@/Layouts/AdminLayout";
-import { Link ,router} from "@inertiajs/react";
+import { Link, router } from "@inertiajs/react";
 
 import {
     PlusIcon,
     CubeIcon,
+    EyeIcon,
     PencilSquareIcon,
     TrashIcon
 } from "@heroicons/react/24/outline";
@@ -11,9 +12,9 @@ import {
 
 export default function Index({ products }) {
 
-     const deleteProduct = (id) => {
+    const deleteProduct = (id) => {
 
-        if(confirm("Are you sure you want to delete this product?")) {
+        if (confirm("Are you sure you want to delete this product?")) {
 
             router.delete(
                 route("admin.products.destroy", id),
@@ -264,8 +265,8 @@ export default function Index({ products }) {
 
                                             </td>
 
-                                        <td className="p-4">
-                                        <span className="
+                                            <td className="p-4">
+                                                <span className="
                                             font-mono
                                             text-sm
                                             text-gray-700
@@ -274,9 +275,9 @@ export default function Index({ products }) {
                                             py-1
                                             rounded-lg
                                         ">
-                                            {product.barcode ?? "-"}
-                                        </span>
-                                    </td>
+                                                    {product.barcode ?? "-"}
+                                                </span>
+                                            </td>
 
                                             <td className="p-4">
 
@@ -306,13 +307,13 @@ export default function Index({ products }) {
 
 
                                                 <span className={`
-px-3
-py-1
-rounded-full
-text-sm
-font-semibold
+                                                    px-3
+                                                    py-1
+                                                    rounded-full
+                                                    text-sm
+                                                    font-semibold
 
-${product.quantity <= 5
+                                                    ${product.quantity <= 5
 
                                                         ?
 
@@ -341,64 +342,77 @@ ${product.quantity <= 5
 
                                             <td className="p-4">
 
-                                                <div className="flex gap-2">
+                                               <div className="flex gap-2">
 
-
-                                                    <Link
-
-                                                        href={route(
-                                                            "admin.products.edit",
-                                                            product.id
-                                                        )}
-
-                                                        className="
-    p-2
-    hover:bg-blue-100
-    rounded-lg
-    "
-
-                                                    >
-
-                                                        <PencilSquareIcon
-
-                                                            className="
-        w-5
-        h-5
-        text-blue-600
-        "
-
-                                                        />
-
-                                                    </Link>
-
-
-
-                                                  <button
-
-                                                onClick={() => deleteProduct(product.id)}
-
-                                                className="
-                                                p-2
-                                                hover:bg-red-100
+                                        {/* View */}
+                                        <Link
+                                            href={route(
+                                                "admin.products.show",
+                                                product.id
+                                            )}
+                                            className="
                                                 rounded-lg
-                                                "
-
-                                            >
-
-                                                <TrashIcon
-
-                                                    className="
-                                                    w-5
+                                                p-2
+                                                transition
+                                                hover:bg-slate-100
+                                            "
+                                            title="View Product"
+                                        >
+                                            <EyeIcon
+                                                className="
                                                     h-5
-                                                    text-red-600
-                                                    "
+                                                    w-5
+                                                    text-slate-600
+                                                "
+                                            />
+                                        </Link>
 
-                                                />
 
-                                                </button>
+    {/* Edit */}
+    <Link
+        href={route(
+            "admin.products.edit",
+            product.id
+        )}
+        className="
+            rounded-lg
+            p-2
+            transition
+            hover:bg-blue-100
+        "
+        title="Edit Product"
+    >
+        <PencilSquareIcon
+            className="
+                h-5
+                w-5
+                text-blue-600
+            "
+        />
+    </Link>
 
 
-                                                </div>
+    {/* Delete */}
+    <button
+        onClick={() => deleteProduct(product.id)}
+        className="
+            rounded-lg
+            p-2
+            transition
+            hover:bg-red-100
+        "
+        title="Delete Product"
+    >
+        <TrashIcon
+            className="
+                h-5
+                w-5
+                text-red-600
+            "
+        />
+    </button>
+
+</div>
 
 
                                             </td>

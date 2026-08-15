@@ -3,10 +3,10 @@ import { Link, router } from "@inertiajs/react";
 
 import {
     PlusIcon,
-    MagnifyingGlassIcon,
     FolderIcon,
     PencilSquareIcon,
-    TrashIcon
+    TrashIcon,
+    EyeIcon
 } from "@heroicons/react/24/outline";
 
 
@@ -58,10 +58,10 @@ export default function Index({ categories }) {
                     <div>
 
                         <h1 className="
-text-3xl
-font-bold
-text-gray-800
-">
+                        text-3xl
+                        font-bold
+                        text-gray-800
+                        ">
 
                             Product Categories
 
@@ -69,9 +69,9 @@ text-gray-800
 
 
                         <p className="
-text-gray-500
-mt-1
-">
+                        text-gray-500
+                        mt-1
+                        ">
 
                             Manage your inventory categories
 
@@ -89,18 +89,18 @@ mt-1
                         href={route("admin.categories.create")}
 
                         className="
-flex
-items-center
-gap-2
-bg-blue-600
-hover:bg-blue-700
-text-white
-px-5
-py-3
-rounded-xl
-shadow
-transition
-"
+                        flex
+                        items-center
+                        gap-2
+                        bg-blue-600
+                        hover:bg-blue-700
+                        text-white
+                        px-5
+                        py-3
+                        rounded-xl
+                        shadow
+                        transition
+                        "
 
                     >
 
@@ -115,14 +115,7 @@ transition
 
                 </div>
 
-
-
-
-
-
-
                 {/* Summary */}
-
 
                 <div className="
                 grid
@@ -350,68 +343,94 @@ transition
                                                 <td className="p-4">
 
 
-                                                    <div className="flex gap-2">
+                                                  <td className="p-4">
+    <div className="flex items-center gap-2">
+
+        {/* VIEW */}
+        <Link
+            href={route(
+                "admin.categories.show",
+                category.id
+            )}
+            title="View Category"
+            className="
+                inline-flex
+                h-9
+                w-9
+                items-center
+                justify-center
+                rounded-lg
+                bg-slate-100
+                text-slate-600
+                hover:bg-slate-200
+                hover:text-slate-800
+                transition
+                duration-200
+            "
+        >
+             <EyeIcon
+                                                className="
+                                                    h-5
+                                                    w-5
+                                                    text-slate-600
+                                                "
+                                            />
+                                        </Link>
 
 
-                                                        <Link
-
-                                                            href={route(
-                                                                "admin.categories.edit",
-                                                                category.id
-                                                            )}
-
-                                                            className="
-                                                            p-2
-                                                            rounded-lg
-                                                            hover:bg-blue-100
-                                                            "
-                                                        >
-
-
-                                                            <PencilSquareIcon
-                                                                className="
-                                                                w-5
-                                                                h-5
-                                                                text-blue-600
-                                                                "
-                                                            />
-
-
-                                                        </Link>
-
+        {/* EDIT */}
+        <Link
+            href={route(
+                "admin.categories.edit",
+                category.id
+            )}
+            title="Edit Category"
+            className="
+                inline-flex
+                h-9
+                w-9
+                items-center
+                justify-center
+                rounded-lg
+                bg-blue-50
+                text-blue-600
+                hover:bg-blue-100
+                hover:text-blue-700
+                transition
+                duration-200
+            "
+        >
+            <PencilSquareIcon className="h-5 w-5" />
+        </Link>
 
 
+        {/* DELETE */}
+        <button
+            type="button"
+            onClick={() =>
+                deleteCategory(category.id)
+            }
+            title="Delete Category"
+            className="
+                inline-flex
+                h-9
+                w-9
+                items-center
+                justify-center
+                rounded-lg
+                bg-red-50
+                text-red-600
+                hover:bg-red-100
+                hover:text-red-700
+                transition
+                duration-200
+            "
+        >
+            <TrashIcon className="h-5 w-5" />
+        </button>
 
-                                                        <button
-
-                                                            onClick={() =>
-                                                                deleteCategory(category.id)
-                                                            }
-
-                                                            className="
-                                                        p-2
-                                                        rounded-lg
-                                                        hover:bg-red-100
-                                                        "
-
-                                                        >
-
-
-                                                            <TrashIcon
-
-                                                                className="
-w-5
-h-5
-text-red-600
-"
-
-                                                            />
-
-
-                                                        </button>
-
-
-                                                    </div>
+    </div>
+</td>
 
 
                                                 </td>

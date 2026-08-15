@@ -136,18 +136,6 @@ class ProductController extends Controller
             'Product created successfully'
         );
             
-
-        // return redirect()
-
-        //     ->route(
-        //         'admin.products.index'
-        //     )
-
-        //     ->with(
-        //         'success',
-        //         'Product created successfully'
-        //     );
-
     }
 
 //Edit
@@ -290,5 +278,19 @@ class ProductController extends Controller
             );
 
     }
+
+    //Show Products
+    public function show(Product $product)
+{
+    if ($product->branch_id != session('branch_id')) {
+        abort(403);
+    }
+
+    $product->load('category');
+
+    return Inertia::render('Admin/Products/Show', [
+        'product' => $product,
+    ]);
+}
 
 }

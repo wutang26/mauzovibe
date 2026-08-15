@@ -83,10 +83,35 @@ class CategoryController extends Controller
     /**
      * Display the specified resource.
      */
-    public function show(string $id)
-    {
-        //
+  public function show(Category $category)
+{
+    $branchId = session('branch_id');
+
+    if (!$branchId) {
+        abort(403, 'No active branch selected.');
     }
+
+    // Security: category must belong to active branch
+    if ($category->branch_id != $branchId) {
+        abort(403, 'This category does not belong to the active branch.');
+    }
+
+    // Load products belonging to this category
+    $category->load([
+        'products' => function ($query) use ($branchId) {
+            $query->where('branch_id', $branchId)
+                ->latest();
+        }
+    ]);
+
+    return Inertia::render(
+        'Admin/Categories/Show',
+        [
+            'category' => $category,
+        ]
+    );
+}
+
 
     /**
      * Show the form for editing the specified resource.
@@ -158,5 +183,9 @@ class CategoryController extends Controller
             );
 
     }
+
+    /**
+ * Display the specified resource.
+ */
 
 }
