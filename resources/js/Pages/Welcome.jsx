@@ -1,5 +1,12 @@
 import { useEffect, useState } from "react";
 import { Head, Link, useForm, usePage } from "@inertiajs/react";
+import {
+    FaFacebookF,
+    FaInstagram,
+    FaLinkedinIn,
+    FaYoutube,
+    FaWhatsapp,
+} from "react-icons/fa";
 
 // export default function Welcome({ canLogin, canRegister }) {
 //     const [showPassword, setShowPassword] = useState(false);
@@ -60,7 +67,7 @@ export default function Welcome({ canLogin, canRegister }) {
     // TRIAL BUTTON TEXT
     // ==========================================================
 
-const trialButtonText =
+    const trialButtonText =
         auth?.trial?.is_expired || daysRemaining === 0
             ? "Trial Expired"
             : daysRemaining !== null
@@ -180,23 +187,112 @@ const trialButtonText =
 
 
                                     {/* Social */}
-                                    <div className="flex items-center gap-5 text-slate-500">
+                                    <div className="flex items-center gap-3">
 
-                                        <span className="cursor-pointer hover:text-emerald-600 transition font-bold">
-                                            f
-                                        </span>
+                                        {/* Facebook */}
+                                        <a
+                                            href="https://www.facebook.com/mauzovibe"
+                                            target="_blank"
+                                            rel="noopener noreferrer"
+                                            aria-label="MauzoVibe Facebook"
+                                            className="
+            w-10 h-10
+            rounded-xl
+            bg-slate-100
+            flex items-center justify-center
+            text-slate-500
+            hover:bg-emerald-600
+            hover:text-white
+            hover:-translate-y-1
+            transition-all duration-200
+        "
+                                        >
+                                            <FaFacebookF className="w-4 h-4" />
+                                        </a>
 
-                                        <span className="cursor-pointer hover:text-emerald-600 transition">
-                                            ◎
-                                        </span>
+                                        {/* Instagram */}
+                                        <a
+                                            href="https://www.instagram.com/mauzovibe"
+                                            target="_blank"
+                                            rel="noopener noreferrer"
+                                            aria-label="MauzoVibe Instagram"
+                                            className="
+            w-10 h-10
+            rounded-xl
+            bg-slate-100
+            flex items-center justify-center
+            text-slate-500
+            hover:bg-emerald-600
+            hover:text-white
+            hover:-translate-y-1
+            transition-all duration-200
+        "
+                                        >
+                                            <FaInstagram className="w-5 h-5" />
+                                        </a>
 
-                                        <span className="cursor-pointer hover:text-emerald-600 transition font-semibold">
-                                            in
-                                        </span>
+                                        {/* LinkedIn */}
+                                        <a
+                                            href="https://www.linkedin.com/company/mauzovibe"
+                                            target="_blank"
+                                            rel="noopener noreferrer"
+                                            aria-label="MauzoVibe LinkedIn"
+                                            className="
+            w-10 h-10
+            rounded-xl
+            bg-slate-100
+            flex items-center justify-center
+            text-slate-500
+            hover:bg-emerald-600
+            hover:text-white
+            hover:-translate-y-1
+            transition-all duration-200
+        "
+                                        >
+                                            <FaLinkedinIn className="w-5 h-5" />
+                                        </a>
 
-                                        <span className="cursor-pointer hover:text-emerald-600 transition">
-                                            ▶
-                                        </span>
+                                        {/* YouTube */}
+                                        <a
+                                            href="https://www.youtube.com/@mauzovibe"
+                                            target="_blank"
+                                            rel="noopener noreferrer"
+                                            aria-label="MauzoVibe YouTube"
+                                            className="
+            w-10 h-10
+            rounded-xl
+            bg-slate-100
+            flex items-center justify-center
+            text-slate-500
+            hover:bg-emerald-600
+            hover:text-white
+            hover:-translate-y-1
+            transition-all duration-200
+        "
+                                        >
+                                            <FaYoutube className="w-5 h-5" />
+                                        </a>
+
+                                        {/* WhatsApp */}
+                                        <a
+                                            href="https://wa.me/255746856656"
+                                            target="_blank"
+                                            rel="noopener noreferrer"
+                                            aria-label="MauzoVibe WhatsApp"
+                                            className="
+            w-10 h-10
+            rounded-xl
+            bg-slate-100
+            flex items-center justify-center
+            text-slate-500
+            hover:bg-emerald-600
+            hover:text-white
+            hover:-translate-y-1
+            transition-all duration-200
+        "
+                                        >
+                                            <FaWhatsapp className="w-5 h-5" />
+                                        </a>
 
                                     </div>
 
@@ -301,7 +397,7 @@ const trialButtonText =
                                         </a>
 
                                         <a
-                                               href={route("pricing")}
+                                            href={route("pricing")}
                                             className="hover:text-emerald-600 transition"
                                         >
                                             Pricing
@@ -822,10 +918,9 @@ const trialButtonText =
                                                                 pr-4
                                                                 rounded-xl
                                                                 border
-                                                                ${
-                                                                    form.errors.email
-                                                                        ? "border-red-400 focus:border-red-500 focus:ring-red-500/10"
-                                                                        : "border-slate-200 focus:border-emerald-500 focus:ring-4 focus:ring-emerald-500/10"
+                                                                ${form.errors.email
+                                                                    ? "border-red-400 focus:border-red-500 focus:ring-red-500/10"
+                                                                    : "border-slate-200 focus:border-emerald-500 focus:ring-4 focus:ring-emerald-500/10"
                                                                 }
                                                                 bg-slate-50
                                                                 text-slate-900
@@ -927,10 +1022,9 @@ const trialButtonText =
                                                                 pr-12
                                                                 rounded-xl
                                                                 border
-                                                                ${
-                                                                    form.errors.password
-                                                                        ? "border-red-400 focus:border-red-500 focus:ring-red-500/10"
-                                                                        : "border-slate-200 focus:border-emerald-500 focus:ring-4 focus:ring-emerald-500/10"
+                                                                ${form.errors.password
+                                                                    ? "border-red-400 focus:border-red-500 focus:ring-red-500/10"
+                                                                    : "border-slate-200 focus:border-emerald-500 focus:ring-4 focus:ring-emerald-500/10"
                                                                 }
                                                                 bg-slate-50
                                                                 text-slate-900
@@ -1245,7 +1339,7 @@ const trialButtonText =
                                         </a>
 
                                         <a
-                                             href={route("support")}
+                                            href={route("support")}
                                             className="hover:text-emerald-600 transition"
                                         >
                                             Support
