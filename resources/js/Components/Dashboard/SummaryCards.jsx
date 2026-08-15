@@ -61,33 +61,46 @@ export default function SummaryCards({ stats = {} }) {
                     className="min-w-0 overflow-hidden rounded-xl bg-white shadow-sm ring-1 ring-slate-200 transition-all duration-200 hover:-translate-y-0.5 hover:shadow-md"
                 >
                     {/* CARD HEADER */}
-                    <div
-                        className={`${card.bg} px-3 py-3 text-white sm:px-4 sm:py-4`}
-                    >
+                    <div className={`${card.bg} px-3 py-3 text-white sm:px-4 sm:py-4`}>
                         <div className="flex items-start justify-between gap-2">
+
                             {/* CONTENT */}
                             <div className="min-w-0 flex-1">
-                                <p className="truncate text-[10px] font-bold uppercase tracking-wide opacity-90 sm:text-xs">
+
+                                {/* TITLE */}
+                                <p
+                                    className="
+                    min-h-[24px]
+                    text-[10px]
+                    font-bold
+                    uppercase
+                    leading-tight
+                    tracking-wide
+                    opacity-90
+                    break-words
+                    sm:min-h-[28px]
+                    sm:text-xs
+                "
+                                >
                                     {card.title}
                                 </p>
 
+                                {/* VALUE */}
                                 {card.isMoney ? (
                                     <div className="mt-1">
-                                        {/* Currency */}
                                         <span className="block text-[9px] font-semibold uppercase tracking-wider opacity-80 sm:text-[10px]">
                                             {card.currency}
                                         </span>
 
-                                        {/* Amount */}
                                         <h3
                                             className="
-                                                mt-0.5
-                                                whitespace-nowrap
-                                                font-black
-                                                leading-none
-                                                tracking-tight
-                                                text-[clamp(1rem,2vw,1.45rem)]
-                                            "
+                            mt-0.5
+                            whitespace-nowrap
+                            font-black
+                            leading-none
+                            tracking-tight
+                            text-[clamp(1rem,2vw,1.45rem)]
+                        "
                                         >
                                             {card.value}
                                         </h3>
@@ -95,38 +108,40 @@ export default function SummaryCards({ stats = {} }) {
                                 ) : (
                                     <h3
                                         className="
-                                            mt-2
-                                            whitespace-nowrap
-                                            font-black
-                                            leading-none
-                                            tracking-tight
-                                            text-[clamp(1.15rem,2vw,1.5rem)]
-                                        "
+                        mt-2
+                        whitespace-nowrap
+                        font-black
+                        leading-none
+                        tracking-tight
+                        text-[clamp(1.15rem,2vw,1.5rem)]
+                    "
                                     >
                                         {card.value}
                                     </h3>
                                 )}
+
                             </div>
 
                             {/* ICON */}
                             <div
                                 className="
-                                    flex
-                                    h-8
-                                    w-8
-                                    shrink-0
-                                    items-center
-                                    justify-center
-                                    rounded-lg
-                                    bg-white/20
-                                    text-base
-                                    sm:h-9
-                                    sm:w-9
-                                    sm:text-lg
-                                "
+                flex
+                h-8
+                w-8
+                shrink-0
+                items-center
+                justify-center
+                rounded-lg
+                bg-white/20
+                text-base
+                sm:h-9
+                sm:w-9
+                sm:text-lg
+            "
                             >
                                 {card.icon}
                             </div>
+
                         </div>
                     </div>
 
