@@ -1,7 +1,6 @@
-
 import { useState } from "react";
 
-import { Link } from "@inertiajs/react";
+import { Link, usePage } from "@inertiajs/react";
 
 import {
     HomeIcon,
@@ -22,6 +21,23 @@ import {
 
 export default function Sidebar({ open }) {
     const [openMenus, setOpenMenus] = useState({});
+
+    const { auth } = usePage().props;
+
+    const user = auth?.user;
+
+    /*
+    |--------------------------------------------------------------------------
+    | ADMIN ACCESS
+    |--------------------------------------------------------------------------
+    */
+
+    const isAdmin =
+        user?.roles?.some((role) =>
+            ["Admin", "Super Admin"].includes(
+                typeof role === "string" ? role : role.name
+            )
+        ) ?? false;
 
     const toggleMenu = (menu) => {
         setOpenMenus((prev) => ({
@@ -63,13 +79,12 @@ export default function Sidebar({ open }) {
             name: "Inventory",
             icon: CubeIcon,
             children: [
-              
                 {
                     name: "Categories",
                     icon: ArchiveBoxIcon,
                     link: route("admin.categories.index"),
                 },
-                  {
+                {
                     name: "Products",
                     icon: CubeIcon,
                     link: route("admin.products.index"),
@@ -126,32 +141,32 @@ export default function Sidebar({ open }) {
                 {
                     name: "Daily Report",
                     icon: DocumentChartBarIcon,
-                    link: route("admin.reports.daily")
+                    link: route("admin.reports.daily"),
                 },
                 {
                     name: "Weekly Report",
                     icon: DocumentChartBarIcon,
-                    link: route("admin.reports.weekly")
+                    link: route("admin.reports.weekly"),
                 },
                 {
                     name: "Monthly Report",
                     icon: DocumentChartBarIcon,
-                    link: route("admin.reports.monthly")
+                    link: route("admin.reports.monthly"),
                 },
                 {
                     name: "Yearly Report",
                     icon: DocumentChartBarIcon,
-                    link: route("admin.reports.yearly")
+                    link: route("admin.reports.yearly"),
                 },
                 {
                     name: "Profit Report",
                     icon: ChartBarIcon,
-                    link: route("admin.reports.profit")
+                    link: route("admin.reports.profit"),
                 },
                 {
                     name: "Stock Report",
                     icon: CubeIcon,
-                    link: route("admin.reports.stock")
+                    link: route("admin.reports.stock"),
                 },
             ],
         },
@@ -165,17 +180,40 @@ export default function Sidebar({ open }) {
                     icon: BuildingStorefrontIcon,
                     link: route("admin.branches.index"),
                 },
+
+                /*
+                |--------------------------------------------------------------------------
+                | USERS - ADMIN & SUPER ADMIN ONLY
+                |--------------------------------------------------------------------------
+                */
+
+                ...(isAdmin
+                    ? [
+                          {
+                              name: "Users",
+                              icon: UserGroupIcon,
+                              link: route("admin.users.index"),
+                          },
+                      ]
+                    : []),
+
+                /*
+                |--------------------------------------------------------------------------
+                | SYSTEM AUDIT - ADMIN & SUPER ADMIN ONLY
+                |--------------------------------------------------------------------------
+                */
+
+                ...(isAdmin
+                    ? [
+                          {
+                              name: "System Audit",
+                              icon: DocumentMagnifyingGlassIcon,
+                              link: route("admin.audit.index"),
+                          },
+                      ]
+                    : []),
+
                 {
-                    name: "Users",
-                    icon: UserGroupIcon,
-                    link: route("admin.users.index"),
-                },
-                 {
-                    name: "System Audit",
-                    icon: DocumentMagnifyingGlassIcon,
-                    link: route("admin.audit.index"),
-                },
-                 {
                     name: "Subscriptions",
                     icon: DocumentMagnifyingGlassIcon,
                     link: route("subscription.index"),
@@ -197,11 +235,7 @@ export default function Sidebar({ open }) {
                 transition-all
                 duration-300
                 z-50
-                ${
-                    open
-                        ? "w-64"
-                        : "w-20"
-                }
+                ${open ? "w-64" : "w-20"}
             `}
         >
             {/* Logo */}
@@ -440,4 +474,3 @@ export default function Sidebar({ open }) {
         </aside>
     );
 }
-
