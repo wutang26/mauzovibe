@@ -755,14 +755,6 @@ Route::prefix('admin')
 
     });
     
-//Subscription Route
-/*
-|--------------------------------------------------------------------------
-| SUBSCRIPTION
-|--------------------------------------------------------------------------
-| Only Super Admin and Admin can manage branch subscriptions.
-|--------------------------------------------------------------------------
-*/
 
  /*
 |--------------------------------------------------------------------------
@@ -773,35 +765,63 @@ Route::prefix('admin')
 |--------------------------------------------------------------------------
 */
 
-Route::middleware(['auth'])->group(function () {
+// Route::middleware(['auth'])->group(function () {
 
-    // Everyone can view subscription
-    Route::get(
-        '/subscription',
-        [SubscriptionController::class, 'index']
-    )->name('subscription.index');
-
-
-    // Only Admin and Super Admin can subscribe
-    Route::post(
-        '/subscription/subscribe',
-        [SubscriptionController::class, 'subscribe']
-    )
-        ->middleware('role:Super Admin|Admin')
-        ->name('subscription.subscribe');
+//     // Everyone can view subscription
+//     Route::get(
+//         '/subscription',
+//         [SubscriptionController::class, 'index']
+//     )->name('subscription.index');
 
 
-    // Temporary payment testing endpoint
-    // Only Admin and Super Admin can use it
-    Route::post(
-        '/subscription/payment-success',
-        [SubscriptionController::class, 'paymentSuccess']
-    )
-        ->middleware('role:Super Admin|Admin')
-        ->name('subscription.payment.success');
+//     // Only Admin and Super Admin can subscribe
+//     Route::post(
+//         '/subscription/subscribe',
+//         [SubscriptionController::class, 'subscribe']
+//     )
+//         ->middleware('role:Super Admin|Admin')
+//         ->name('subscription.subscribe');
 
-});
 
+//     // Temporary payment testing endpoint
+//     // Only Admin and Super Admin can use it
+//     Route::post(
+//         '/subscription/payment-success',
+//         [SubscriptionController::class, 'paymentSuccess']
+//     )
+//         ->middleware('role:Super Admin|Admin')
+//         ->name('subscription.payment.success');
+
+// });
+/*
+|--------------------------------------------------------------------------
+| SUBSCRIPTION
+|--------------------------------------------------------------------------
+| Only Super Admin and Admin can access subscription management.
+|--------------------------------------------------------------------------
+*/
+
+Route::middleware(['auth', 'role:Super Admin|Admin'])
+    ->group(function () {
+
+        // Subscription page
+        Route::get(
+            '/subscription',
+            [SubscriptionController::class, 'index']
+        )->name('subscription.index');
+
+        // Subscribe / Renew
+        Route::post(
+            '/subscription/subscribe',
+            [SubscriptionController::class, 'subscribe']
+        )->name('subscription.subscribe');
+
+        // Payment success
+        Route::post(
+            '/subscription/payment-success',
+            [SubscriptionController::class, 'paymentSuccess']
+        )->name('subscription.payment.success');
+    });
 
 //Home Page routes
 Route::get('/about', function () {

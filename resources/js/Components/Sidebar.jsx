@@ -210,14 +210,15 @@ export default function Sidebar({ open }) {
                               icon: DocumentMagnifyingGlassIcon,
                               link: route("admin.audit.index"),
                           },
+                           {
+                            name: "Subscriptions",
+                            icon: DocumentMagnifyingGlassIcon,
+                            link: route("subscription.index"),
+                        },
                       ]
                     : []),
 
-                {
-                    name: "Subscriptions",
-                    icon: DocumentMagnifyingGlassIcon,
-                    link: route("subscription.index"),
-                },
+               
             ],
         },
     ];
