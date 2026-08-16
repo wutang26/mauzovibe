@@ -801,7 +801,7 @@ Route::prefix('admin')
 |--------------------------------------------------------------------------
 */
 
-Route::middleware(['auth', 'role:Super Admin|Admin'])
+Route::middleware(['auth'])  //'role:Super Admin|Admin'
     ->group(function () {
 
         // Subscription page

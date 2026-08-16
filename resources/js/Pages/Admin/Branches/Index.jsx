@@ -8,6 +8,7 @@ import {
     PencilSquareIcon,
     UserPlusIcon,
     EyeIcon,
+    CreditCardIcon,
 } from "@heroicons/react/24/outline";
 
 function Index({ branches }) {
@@ -185,6 +186,10 @@ function Index({ branches }) {
                                 </th>
 
                                 <th className="p-4 text-center font-semibold">
+                                    Subscription
+                                </th>
+
+                                <th className="p-4 text-center font-semibold">
                                     Assign User
                                 </th>
 
@@ -331,7 +336,217 @@ function Index({ branches }) {
 
                                         </td>
 
+{/* =================================================
+    SUBSCRIPTION
+================================================== */}
+{/* =================================================
+    SUBSCRIPTION
+================================================== */}
+<td className="p-4 text-center">
 
+    {/* FREE TRIAL */}
+    {branch.subscription?.status === "trial" && (
+        <div className="flex flex-col items-center gap-1">
+
+            <span
+                className="
+                    inline-flex
+                    items-center
+                    gap-2
+                    bg-emerald-50
+                    border
+                    border-emerald-100
+                    text-emerald-700
+                    px-3
+                    py-1.5
+                    rounded-full
+                    text-xs
+                    font-semibold
+                "
+            >
+                <span className="w-2 h-2 rounded-full bg-emerald-500" />
+
+                Free Trial
+            </span>
+
+            {branch.subscription.trial_ends_at && (
+                <span className="text-[11px] text-slate-400">
+
+                    {(() => {
+                        const end = new Date(
+                            branch.subscription.trial_ends_at
+                        );
+
+                        const today = new Date();
+
+                        const diff = Math.ceil(
+                            (end - today) / (1000 * 60 * 60 * 24)
+                        );
+
+                        return diff > 0
+                            ? `${diff} day${diff !== 1 ? "s" : ""} left`
+                            : "Trial Expired";
+
+                    })()}
+
+                </span>
+            )}
+
+        </div>
+    )}
+
+
+    {/* ACTIVE */}
+    {branch.subscription?.status === "active" && (
+        <div className="flex flex-col items-center gap-1">
+
+            <span
+                className="
+                    inline-flex
+                    items-center
+                    gap-2
+                    bg-green-50
+                    border
+                    border-green-100
+                    text-green-700
+                    px-3
+                    py-1.5
+                    rounded-full
+                    text-xs
+                    font-semibold
+                "
+            >
+                <span className="w-2 h-2 rounded-full bg-green-500" />
+
+                Active
+            </span>
+
+            {branch.subscription.ends_at && (
+                <span className="text-[11px] text-slate-400">
+
+                    {(() => {
+                        const end = new Date(
+                            branch.subscription.ends_at
+                        );
+
+                        const today = new Date();
+
+                        const diff = Math.ceil(
+                            (end - today) / (1000 * 60 * 60 * 24)
+                        );
+
+                        return diff > 0
+                            ? `${diff} day${diff !== 1 ? "s" : ""} left`
+                            : "Subscription Expired";
+
+                    })()}
+
+                </span>
+            )}
+
+        </div>
+    )}
+
+
+    {/* PENDING */}
+    {branch.subscription?.status === "pending" && (
+        <div className="flex flex-col items-center gap-1">
+
+            <span
+                className="
+                    inline-flex
+                    items-center
+                    gap-2
+                    bg-yellow-50
+                    border
+                    border-yellow-100
+                    text-yellow-700
+                    px-3
+                    py-1.5
+                    rounded-full
+                    text-xs
+                    font-semibold
+                "
+            >
+                <span className="w-2 h-2 rounded-full bg-yellow-500" />
+
+                Payment Pending
+            </span>
+
+            <span className="text-[11px] text-slate-400">
+                Awaiting payment
+            </span>
+
+        </div>
+    )}
+
+
+    {/* EXPIRED */}
+    {branch.subscription?.status === "expired" && (
+        <div className="flex flex-col items-center gap-1">
+
+            <span
+                className="
+                    inline-flex
+                    items-center
+                    gap-2
+                    bg-red-50
+                    border
+                    border-red-100
+                    text-red-700
+                    px-3
+                    py-1.5
+                    rounded-full
+                    text-xs
+                    font-semibold
+                "
+            >
+                <span className="w-2 h-2 rounded-full bg-red-500" />
+
+                Expired
+            </span>
+
+            <span className="text-[11px] text-red-400">
+                Renewal required
+            </span>
+
+        </div>
+    )}
+
+
+    {/* NO SUBSCRIPTION */}
+    {!branch.subscription && (
+        <div className="flex flex-col items-center gap-1">
+
+            <span
+                className="
+                    inline-flex
+                    items-center
+                    gap-2
+                    bg-slate-50
+                    border
+                    border-slate-200
+                    text-slate-500
+                    px-3
+                    py-1.5
+                    rounded-full
+                    text-xs
+                    font-semibold
+                "
+            >
+                <CreditCardIcon className="w-4 h-4" />
+
+                No Subscription
+            </span>
+
+            <span className="text-[11px] text-slate-400">
+                Not subscribed
+            </span>
+
+        </div>
+    )}
+
+</td>
                                         {/* =================================================
                                             ASSIGN USER
                                         ================================================== */}

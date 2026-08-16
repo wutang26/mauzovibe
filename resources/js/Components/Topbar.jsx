@@ -1,4 +1,3 @@
-
 import {
     Bars3Icon,
     BellIcon,
@@ -17,77 +16,127 @@ export default function Topbar({ toggleSidebar }) {
     const { auth } = usePage().props;
 
     const user = auth?.user;
-
     const activeBranch = auth?.active_branch;
 
     const [open, setOpen] = useState(false);
 
+
     // =====================================================
-// FREE TRIAL COUNTDOWN
-// =====================================================
+    // FREE TRIAL COUNTDOWN
+    // =====================================================
 
-const trialEndsAt = auth?.trial?.trial_ends_at;
+    const trialEndsAt = auth?.trial?.trial_ends_at;
 
-const [daysRemaining, setDaysRemaining] = useState(
-    auth?.trial?.days_remaining ?? null
-);
-
-useEffect(() => {
-
-    if (!trialEndsAt) {
-        return;
-    }
-
-    const calculateDaysRemaining = () => {
-
-        const now = new Date();
-        const trialEnd = new Date(trialEndsAt);
-
-        const difference =
-            trialEnd.getTime() - now.getTime();
-
-        const days = Math.max(
-            0,
-            Math.ceil(
-                difference / (1000 * 60 * 60 * 24)
-            )
-        );
-
-        setDaysRemaining(days);
-    };
-
-    calculateDaysRemaining();
-
-    // Update countdown every minute
-    const interval = setInterval(
-        calculateDaysRemaining,
-        60000
+    const [daysRemaining, setDaysRemaining] = useState(
+        auth?.trial?.days_remaining ?? null
     );
 
-    return () => clearInterval(interval);
+
+    useEffect(() => {
+
+        if (!trialEndsAt) {
+            return;
+        }
+
+        const calculateDaysRemaining = () => {
+
+            const now = new Date();
+            const trialEnd = new Date(trialEndsAt);
+
+            const difference =
+                trialEnd.getTime() - now.getTime();
+
+            const days = Math.max(
+                0,
+                Math.ceil(
+                    difference / (1000 * 60 * 60 * 24)
+                )
+            );
+
+            setDaysRemaining(days);
+        };
+
+
+        calculateDaysRemaining();
+
+
+        // Update countdown every minute
+        const interval = setInterval(
+            calculateDaysRemaining,
+            60000
+        );
+
+
+        return () => clearInterval(interval);
 
     }, [trialEndsAt]);
 
-    //End of free trial
 
-   const [darkMode, setDarkMode] = useState(() => {
-    return localStorage.getItem("mauzovibe_theme") === "dark";
-});
+    // =====================================================
+    // DARK MODE
+    // =====================================================
+
+    const [darkMode, setDarkMode] = useState(() => {
+
+        return (
+            localStorage.getItem(
+                "mauzovibe_theme"
+            ) === "dark"
+        );
+
+    });
 
 
-   const [language, setLanguage] = useState(() => {
-    return localStorage.getItem("mauzovibe_language") || "EN";
-});
+    // =====================================================
+    // LANGUAGE
+    // =====================================================
 
-//Change Dark
-useEffect(() => {
-    document.documentElement.classList.toggle("dark", darkMode);
+    const [language, setLanguage] = useState(() => {
 
-    localStorage.setItem(
-        "mauzovibe_theme",
-        darkMode ? "dark" : "light"
-    );
-}, [darkMode]);
+        return (
+            localStorage.getItem(
+                "mauzovibe_language"
+            ) || "EN"
+        );
+
+    });
+
+
+    // =====================================================
+    // APPLY DARK MODE
+    // =====================================================
+
+    useEffect(() => {
+
+        document.documentElement.classList.toggle(
+            "dark",
+            darkMode
+        );
+
+
+        localStorage.setItem(
+            "mauzovibe_theme",
+            darkMode
+                ? "dark"
+                : "light"
+        );
+
+    }, [darkMode]);
+
+
+    // =====================================================
+    // OPEN SUBSCRIPTION PAGE
+    // =====================================================
+
+    function openSubscription() {
+
+        setOpen(false);
+
+        router.get(
+            route("subscription.index")
+        );
+
+    }
 
 
     // =====================================================
@@ -106,26 +155,35 @@ useEffect(() => {
     // =====================================================
 
     function toggleDarkMode() {
-    setDarkMode((previous) => !previous);
-}
+
+        setDarkMode(
+            (previous) => !previous
+        );
+
+    }
 
 
     // =====================================================
     // CHANGE LANGUAGE
     // =====================================================
 
-   function changeLanguage() {
-    const newLanguage = language === "EN"
-        ? "SW"
-        : "EN";
+    function changeLanguage() {
 
-    setLanguage(newLanguage);
+        const newLanguage =
+            language === "EN"
+                ? "SW"
+                : "EN";
 
-    localStorage.setItem(
-        "mauzovibe_language",
-        newLanguage
-    );
-}
+
+        setLanguage(newLanguage);
+
+
+        localStorage.setItem(
+            "mauzovibe_language",
+            newLanguage
+        );
+
+    }
 
 
     // =====================================================
@@ -134,10 +192,8 @@ useEffect(() => {
 
     function registerAnotherBranch() {
 
-        // Close dropdown first
         setOpen(false);
 
-        // Go to register branch page
         router.get(
             route("branches.register")
         );
@@ -151,10 +207,8 @@ useEffect(() => {
 
     function switchBranch(branchId) {
 
-        // Close dropdown
         setOpen(false);
 
-        // Switch selected branch
         router.post(
             `/switch-branch/${branchId}`
         );
@@ -182,6 +236,7 @@ useEffect(() => {
             ===================================================== */}
 
             <button
+                type="button"
                 onClick={toggleSidebar}
                 className="
                     hover:bg-gray-100
@@ -215,129 +270,162 @@ useEffect(() => {
                 "
             >
 
+
                 {/* =================================================
-    FREE TRIAL REMINDER
-================================================= */}
+                    FREE TRIAL REMINDER
+                ================================================= */}
 
-{auth?.trial?.status === "trial" && daysRemaining > 0 && (
+                {auth?.trial?.status === "trial" &&
+                    daysRemaining > 0 && (
 
-    <button
-        type="button"
-        className="
-            hidden
-            sm:flex
-            items-center
-            gap-2
-            px-3
-            py-2
-            rounded-lg
-            bg-emerald-50
-            border
-            border-emerald-200
-            text-emerald-700
-            hover:bg-emerald-100
-            transition
-            font-semibold
-            text-sm
-        "
-    >
+                        <button
+                            type="button"
+                            onClick={openSubscription}
+                            title="Manage your subscription"
+                            className="
+                                hidden
+                                sm:flex
+                                items-center
+                                gap-2
+                                px-3
+                                py-2
+                                rounded-lg
+                                bg-emerald-50
+                                border
+                                border-emerald-200
+                                text-emerald-700
+                                hover:bg-emerald-100
+                                hover:border-emerald-300
+                                transition
+                                font-semibold
+                                text-sm
+                                cursor-pointer
+                            "
+                        >
 
-        <span
-            className="
-                relative
-                flex
-                h-2.5
-                w-2.5
-            "
-        >
+                            {/* Animated Dot */}
 
-            <span
-                className="
-                    absolute
-                    inline-flex
-                    h-full
-                    w-full
-                    rounded-full
-                    bg-emerald-400
-                    opacity-75
-                    animate-ping
-                "
-            />
+                            <span
+                                className="
+                                    relative
+                                    flex
+                                    h-2.5
+                                    w-2.5
+                                "
+                            >
 
-            <span
-                className="
-                    relative
-                    inline-flex
-                    h-2.5
-                    w-2.5
-                    rounded-full
-                    bg-emerald-600
-                "
-            />
+                                <span
+                                    className="
+                                        absolute
+                                        inline-flex
+                                        h-full
+                                        w-full
+                                        rounded-full
+                                        bg-emerald-400
+                                        opacity-75
+                                        animate-ping
+                                    "
+                                />
 
-        </span>
+                                <span
+                                    className="
+                                        relative
+                                        inline-flex
+                                        h-2.5
+                                        w-2.5
+                                        rounded-full
+                                        bg-emerald-600
+                                    "
+                                />
 
-        {daysRemaining}{" "}
-        {daysRemaining === 1
-            ? "Day Left"
-            : "Days Left"}
+                            </span>
 
-    </button>
 
-)}
+                            {/* Days */}
 
-{/* =================================================
-    TRIAL EXPIRED
-================================================= */}
+                            <span>
+                                {daysRemaining}{" "}
+                                {daysRemaining === 1
+                                    ? "Day Left"
+                                    : "Days Left"}
+                            </span>
 
-{(
-    auth?.trial?.status === "expired" ||
-    daysRemaining === 0
-) && (
 
-    <button
-        type="button"
-        className="
-            hidden
-            sm:flex
-            items-center
-            gap-2
-            px-3
-            py-2
-            rounded-lg
-            bg-red-50
-            border
-            border-red-200
-            text-red-600
-            hover:bg-red-100
-            transition
-            font-semibold
-            text-sm
-        "
-    >
+                            {/* Subscribe */}
 
-        <span
-            className="
-                w-2.5
-                h-2.5
-                rounded-full
-                bg-red-500
-            "
-        />
+                            <span className="text-emerald-600">
+                                • Subscribe
+                            </span>
 
-        Trial Expired
+                        </button>
 
-    </button>
+                    )}
 
-)}
 
-{/* end of  Trial Expired */}
+                {/* =================================================
+                    TRIAL EXPIRED
+                ================================================= */}
+
+                {(
+                    auth?.trial?.status === "expired" ||
+                    daysRemaining === 0
+                ) && (
+
+                    <button
+                        type="button"
+                        onClick={openSubscription}
+                        title="Subscribe to continue using MauzoVibe"
+                        className="
+                            hidden
+                            sm:flex
+                            items-center
+                            gap-2
+                            px-3
+                            py-2
+                            rounded-lg
+                            bg-red-50
+                            border
+                            border-red-200
+                            text-red-600
+                            hover:bg-red-100
+                            hover:border-red-300
+                            transition
+                            font-semibold
+                            text-sm
+                            cursor-pointer
+                        "
+                    >
+
+                        <span
+                            className="
+                                w-2.5
+                                h-2.5
+                                rounded-full
+                                bg-red-500
+                            "
+                        />
+
+
+                        <span>
+                            Trial Expired
+                        </span>
+
+
+                        <span className="text-red-600">
+                            • Subscribe Now
+                        </span>
+
+                    </button>
+
+                )}
+
 
                 {/* =================================================
                     LANGUAGE
                 ================================================= */}
 
                 <button
+                    type="button"
                     onClick={changeLanguage}
                     className="
                         flex
@@ -367,6 +455,7 @@ useEffect(() => {
                 ================================================= */}
 
                 <button
+                    type="button"
                     onClick={toggleDarkMode}
                     className="
                         hover:bg-gray-100
@@ -398,6 +487,7 @@ useEffect(() => {
                 ================================================= */}
 
                 <button
+                    type="button"
                     className="
                         hover:bg-gray-100
                         dark:hover:bg-gray-800
@@ -425,9 +515,12 @@ useEffect(() => {
                 <div className="relative">
 
 
-                    {/* Profile Button */}
+                    {/* =================================================
+                        PROFILE BUTTON
+                    ================================================= */}
 
                     <button
+                        type="button"
                         onClick={() =>
                             setOpen(!open)
                         }
@@ -519,7 +612,6 @@ useEffect(() => {
                             ================================================= */}
 
                             <div className="px-4 py-3">
-
 
                                 <p
                                     className="
@@ -675,11 +767,46 @@ useEffect(() => {
 
 
                             {/* =================================================
+                                SUBSCRIPTION
+                            ================================================= */}
+
+                            <button
+                                type="button"
+                                onClick={openSubscription}
+                                className="
+                                    w-full
+                                    text-left
+                                    px-4
+                                    py-2.5
+                                    font-semibold
+                                    text-emerald-600
+                                    hover:bg-emerald-50
+                                    dark:hover:bg-emerald-900/20
+                                    transition
+                                "
+                            >
+                                💳 Subscription
+                            </button>
+
+
+                            {/* Divider */}
+
+                            <hr
+                                className="
+                                    my-1
+                                    border-gray-100
+                                    dark:border-gray-700
+                                "
+                            />
+
+
+                            {/* =================================================
                                 PROFILE
                             ================================================= */}
 
                             <a
                                 href="/profile"
+                                onClick={() => setOpen(false)}
                                 className="
                                     block
                                     px-4
@@ -698,7 +825,7 @@ useEffect(() => {
                                 PASSWORD
                             ================================================= */}
 
-                           <a
+                            <a
                                 href="/profile#password"
                                 onClick={() => setOpen(false)}
                                 className="
@@ -731,6 +858,7 @@ useEffect(() => {
                             ================================================= */}
 
                             <button
+                                type="button"
                                 onClick={logout}
                                 className="
                                     w-full
@@ -755,6 +883,7 @@ useEffect(() => {
             </div>
 
         </header>
-    );
-}
 
+    );
+
+}
