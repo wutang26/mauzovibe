@@ -9,11 +9,19 @@ use Symfony\Component\HttpFoundation\Response;
 class EnsureBranchSelected
 {
     /**
-     * Ensure the user has an active branch.
+     * Ensure normal users have an active branch.
+     *
+     * Admin and Super Admin do not require a branch.
      */
     public function handle(Request $request, Closure $next): Response
     {
         $user = $request->user();
+
+        /*
+        |--------------------------------------------------------------------------
+        | 1. User is not authenticated
+        |--------------------------------------------------------------------------
+        */
 
         if (!$user) {
             return $next($request);
@@ -21,11 +29,41 @@ class EnsureBranchSelected
 
         /*
         |--------------------------------------------------------------------------
-        | 1. Use existing active branch from session
+        | 2. ADMIN & SUPER ADMIN
         |--------------------------------------------------------------------------
+        |
+        | Admin and Super Admin manage ALL branches.
+        | They do NOT need:
+        |
+        | - session branch_id
+        | - users.branch_id
+        | - default branch
+        | - branch selection
+        |
+        | Therefore, let them continue directly to the requested page.
+        |
+        */
+
+        if ($user->hasAnyRole(['Admin', 'Super Admin'])) {
+            return $next($request);
+        }
+
+        /*
+        |--------------------------------------------------------------------------
+        | 3. NORMAL USERS
+        |--------------------------------------------------------------------------
+        |
+        | From this point onward, branch selection applies only to normal users.
+        |
         */
 
         $activeBranchId = session('branch_id');
+
+        /*
+        |--------------------------------------------------------------------------
+        | 4. Use existing active branch from session
+        |--------------------------------------------------------------------------
+        */
 
         if ($activeBranchId) {
 
@@ -45,7 +83,7 @@ class EnsureBranchSelected
 
         /*
         |--------------------------------------------------------------------------
-        | 2. Try user's default branch
+        | 5. Try user's default branch
         |--------------------------------------------------------------------------
         */
 
@@ -64,7 +102,7 @@ class EnsureBranchSelected
 
         /*
         |--------------------------------------------------------------------------
-        | 3. Fallback to users.branch_id
+        | 6. Fallback to users.branch_id
         |--------------------------------------------------------------------------
         */
 
@@ -86,10 +124,10 @@ class EnsureBranchSelected
 
         /*
         |--------------------------------------------------------------------------
-        | 4. User has no active branch
+        | 7. Normal user has no branch
         |--------------------------------------------------------------------------
         */
 
-        return redirect()->route('branches.choose');
+        return redirect()->route('choose.branch');
     }
 }

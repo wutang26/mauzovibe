@@ -10,17 +10,29 @@ use Inertia\Inertia;
 
 class ReportController extends Controller
 {
+
+
     /**
      * Daily Sales Report
      */
    public function daily(Request $request)
 {
+    //This Fails For Admin and Super Admin dont have branches
+    // $branchId = session('branch_id');
+
+    // if (!$branchId) {
+    //     abort(403, 'No active branch selected.');
+    // }
+
     $branchId = session('branch_id');
+
+    if (!$branchId && auth()->check()) {
+        $branchId = auth()->user()->branch_id;
+    }
 
     if (!$branchId) {
         abort(403, 'No active branch selected.');
     }
-
     /*
     |--------------------------------------------------------------------------
     | Report Date

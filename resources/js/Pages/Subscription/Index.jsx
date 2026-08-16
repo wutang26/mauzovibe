@@ -94,343 +94,161 @@ export default function Index({
 
 
                 {/* =====================================================
-                    HEADER
+                    PAGE HEADER
                 ===================================================== */}
 
-                <div className="mb-8">
-
-                    <p
-                        className="
-                            text-sm
-                            font-semibold
-                            text-emerald-600
-                        "
-                    >
-                        MauzoVibe Subscription
-                    </p>
-
-                    <h1
-                        className="
-                            mt-1
-                            text-3xl
-                            font-black
-                            tracking-tight
-                            text-slate-900
-                            dark:text-white
-                            sm:text-4xl
-                        "
-                    >
-                        Choose your subscription plan
-                    </h1>
-
-                    <p
-                        className="
-                            mt-2
-                            max-w-2xl
-                            text-sm
-                            text-slate-500
-                            dark:text-slate-400
-                        "
-                    >
-                        Continue using MauzoVibe POS, inventory,
-                        sales reports and other business tools
-                        by subscribing for your branch.
-                    </p>
-
-                </div>
-
-
                 {/* =====================================================
-                    CURRENT BRANCH
-                ===================================================== */}
-
-                <div
-                    className="
-                        mb-8
-                        rounded-2xl
-                        border
-                        border-slate-200
-                        bg-white
-                        p-5
-                        shadow-sm
-                        dark:border-slate-700
-                        dark:bg-slate-900
-                    "
-                >
-
-                    <div
-                        className="
-                            flex
-                            flex-col
-                            gap-3
-                            sm:flex-row
-                            sm:items-center
-                            sm:justify-between
-                        "
-                    >
-
-                        <div>
-
-                            <p
-                                className="
-                                    text-xs
-                                    font-semibold
-                                    uppercase
-                                    tracking-wide
-                                    text-slate-400
-                                "
-                            >
-                                Current Branch
-                            </p>
-
-                            <h2
-                                className="
-                                    mt-1
-                                    text-xl
-                                    font-bold
-                                    text-slate-900
-                                    dark:text-white
-                                "
-                            >
-                                🏪 {branch?.name}
-                            </h2>
-
-                            {branch?.location && (
-
-                                <p
-                                    className="
-                                        mt-1
-                                        text-sm
-                                        text-slate-500
-                                        dark:text-slate-400
-                                    "
-                                >
-                                    {branch.location}
-                                </p>
-
-                            )}
-
-                        </div>
-
-
-                        {/* STATUS */}
-
-                        <div>
-
-                            {isTrial && (
-
-                                <span
-                                    className="
-                                        inline-flex
-                                        items-center
-                                        gap-2
-                                        rounded-full
-                                        bg-emerald-50
-                                        px-4
-                                        py-2
-                                        text-sm
-                                        font-bold
-                                        text-emerald-700
-                                        dark:bg-emerald-900/30
-                                        dark:text-emerald-400
-                                    "
-                                >
-
-                                    <span
-                                        className="
-                                            h-2.5
-                                            w-2.5
-                                            rounded-full
-                                            bg-emerald-500
-                                        "
-                                    />
-
-                                    Free Trial
-
-                                </span>
-
-                            )}
-
-
-                            {isActive && (
-
-                                <span
-                                    className="
-                                        inline-flex
-                                        items-center
-                                        gap-2
-                                        rounded-full
-                                        bg-green-50
-                                        px-4
-                                        py-2
-                                        text-sm
-                                        font-bold
-                                        text-green-700
-                                        dark:bg-green-900/30
-                                        dark:text-green-400
-                                    "
-                                >
-
-                                    <span
-                                        className="
-                                            h-2.5
-                                            w-2.5
-                                            rounded-full
-                                            bg-green-500
-                                        "
-                                    />
-
-                                    Active
-
-                                </span>
-
-                            )}
-
-
-                            {isExpired && (
-
-                                <span
-                                    className="
-                                        inline-flex
-                                        items-center
-                                        gap-2
-                                        rounded-full
-                                        bg-red-50
-                                        px-4
-                                        py-2
-                                        text-sm
-                                        font-bold
-                                        text-red-700
-                                        dark:bg-red-900/30
-                                        dark:text-red-400
-                                    "
-                                >
-
-                                    <span
-                                        className="
-                                            h-2.5
-                                            w-2.5
-                                            rounded-full
-                                            bg-red-500
-                                        "
-                                    />
-
-                                    Expired
-
-                                </span>
-
-                            )}
-
-
-                            {isPending && (
-
-                                <span
-                                    className="
-                                        inline-flex
-                                        items-center
-                                        gap-2
-                                        rounded-full
-                                        bg-yellow-50
-                                        px-4
-                                        py-2
-                                        text-sm
-                                        font-bold
-                                        text-yellow-700
-                                        dark:bg-yellow-900/30
-                                        dark:text-yellow-400
-                                    "
-                                >
-
-                                    <span
-                                        className="
-                                            h-2.5
-                                            w-2.5
-                                            rounded-full
-                                            bg-yellow-500
-                                        "
-                                    />
-
-                                    Payment Pending
-
-                                </span>
-
-                            )}
-
-                        </div>
-
-                    </div>
-
-                </div>
-
-
-                {/* =====================================================
-                    TRIAL INFORMATION
+                    TRIAL INFORMATION + CURRENT BRANCH
                 ===================================================== */}
 
                 {isTrial && (
 
                     <div
                         className="
-                            mb-8
-                            rounded-2xl
-                            border
-                            border-emerald-200
-                            bg-emerald-50
-                            p-5
-                            dark:border-emerald-800
-                            dark:bg-emerald-900/20
-                        "
+            mb-8
+            rounded-2xl
+            border
+            border-emerald-200
+            bg-emerald-50
+            px-6
+            py-6
+            shadow-sm
+            dark:border-emerald-800
+            dark:bg-emerald-900/20
+        "
                     >
 
                         <div
                             className="
-                                flex
-                                flex-col
-                                gap-4
-                                sm:flex-row
-                                sm:items-center
-                                sm:justify-between
-                            "
+                grid
+                grid-cols-1
+                gap-6
+                md:grid-cols-[1fr_auto_auto]
+                md:items-center
+            "
                         >
 
-                            <div>
+                            {/* =================================================
+                LEFT — FREE TRIAL
+            ================================================= */}
+
+                            <div className="min-w-0">
 
                                 <p
                                     className="
-                                        font-bold
-                                        text-emerald-800
-                                        dark:text-emerald-400
-                                    "
+                        text-base
+                        font-bold
+                        text-emerald-800
+                        dark:text-emerald-400
+                    "
                                 >
                                     🎉 Your free trial is active
                                 </p>
 
                                 <p
                                     className="
-                                        mt-1
-                                        text-sm
-                                        text-emerald-700
-                                        dark:text-emerald-500
-                                    "
+                        mt-1
+                        text-sm
+                        text-emerald-700
+                        dark:text-emerald-500
+                    "
                                 >
                                     You have{" "}
-                                    <strong>
+                                    <strong className="font-black">
                                         {trialDaysLeft}
                                     </strong>{" "}
-                                    days remaining.
+                                    {trialDaysLeft === 1
+                                        ? "day"
+                                        : "days"}{" "}
+                                    remaining.
                                 </p>
 
                             </div>
 
 
+                            {/* =================================================
+                CENTER — CURRENT BRANCH
+            ================================================= */}
+
                             <div
                                 className="
-                                    text-4xl
-                                    font-black
-                                    text-emerald-600
-                                "
+                    min-w-0
+                    md:border-l
+                    md:border-emerald-200
+                    md:pl-8
+                    dark:md:border-emerald-800
+                "
                             >
-                                {trialDaysLeft}
+
+                                <p
+                                    className="
+                        text-xs
+                        font-semibold
+                        uppercase
+                        tracking-wider
+                        text-emerald-600
+                        dark:text-emerald-400
+                    "
+                                >
+                                    Current Branch
+                                </p>
+
+                                <h2
+                                    className="
+                        mt-1
+                        text-lg
+                        font-black
+                        text-slate-900
+                        dark:text-white
+                    "
+                                >
+                                    🏪 {branch?.name || "No Branch"}
+                                </h2>
+
+                                {branch?.location && (
+
+                                    <p
+                                        className="
+                            mt-0.5
+                            text-sm
+                            text-slate-500
+                            dark:text-slate-400
+                        "
+                                    >
+                                        {branch.location}
+                                    </p>
+
+                                )}
+
+                            </div>
+
+
+                            {/* =================================================
+                RIGHT — DAYS REMAINING
+            ================================================= */}
+
+                            <div
+                                className="
+                    flex
+                    items-center
+                    justify-center
+                    md:min-w-[90px]
+                    md:justify-end
+                "
+                            >
+
+                                <span
+                                    className="
+                        text-5xl
+                        font-black
+                        leading-none
+                        text-emerald-600
+                        dark:text-emerald-400
+                    "
+                                >
+                                    {trialDaysLeft}
+                                </span>
+
                             </div>
 
                         </div>
@@ -439,9 +257,8 @@ export default function Index({
 
                 )}
 
-
                 {/* =====================================================
-                    ACTIVE INFORMATION
+                    ACTIVE INFORMATION + CURRENT BRANCH
                 ===================================================== */}
 
                 {isActive && (
@@ -454,58 +271,121 @@ export default function Index({
                             border-green-200
                             bg-green-50
                             p-5
+                            shadow-sm
                             dark:border-green-800
                             dark:bg-green-900/20
                         "
                     >
 
-                        <p
+                        <div
                             className="
-                                font-bold
-                                text-green-800
-                                dark:text-green-400
-                            "
-                        >
-                            ✓ Subscription Active
-                        </p>
-
-                        <p
-                            className="
-                                mt-1
-                                text-sm
-                                text-green-700
-                                dark:text-green-500
+                                flex
+                                flex-col
+                                gap-5
+                                sm:flex-row
+                                sm:items-center
+                                sm:justify-between
                             "
                         >
 
-                            You have{" "}
-                            <strong>
-                                {subscriptionDaysLeft}
-                            </strong>{" "}
-                            days remaining.
+                            <div>
 
-                        </p>
+                                <p
+                                    className="
+                                        text-xs
+                                        font-semibold
+                                        uppercase
+                                        tracking-wider
+                                        text-green-600
+                                        dark:text-green-400
+                                    "
+                                >
+                                    Current Branch
+                                </p>
 
-                        {subscription?.ends_at && (
+                                <h2
+                                    className="
+                                        mt-1
+                                        text-lg
+                                        font-black
+                                        text-slate-900
+                                        dark:text-white
+                                    "
+                                >
+                                    🏪 {branch?.name || "No Branch"}
+                                </h2>
 
-                            <p
-                                className="
-                                    mt-2
-                                    text-xs
-                                    text-green-600
-                                    dark:text-green-500
-                                "
-                            >
+                                {branch?.location && (
 
-                                Expires on{" "}
+                                    <p
+                                        className="
+                                            mt-0.5
+                                            text-sm
+                                            text-slate-500
+                                            dark:text-slate-400
+                                        "
+                                    >
+                                        {branch.location}
+                                    </p>
 
-                                {new Date(
-                                    subscription.ends_at
-                                ).toLocaleDateString()}
+                                )}
 
-                            </p>
+                                <div
+                                    className="
+                                        my-4
+                                        h-px
+                                        max-w-md
+                                        bg-green-200
+                                        dark:bg-green-800
+                                    "
+                                />
 
-                        )}
+                                <p
+                                    className="
+                                        font-bold
+                                        text-green-800
+                                        dark:text-green-400
+                                    "
+                                >
+                                    ✓ Subscription Active
+                                </p>
+
+                                <p
+                                    className="
+                                        mt-1
+                                        text-sm
+                                        text-green-700
+                                        dark:text-green-500
+                                    "
+                                >
+                                    You have{" "}
+                                    <strong>
+                                        {subscriptionDaysLeft}
+                                    </strong>{" "}
+                                    days remaining.
+                                </p>
+
+                                {subscription?.ends_at && (
+
+                                    <p
+                                        className="
+                                            mt-2
+                                            text-xs
+                                            text-green-600
+                                            dark:text-green-500
+                                        "
+                                    >
+                                        Expires on{" "}
+                                        {new Date(
+                                            subscription.ends_at
+                                        ).toLocaleDateString()}
+                                    </p>
+
+                                )}
+
+                            </div>
+
+                        </div>
 
                     </div>
 
@@ -513,7 +393,7 @@ export default function Index({
 
 
                 {/* =====================================================
-                    EXPIRED INFORMATION
+                    EXPIRED INFORMATION + CURRENT BRANCH
                 ===================================================== */}
 
                 {isExpired && (
@@ -526,10 +406,61 @@ export default function Index({
                             border-red-200
                             bg-red-50
                             p-5
+                            shadow-sm
                             dark:border-red-800
                             dark:bg-red-900/20
                         "
                     >
+
+                        <p
+                            className="
+                                text-xs
+                                font-semibold
+                                uppercase
+                                tracking-wider
+                                text-red-600
+                                dark:text-red-400
+                            "
+                        >
+                            Current Branch
+                        </p>
+
+                        <h2
+                            className="
+                                mt-1
+                                text-lg
+                                font-black
+                                text-slate-900
+                                dark:text-white
+                            "
+                        >
+                            🏪 {branch?.name || "No Branch"}
+                        </h2>
+
+                        {branch?.location && (
+
+                            <p
+                                className="
+                                    mt-0.5
+                                    text-sm
+                                    text-slate-500
+                                    dark:text-slate-400
+                                "
+                            >
+                                {branch.location}
+                            </p>
+
+                        )}
+
+                        <div
+                            className="
+                                my-4
+                                h-px
+                                max-w-md
+                                bg-red-200
+                                dark:bg-red-800
+                            "
+                        />
 
                         <p
                             className="
@@ -587,16 +518,15 @@ export default function Index({
                                 font-bold
                                 transition
 
-                                ${
-                                    billingCycle === "monthly"
-                                        ? `
+                                ${billingCycle === "monthly"
+                                    ? `
                                             bg-white
                                             text-emerald-600
                                             shadow
                                             dark:bg-slate-700
                                             dark:text-emerald-400
                                         `
-                                        : `
+                                    : `
                                             text-slate-500
                                             hover:text-slate-800
                                             dark:text-slate-400
@@ -622,16 +552,15 @@ export default function Index({
                                 font-bold
                                 transition
 
-                                ${
-                                    billingCycle === "yearly"
-                                        ? `
+                                ${billingCycle === "yearly"
+                                    ? `
                                             bg-white
                                             text-emerald-600
                                             shadow
                                             dark:bg-slate-700
                                             dark:text-emerald-400
                                         `
-                                        : `
+                                    : `
                                             text-slate-500
                                             hover:text-slate-800
                                             dark:text-slate-400

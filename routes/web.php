@@ -195,39 +195,51 @@ Route::middleware('auth')->group(function () {
     | BRANCH MANAGEMENT
     |--------------------------------------------------------------------------
     */
-
     // Route::prefix('admin')
-    //     ->name('admin.')
-    //     ->group(function () {
-    Route::prefix('admin')
-    ->name('admin.')
-    ->middleware('role:Super Admin|Admin')
-    ->group(function () {
+    // ->name('admin.')
+    // ->middleware('role:Super Admin|Admin')
+    // ->group(function () {
 
-            Route::resource(
-                'branches',
-                BranchController::class
-            );
+    //         Route::resource(
+    //             'branches',
+    //             BranchController::class
+    //         );
 
-        });
-
+    //     });
 
     /*
-    |--------------------------------------------------------------------------
-    | ASSIGN USER TO BRANCH
-    |--------------------------------------------------------------------------
-    */
+|--------------------------------------------------------------------------
+| BRANCH MANAGEMENT
+|--------------------------------------------------------------------------
+*/
 
-    // Route::get(
-    //     '/admin/branches/{branch}/assign-user',
-    //     [BranchController::class, 'assignUser']
-    // )->name('branches.assign-user');
+Route::prefix('admin')
+    ->name('admin.')
+    ->group(function () {
 
-    // Route::post(
-    //     '/admin/branches/{branch}/assign-user',
-    //     [BranchController::class, 'storeAssignedUser']
-    // )->name('branches.store-assigned-user');
+        // All authenticated users can view branches and create a branch
+        Route::resource(
+            'branches',
+            BranchController::class
+        )->only([
+            'index',
+            'create',
+            'store',
+            'show',
+        ]);
 
+        // Only Admin and Super Admin can edit/delete branches
+        Route::resource(
+            'branches',
+            BranchController::class
+        )->only([
+            'edit',
+            'update',
+            'destroy',
+        ])->middleware('role:Super Admin|Admin');
+    });
+
+        //Assig Users to Branch
     Route::middleware('role:Super Admin|Admin')->group(function () {
 
     Route::get(
