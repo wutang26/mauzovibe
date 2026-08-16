@@ -48,11 +48,12 @@ export default function Index({ sales }) {
 
                     <div className="sales-header-actions">
 
-                        <Link
+                       <Link
                             href={route("admin.sales.create")}
-                            className="complete-sale-button"
+                            className="new-sale-button"
                         >
-                            + New Sale
+                            <span className="new-sale-icon">+</span>
+                            <span>New Sale</span>
                         </Link>
 
                     </div>

@@ -342,6 +342,79 @@
     gap: 12px;
 }
 
+/* =========================================================
+   NEW SALE BUTTON - MAUZOVIBE
+========================================================= */
+
+.new-sale-button {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+
+    min-height: 44px;
+    padding: 0 18px;
+
+    border: 1px solid #16a34a;
+    border-radius: 10px;
+
+    background: #16a34a;
+    color: #ffffff;
+
+    text-decoration: none;
+
+    font-size: 14px;
+    font-weight: 700;
+
+    box-shadow:
+        0 4px 10px rgba(22, 163, 74, 0.18);
+
+    transition:
+        background 0.2s ease,
+        border-color 0.2s ease,
+        transform 0.2s ease,
+        box-shadow 0.2s ease;
+}
+
+.new-sale-icon {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+
+    width: 24px;
+    height: 24px;
+
+    border-radius: 50%;
+
+    background: #ffffff;
+    color: #16a34a;
+
+    font-size: 19px;
+    font-weight: 800;
+    line-height: 1;
+}
+
+.new-sale-button:hover {
+    background: #15803d;
+    border-color: #15803d;
+
+    color: #ffffff;
+
+    transform: translateY(-2px);
+
+    box-shadow:
+        0 7px 16px rgba(22, 163, 74, 0.25);
+}
+
+.new-sale-button:active {
+    transform: translateY(0);
+}
+
+.new-sale-button:focus-visible {
+    outline: 3px solid rgba(22, 163, 74, 0.2);
+    outline-offset: 2px;
+}
+/* End of +new sales btn */
 .cart-counter {
     display: flex;
     align-items: center;
