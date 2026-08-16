@@ -5,13 +5,20 @@ namespace Database\Seeders;
 use Illuminate\Database\Seeder;
 use Spatie\Permission\Models\Role;
 use Spatie\Permission\Models\Permission;
+use Spatie\Permission\PermissionRegistrar;
 
 class RolePermissionSeeder extends Seeder
 {
     public function run(): void
     {
+        // Clear cached permissions
+        app()[PermissionRegistrar::class]->forgetCachedPermissions();
 
-        // Permissions
+        /*
+        |--------------------------------------------------------------------------
+        | PERMISSIONS
+        |--------------------------------------------------------------------------
+        */
 
         $permissions = [
 
@@ -38,75 +45,139 @@ class RolePermissionSeeder extends Seeder
             'manage settings',
         ];
 
-
-        foreach($permissions as $permission){
-
-            Permission::create([
-                'name'=>$permission
+        foreach ($permissions as $permission) {
+            Permission::firstOrCreate([
+                'name' => $permission,
+                'guard_name' => 'web',
             ]);
-
         }
 
+        /*
+        |--------------------------------------------------------------------------
+        | ROLES
+        |--------------------------------------------------------------------------
+        */
 
-
-        // Roles
-
-        $superAdmin = Role::create([
-            'name'=>'Super Admin'
+        $superAdmin = Role::firstOrCreate([
+            'name' => 'Super Admin',
+            'guard_name' => 'web',
         ]);
 
-        $manager = Role::create([
-            'name'=>'Branch Manager'
+        $admin = Role::firstOrCreate([
+            'name' => 'Admin',
+            'guard_name' => 'web',
         ]);
 
-
-        $cashier = Role::create([
-            'name'=>'Cashier'
+        $manager = Role::firstOrCreate([
+            'name' => 'Branch Manager',
+            'guard_name' => 'web',
         ]);
 
-
-        $store = Role::create([
-            'name'=>'Store Keeper'
+        $cashier = Role::firstOrCreate([
+            'name' => 'Cashier',
+            'guard_name' => 'web',
         ]);
 
-
-        $accountant = Role::create([
-            'name'=>'Accountant'
+        $store = Role::firstOrCreate([
+            'name' => 'Store Keeper',
+            'guard_name' => 'web',
         ]);
 
+        $accountant = Role::firstOrCreate([
+            'name' => 'Accountant',
+            'guard_name' => 'web',
+        ]);
 
+        /*
+        |--------------------------------------------------------------------------
+        | SUPER ADMIN
+        |--------------------------------------------------------------------------
+        */
 
-        // Super Admin gets everything
-
-        $superAdmin->givePermissionTo(
+        $superAdmin->syncPermissions(
             Permission::all()
         );
 
+        /*
+        |--------------------------------------------------------------------------
+        | ADMIN
+        |--------------------------------------------------------------------------
+        */
 
-        // Cashier permissions
+        $admin->syncPermissions([
+            'view sales',
+            'create sale',
+            'delete sale',
+            'refund sale',
 
-        $cashier->givePermissionTo([
+            'view products',
+            'add product',
+            'edit product',
+            'delete product',
+
+            'view reports',
+            'export reports',
+
+            'manage users',
+            'manage settings',
+        ]);
+
+        /*
+        |--------------------------------------------------------------------------
+        | BRANCH MANAGER
+        |--------------------------------------------------------------------------
+        */
+
+        $manager->syncPermissions([
+            'view sales',
+            'create sale',
+            'delete sale',
+            'refund sale',
+
+            'view products',
+            'add product',
+            'edit product',
+            'delete product',
+
+            'view reports',
+            'export reports',
+        ]);
+
+        /*
+        |--------------------------------------------------------------------------
+        | CASHIER
+        |--------------------------------------------------------------------------
+        */
+
+        $cashier->syncPermissions([
             'view sales',
             'create sale',
         ]);
 
+        /*
+        |--------------------------------------------------------------------------
+        | STORE KEEPER
+        |--------------------------------------------------------------------------
+        */
 
-
-        // Store keeper
-
-        $store->givePermissionTo([
+        $store->syncPermissions([
             'view products',
-            'add product'
+            'add product',
+            'edit product',
         ]);
 
+        /*
+        |--------------------------------------------------------------------------
+        | ACCOUNTANT
+        |--------------------------------------------------------------------------
+        */
 
-
-        // Accountant
-
-        $accountant->givePermissionTo([
+        $accountant->syncPermissions([
             'view reports',
-            'export reports'
+            'export reports',
         ]);
 
+        // Clear cache again
+        app()[PermissionRegistrar::class]->forgetCachedPermissions();
     }
 }
