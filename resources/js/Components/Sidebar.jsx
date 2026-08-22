@@ -171,6 +171,22 @@ export default function Sidebar({ open }) {
             ],
         },
 
+        // MarketPlace
+
+       // Marketplace
+
+        {
+            name: "Marketplace",
+            icon: BuildingStorefrontIcon,
+            children: [
+                {
+                    name: "Browse Marketplace",
+                    icon: ShoppingCartIcon,
+                    link: route("marketplace.index"),
+                },
+            ],
+        },
+
         {
             name: "Settings",
             icon: Cog6ToothIcon,

@@ -16,5 +16,9 @@ class DatabaseSeeder extends Seeder
             RolePermissionSeeder::class,
             UserSeeder::class,
         ]);
+
+         $this->call([
+            MarketplaceCategorySeeder::class,
+        ]);
     }
 }

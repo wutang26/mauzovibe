@@ -20,6 +20,8 @@ use App\Http\Controllers\Admin\DebtorController;
 use App\Http\Controllers\Admin\PaymentHistoryController;
 use App\Http\Controllers\Admin\ReportController;
 use App\Http\Controllers\Admin\AuditController;
+use App\Http\Controllers\MarketplaceController;
+
 use Inertia\Inertia;
 
 
@@ -860,5 +862,49 @@ Route::get('/terms', function () {
 Route::get('/support', function () {
     return Inertia::render('Support');
 })->name('support');
+
+//MarketPlace Routes
+/// MARKETPLACE ROUTES
+// ======================
+
+Route::prefix('marketplace')->name('marketplace.')->group(function () {
+
+    // Public page
+    Route::get('/', [MarketplaceController::class, 'index'])->name('index');
+
+    // Authenticated routes
+    Route::middleware(['auth'])->group(function () {
+        Route::get('/create', [MarketplaceController::class, 'create'])->name('create');
+        Route::post('/', [MarketplaceController::class, 'store'])->name('store');
+    });
+});
+
+//Market Place Dashboard
+// Route::middleware(['auth'])->group(function () {
+//     Route::get('/marketplace/dashboard', function () {
+//         return Inertia::render('Marketplace/Dashboard');
+//     })->name('marketplace.dashboard');
+// });
+
+Route::middleware(['auth'])->group(function () {
+    Route::get(
+        '/marketplace/dashboard',
+        [MarketplaceController::class, 'dashboard']
+    )->name('marketplace.dashboard');
+});
+
+// Marketplace Registration
+
+// Marketplace Registration
+Route::get('/marketplace/register', function () {
+    return Inertia::render('Auth/Register', [
+        'marketplace' => true,
+    ]);
+})->name('marketplace.register');
+
+Route::post('/marketplace/register', [
+    \App\Http\Controllers\Auth\RegisteredUserController::class,
+    'store'
+])->name('marketplace.register.store');
 
 require __DIR__.'/auth.php';

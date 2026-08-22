@@ -1,66 +1,47 @@
 <?php
-
 namespace App\Http\Controllers\Auth;
 
 use App\Http\Controllers\Controller;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 
-
 class LoginController extends Controller
 {
 
+    public function store(Request $request)
+    {
 
-public function store(Request $request)
-{
+        $credentials = $request->validate([
 
+            'email'    => 'required|email',
 
-$credentials = $request->validate([
+            'password' => 'required',
 
+        ]);
 
-'email'=>'required|email',
+        if (! Auth::attempt(
 
-'password'=>'required'
+            $credentials,
 
+            $request->remember
 
-]);
+        )) {
 
+            return back()->withErrors([
 
+                'email' => 'Invalid email or password',
 
-if(!Auth::attempt(
+            ]);
 
-$credentials,
+        }
 
-$request->remember
+        $request->session()->regenerate();
 
-)){
+        $user = auth()->user();
 
-
-return back()->withErrors([
-
-'email'=>'Invalid email or password'
-
-]);
-
-
-}
-
-
-
-$request->session()->regenerate();
-
-
-
-$user = auth()->user();
-
-
-
-$branches = $user
+        $branches = $user
             ->branches()
             ->count();
-
-
-
 
 /*
 |--------------------------------------------------------------------------
@@ -68,19 +49,12 @@ $branches = $user
 |--------------------------------------------------------------------------
 */
 
-if($branches > 1)
-{
+        if ($branches > 1) {
 
+            return redirect()
+                ->route('choose.branch');
 
-return redirect()
-        ->route('choose.branch');
-
-
-}
-
-
-
-
+        }
 
 /*
 |--------------------------------------------------------------------------
@@ -88,41 +62,33 @@ return redirect()
 |--------------------------------------------------------------------------
 */
 
-if($branches == 1)
-{
+        if ($branches == 1) {
 
+            session([
 
-session([
+                'branch_id' =>
 
-'branch_id'=>
+                $user->branches()
+                    ->first()
+                    ->id,
 
-$user->branches()
-->first()
-->id
+            ]);
 
+        }
 
-]);
+        return redirect()
+            ->route('dashboard');
 
+    }
 
-}
+    public function destroy(Request $request)
+    {
+        Auth::logout();
 
+        $request->session()->invalidate();
+        $request->session()->regenerateToken();
 
-
-
-return redirect()
-        ->route('dashboard');
-
-
-}
-
-public function destroy(Request $request)
-{
-    Auth::logout();
-
-    $request->session()->invalidate();
-    $request->session()->regenerateToken();
-
-    return redirect()->route('welcome');
-}
+        return redirect()->route('welcome');
+    }
 
 }

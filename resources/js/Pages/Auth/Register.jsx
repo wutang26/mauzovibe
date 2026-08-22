@@ -2,7 +2,9 @@ import { useState } from "react";
 import { Head, Link, useForm } from "@inertiajs/react";
 import AuthLayout from "@/Layouts/AuthLayout";
 
-export default function Register() {
+// export default function Register() {
+
+export default function Register({ marketplace = false }) {
 
     const [showPassword, setShowPassword] = useState(false);
     const [showConfirmPassword, setShowConfirmPassword] = useState(false);
@@ -24,21 +26,38 @@ export default function Register() {
     });
 
 
-    const submit = (e) => {
+    // const submit = (e) => {
 
-        e.preventDefault();
+    //     e.preventDefault();
 
-        post(route("register"), {
+    //     post(route("register"), {
+    //         onFinish: () =>
+    //             reset(
+    //                 "password",
+    //                 "password_confirmation"
+    //             ),
+    //     });
+
+    // };
+
+const submit = (e) => {
+
+    e.preventDefault();
+
+    post(
+        marketplace
+            ? route("marketplace.register.store")
+            : route("register.store"),
+        {
             onFinish: () =>
                 reset(
                     "password",
                     "password_confirmation"
                 ),
-        });
+        }
+    );
 
-    };
-
-
+};
     return (
         <>
             <Head title="Create Your Business | MauzoVibe" />

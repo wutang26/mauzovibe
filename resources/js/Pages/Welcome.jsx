@@ -437,6 +437,13 @@ export default function Welcome({ canLogin, canRegister }) {
                                             About Us
                                         </Link>
 
+                                         <Link
+                                            href={route("marketplace.index")}
+                                            className="hover:text-emerald-600 transition"
+                                        >
+                                            MarketPlace
+                                        </Link>
+
                                     </div>
 
 
