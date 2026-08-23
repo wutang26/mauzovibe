@@ -2,8 +2,8 @@ import { useRef } from "react";
 import { useForm } from "@inertiajs/react";
 
 import MarketplaceLayout from "@/Layouts/MarketplaceLayout";
-import ProductForm from "@/Components/marketplace/ProductForm";
-import ProductPreview from "@/Components/Marketplace/Productpreview";
+import ProductForm from "@/Components/Marketplace/ProductForm";
+import ProductPreview from "@/Components/Marketplace/ProductPreview";
 
 export default function Dashboard({
     categories = [],

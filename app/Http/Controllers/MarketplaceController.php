@@ -31,85 +31,51 @@ class MarketplaceController extends Controller
         |--------------------------------------------------------------------------
         */
 
-        $categories = Cache::remember(
-            'marketplace.categories.v2',
-            now()->addMinutes(30),
-            function () {
+                $categories = MarketplaceCategory::where('is_active', true)
+            ->orderBy('sort_order')
+            ->select([
+                'id',
+                'name',
+                'slug',
+                'icon',
+                'listings_count',
+            ])
+            ->get()
+            ->map(function ($category) {
 
-                return MarketplaceCategory::where('is_active', true)
-                    ->orderBy('sort_order')
-                    ->select([
-                        'id',
-                        'name',
-                        'slug',
-                        'icon',
-                        'listings_count',
-                    ])
-                    ->get()
-                    ->map(function ($category) {
+                $iconMap = [
+                    'Electronics' => 'fa-tv',
+                    'Vehicles' => 'fa-car-side',
+                    'Property' => 'fa-house',
+                    'Fashion' => 'fa-shirt',
+                    'Jobs' => 'fa-briefcase',
+                    'Services' => 'fa-screwdriver-wrench',
+                    'Furniture' => 'fa-couch',
+                    'Phones' => 'fa-mobile-screen-button',
+                    'Computers' => 'fa-laptop',
+                    'Beauty' => 'fa-wand-magic-sparkles',
+                    'Sports' => 'fa-dumbbell',
+                    'Agriculture' => 'fa-wheat-awn',
+                    'Animals' => 'fa-paw',
+                    'Baby Products' => 'fa-baby',
+                    'Books' => 'fa-book-open',
+                    'Gaming' => 'fa-gamepad',
+                    'Music' => 'fa-music',
+                    'Health' => 'fa-heart-pulse',
+                    'Industrial Equipment' => 'fa-industry',
+                    'Other' => 'fa-layer-group',
+                ];
 
-                        /*
-                        |--------------------------------------------------------------------------
-                        | Font Awesome Icons
-                        |--------------------------------------------------------------------------
-                        | This also protects the frontend if old database values
-                        | such as "smartphone" or "car" are still present.
-                        |--------------------------------------------------------------------------
-                        */
-
-                        $iconMap = [
-
-                            // Main categories
-                            'Electronics' => 'fa-tv',
-                            'Vehicles' => 'fa-car-side',
-                            'Property' => 'fa-house',
-                            'Fashion' => 'fa-shirt',
-                            'Jobs' => 'fa-briefcase',
-                            'Services' => 'fa-screwdriver-wrench',
-                            'Furniture' => 'fa-couch',
-
-                            // More categories
-                            'Phones' => 'fa-mobile-screen-button',
-                            'Computers' => 'fa-laptop',
-                            'Beauty' => 'fa-wand-magic-sparkles',
-                            'Sports' => 'fa-dumbbell',
-                            'Agriculture' => 'fa-wheat-awn',
-                            'Animals' => 'fa-paw',
-                            'Baby Products' => 'fa-baby',
-                            'Books' => 'fa-book-open',
-                            'Gaming' => 'fa-gamepad',
-                            'Music' => 'fa-music',
-                            'Health' => 'fa-heart-pulse',
-                            'Industrial Equipment' => 'fa-industry',
-                            'Other' => 'fa-layer-group',
-                        ];
-
-                        return [
-                            'id' => $category->id,
-
-                            'name' => $category->name,
-
-                            'slug' => $category->slug,
-
-                            /*
-                            |--------------------------------------------------------------------------
-                            | Use mapped icon first.
-                            | If category name is not in map, use database icon.
-                            |--------------------------------------------------------------------------
-                            */
-
-                            'icon' => $iconMap[$category->name]
-                                ?? $category->icon
-                                ?? 'fa-tag',
-
-                            'listings_count' => (int) (
-                                $category->listings_count ?? 0
-                            ),
-                        ];
-                    });
-            }
-        );
-
+                return [
+                    'id' => $category->id,
+                    'name' => $category->name,
+                    'slug' => $category->slug,
+                    'icon' => $iconMap[$category->name]
+                        ?? $category->icon
+                        ?? 'fa-tag',
+                    'listings_count' => (int) ($category->listings_count ?? 0),
+                ];
+            });
 
         /*
         |--------------------------------------------------------------------------

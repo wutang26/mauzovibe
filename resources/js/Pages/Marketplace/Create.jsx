@@ -2,7 +2,7 @@ import { Head, useForm } from "@inertiajs/react";
 import Sidebar from "@/Components/Marketplace/Sidebar";
 import Topbar from "@/Components/Marketplace/Topbar";
 import ProductForm from "@/Components/Marketplace/ProductForm";
-import ProductPreview from "@/Components/Marketplace/Productpreview";
+import ProductPreview from "@/Components/Marketplace/ProductPreview";
 
 export default function Create({ categories = [], seller = null }) {
     const {
