@@ -1,6 +1,6 @@
 import { useState } from "react";
-import Sidebar from "@/Components/marketplace/Sidebar";
-import Topbar from "@/Components/marketplace/Topbar";
+import Sidebar from "@/Components/Marketplace/Sidebar";
+import Topbar from "@/Components/Marketplace/Topbar";
 
 export default function MarketplaceLayout({ children }) {
     const [sidebarOpen, setSidebarOpen] = useState(false);
