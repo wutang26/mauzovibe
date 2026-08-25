@@ -1,5 +1,4 @@
-
-import { useEffect, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { Head, Link, useForm, usePage } from "@inertiajs/react";
 
 import {
@@ -16,43 +15,58 @@ import {
     FaWhatsapp,
 } from "react-icons/fa";
 
-export default function Welcome({ canLogin, canRegister }) {
+export default function Welcome({
+    canLogin = true,
+    canRegister = true,
+}) {
+    /*
+    |--------------------------------------------------------------------------
+    | PAGE PROPS
+    |--------------------------------------------------------------------------
+    */
 
-    const { auth } = usePage().props;
+    const page = usePage();
+    const auth = page?.props?.auth ?? null;
+
+    /*
+    |--------------------------------------------------------------------------
+    | STATE
+    |--------------------------------------------------------------------------
+    */
 
     const [showPassword, setShowPassword] = useState(false);
     const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
+    const [daysRemaining, setDaysRemaining] = useState(null);
 
-    // kuendelea na code yako...
-// export default function Welcome({ canLogin, canRegister }) {
-//     const [showPassword, setShowPassword] = useState(false);
-//export default function Welcome({ canLogin, canRegister }) {
+    /*
+    |--------------------------------------------------------------------------
+    | TRIAL INFORMATION
+    |--------------------------------------------------------------------------
+    */
 
-    //const { auth } = usePage().props;
+    const trial = auth?.trial ?? null;
+    const trialEndsAt = trial?.trial_ends_at ?? null;
 
-    //const [showPassword, setShowPassword] = useState(false);
-
-    // ==========================================================
-    // FREE TRIAL COUNTDOWN
-    // ==========================================================
-
-    const trialEndsAt = auth?.trial?.trial_ends_at;
-
-    const [daysRemaining, setDaysRemaining] = useState(
-        auth?.trial?.days_remaining ?? null
-    );
+    /*
+    |--------------------------------------------------------------------------
+    | CALCULATE TRIAL DAYS
+    |--------------------------------------------------------------------------
+    */
 
     useEffect(() => {
-
         if (!trialEndsAt) {
+            setDaysRemaining(null);
             return;
         }
 
         const calculateDaysRemaining = () => {
-
             const now = new Date();
-
             const trialEnd = new Date(trialEndsAt);
+
+            if (Number.isNaN(trialEnd.getTime())) {
+                setDaysRemaining(null);
+                return;
+            }
 
             const difference = trialEnd.getTime() - now.getTime();
 
@@ -66,42 +80,87 @@ export default function Welcome({ canLogin, canRegister }) {
             setDaysRemaining(days);
         };
 
-        // Calculate immediately
         calculateDaysRemaining();
 
-        // Update every minute
         const interval = setInterval(
             calculateDaysRemaining,
-            60000
+            60 * 1000
         );
 
         return () => clearInterval(interval);
-
     }, [trialEndsAt]);
 
-    // ==========================================================
-    // TRIAL BUTTON TEXT
-    // ==========================================================
+    /*
+    |--------------------------------------------------------------------------
+    | TRIAL BUTTON
+    |--------------------------------------------------------------------------
+    */
 
-    const trialButtonText =
-        auth?.trial?.is_expired || daysRemaining === 0
-            ? "Trial Expired"
-            : daysRemaining !== null
-                ? `${daysRemaining} Days Left`
-                : "Start Free Trial";
+    const trialButtonText = useMemo(() => {
+        if (trial?.is_expired || daysRemaining === 0) {
+            return "Trial Expired";
+        }
+
+        if (daysRemaining !== null) {
+            return `${daysRemaining} Days Left`;
+        }
+
+        return "Start Free Trial";
+    }, [trial?.is_expired, daysRemaining]);
+
+    /*
+    |--------------------------------------------------------------------------
+    | LOGIN FORM
+    |--------------------------------------------------------------------------
+    */
+
     const form = useForm({
         email: "",
         password: "",
         remember: false,
     });
 
-    function submit(e) {
+    /*
+    |--------------------------------------------------------------------------
+    | LOGIN SUBMIT
+    |--------------------------------------------------------------------------
+    */
+
+    const submit = (e) => {
         e.preventDefault();
 
         form.post(route("login"), {
-            onFinish: () => form.reset("password"),
+            preserveScroll: true,
+
+            onFinish: () => {
+                form.reset("password");
+            },
         });
-    }
+    };
+
+    /*
+    |--------------------------------------------------------------------------
+    | CLOSE MOBILE MENU
+    |--------------------------------------------------------------------------
+    */
+
+    const closeMobileMenu = () => {
+        setMobileMenuOpen(false);
+    };
+
+    /*
+    |--------------------------------------------------------------------------
+    | CURRENT YEAR
+    |--------------------------------------------------------------------------
+    */
+
+    const currentYear = new Date().getFullYear();
+
+    /*
+    |--------------------------------------------------------------------------
+    | RENDER
+    |--------------------------------------------------------------------------
+    */
 
     return (
         <>
@@ -110,32 +169,56 @@ export default function Welcome({ canLogin, canRegister }) {
             <div className="min-h-screen bg-white text-slate-900">
 
                 {/* =====================================================
-                    HERO SECTION
+                    HERO
                 ====================================================== */}
+
                 <section
                     id="home"
                     className="relative min-h-screen overflow-hidden"
                 >
 
                     {/* =================================================
-                        BACKGROUND IMAGE
+                        BACKGROUND
                     ================================================== */}
+
                     <div className="absolute inset-0">
 
                         <img
                             src="/images/shop.jpg"
                             alt="MauzoVibe Business"
-                            className="h-full w-full object-cover brightness-110 contrast-90"
+                            className="
+                                h-full
+                                w-full
+                                object-cover
+                                brightness-110
+                                contrast-90
+                            "
                         />
 
-                        {/* Bright overlay */}
                         <div className="absolute inset-0 bg-white/30" />
 
-                        {/* Left readability overlay */}
-                        <div className="absolute inset-0 bg-gradient-to-r from-white/90 via-white/55 to-white/10" />
+                        <div
+                            className="
+                                absolute
+                                inset-0
+                                bg-gradient-to-r
+                                from-white/90
+                                via-white/55
+                                to-white/10
+                            "
+                        />
 
-                        {/* Soft bottom fade */}
-                        <div className="absolute inset-x-0 bottom-0 h-40 bg-gradient-to-t from-white/70 to-transparent" />
+                        <div
+                            className="
+                                absolute
+                                inset-x-0
+                                bottom-0
+                                h-40
+                                bg-gradient-to-t
+                                from-white/70
+                                to-transparent
+                            "
+                        />
 
                     </div>
 
@@ -143,19 +226,39 @@ export default function Welcome({ canLogin, canRegister }) {
                     {/* =================================================
                         PAGE CONTENT
                     ================================================== */}
+
                     <div className="relative z-10 min-h-screen flex flex-col">
 
-
                         {/* =================================================
-                            TOP CONTACT BAR
+                            CONTACT BAR
                         ================================================== */}
-                        <div className="hidden lg:block border-b border-slate-200/70 bg-white/85 backdrop-blur-md">
+
+                        <div
+                            className="
+                                hidden
+                                lg:block
+                                border-b
+                                border-slate-200/70
+                                bg-white/85
+                                backdrop-blur-md
+                            "
+                        >
 
                             <div className="max-w-7xl mx-auto px-6 xl:px-8">
 
-                                <div className="h-10 flex items-center justify-between text-xs text-slate-600">
+                                <div
+                                    className="
+                                        h-10
+                                        flex
+                                        items-center
+                                        justify-between
+                                        text-xs
+                                        text-slate-600
+                                    "
+                                >
 
                                     {/* Contact */}
+
                                     <div className="flex items-center gap-6">
 
                                         <span className="flex items-center gap-2">
@@ -174,7 +277,9 @@ export default function Welcome({ canLogin, canRegister }) {
                                                 />
                                             </svg>
 
-                                            mauzovibe@outlook.com
+                                            <span>
+                                                mauzovibe@outlook.com
+                                            </span>
 
                                         </span>
 
@@ -195,7 +300,9 @@ export default function Welcome({ canLogin, canRegister }) {
                                                 />
                                             </svg>
 
-                                            +255 (0)748565656
+                                            <span>
+                                                +255 (0)748565656
+                                            </span>
 
                                         </span>
 
@@ -203,109 +310,129 @@ export default function Welcome({ canLogin, canRegister }) {
 
 
                                     {/* Social */}
+
                                     <div className="flex items-center gap-3">
 
-                                        {/* Facebook */}
                                         <a
                                             href="https://www.facebook.com/mauzovibe"
                                             target="_blank"
                                             rel="noopener noreferrer"
                                             aria-label="MauzoVibe Facebook"
                                             className="
-            w-10 h-10
-            rounded-xl
-            bg-slate-100
-            flex items-center justify-center
-            text-slate-500
-            hover:bg-emerald-600
-            hover:text-white
-            hover:-translate-y-1
-            transition-all duration-200
-        "
+                                                w-10
+                                                h-10
+                                                rounded-xl
+                                                bg-slate-100
+                                                flex
+                                                items-center
+                                                justify-center
+                                                text-slate-500
+                                                hover:bg-emerald-600
+                                                hover:text-white
+                                                hover:-translate-y-1
+                                                transition-all
+                                                duration-200
+                                            "
                                         >
                                             <FaFacebookF className="w-4 h-4" />
                                         </a>
 
-                                        {/* Instagram */}
+
                                         <a
                                             href="https://www.instagram.com/mauzovibe"
                                             target="_blank"
                                             rel="noopener noreferrer"
                                             aria-label="MauzoVibe Instagram"
                                             className="
-            w-10 h-10
-            rounded-xl
-            bg-slate-100
-            flex items-center justify-center
-            text-slate-500
-            hover:bg-emerald-600
-            hover:text-white
-            hover:-translate-y-1
-            transition-all duration-200
-        "
+                                                w-10
+                                                h-10
+                                                rounded-xl
+                                                bg-slate-100
+                                                flex
+                                                items-center
+                                                justify-center
+                                                text-slate-500
+                                                hover:bg-emerald-600
+                                                hover:text-white
+                                                hover:-translate-y-1
+                                                transition-all
+                                                duration-200
+                                            "
                                         >
                                             <FaInstagram className="w-5 h-5" />
                                         </a>
 
-                                        {/* LinkedIn */}
+
                                         <a
                                             href="https://www.linkedin.com/company/mauzovibe"
                                             target="_blank"
                                             rel="noopener noreferrer"
                                             aria-label="MauzoVibe LinkedIn"
                                             className="
-            w-10 h-10
-            rounded-xl
-            bg-slate-100
-            flex items-center justify-center
-            text-slate-500
-            hover:bg-emerald-600
-            hover:text-white
-            hover:-translate-y-1
-            transition-all duration-200
-        "
+                                                w-10
+                                                h-10
+                                                rounded-xl
+                                                bg-slate-100
+                                                flex
+                                                items-center
+                                                justify-center
+                                                text-slate-500
+                                                hover:bg-emerald-600
+                                                hover:text-white
+                                                hover:-translate-y-1
+                                                transition-all
+                                                duration-200
+                                            "
                                         >
                                             <FaLinkedinIn className="w-5 h-5" />
                                         </a>
 
-                                        {/* YouTube */}
+
                                         <a
                                             href="https://www.youtube.com/@mauzovibe"
                                             target="_blank"
                                             rel="noopener noreferrer"
                                             aria-label="MauzoVibe YouTube"
                                             className="
-            w-10 h-10
-            rounded-xl
-            bg-slate-100
-            flex items-center justify-center
-            text-slate-500
-            hover:bg-emerald-600
-            hover:text-white
-            hover:-translate-y-1
-            transition-all duration-200
-        "
+                                                w-10
+                                                h-10
+                                                rounded-xl
+                                                bg-slate-100
+                                                flex
+                                                items-center
+                                                justify-center
+                                                text-slate-500
+                                                hover:bg-emerald-600
+                                                hover:text-white
+                                                hover:-translate-y-1
+                                                transition-all
+                                                duration-200
+                                            "
                                         >
                                             <FaYoutube className="w-5 h-5" />
                                         </a>
 
-                                        {/* WhatsApp */}
+
                                         <a
                                             href="https://wa.me/255746856656"
                                             target="_blank"
                                             rel="noopener noreferrer"
                                             aria-label="MauzoVibe WhatsApp"
                                             className="
-            w-10 h-10
-            rounded-xl
-            bg-slate-100
-            flex items-center justify-center
-            text-slate-500
-            hover:bg-emerald-600
-            hover:text-white
-            hover:-translate-y-1
-            transition-all duration-200
-        "
+                                                w-10
+                                                h-10
+                                                rounded-xl
+                                                bg-slate-100
+                                                flex
+                                                items-center
+                                                justify-center
+                                                text-slate-500
+                                                hover:bg-emerald-600
+                                                hover:text-white
+                                                hover:-translate-y-1
+                                                transition-all
+                                                duration-200
+                                            "
                                         >
                                             <FaWhatsapp className="w-5 h-5" />
                                         </a>
@@ -322,51 +449,80 @@ export default function Welcome({ canLogin, canRegister }) {
                         {/* =================================================
                             NAVBAR
                         ================================================== */}
-                        {/* =================================================
-    NAVBAR
-================================================= */}
-                        <nav className="sticky top-0 z-50 border-b border-slate-200/70 bg-white/95 backdrop-blur-xl shadow-sm">
+
+                        <nav
+                            className="
+                                sticky
+                                top-0
+                                z-50
+                                border-b
+                                border-slate-200/70
+                                bg-white/95
+                                backdrop-blur-xl
+                                shadow-sm
+                            "
+                        >
 
                             <div className="max-w-7xl mx-auto px-4 sm:px-6 xl:px-8">
 
-                                <div className="min-h-[72px] flex items-center justify-between gap-4">
+                                <div
+                                    className="
+                                        min-h-[72px]
+                                        flex
+                                        items-center
+                                        justify-between
+                                        gap-4
+                                    "
+                                >
 
-                                    {/* =================================================
-                LOGO
-            ================================================= */}
+                                    {/* LOGO */}
+
                                     <Link
                                         href="/"
-                                        onClick={() => setMobileMenuOpen(false)}
-                                        className="flex items-center gap-2.5 group shrink-0"
+                                        onClick={closeMobileMenu}
+                                        className="
+                                            flex
+                                            items-center
+                                            gap-2.5
+                                            group
+                                            shrink-0
+                                        "
                                     >
 
                                         <div
                                             className="
-                        relative
-                        flex
-                        items-center
-                        justify-center
-                        w-10
-                        h-10
-                        sm:w-11
-                        sm:h-11
-                        rounded-xl
-                        bg-emerald-600
-                        shadow-lg
-                        shadow-emerald-600/20
-                        transition-all
-                        duration-200
-                        group-hover:-translate-y-0.5
-                    "
+                                                relative
+                                                flex
+                                                items-center
+                                                justify-center
+                                                w-10
+                                                h-10
+                                                sm:w-11
+                                                sm:h-11
+                                                rounded-xl
+                                                bg-emerald-600
+                                                shadow-lg
+                                                shadow-emerald-600/20
+                                                transition-all
+                                                duration-200
+                                                group-hover:-translate-y-0.5
+                                            "
                                         >
 
                                             <svg
-                                                className="w-6 h-6 sm:w-7 sm:h-7 text-white"
+                                                className="
+                                                    w-6
+                                                    h-6
+                                                    sm:w-7
+                                                    sm:h-7
+                                                    text-white
+                                                "
                                                 fill="none"
                                                 viewBox="0 0 24 24"
                                                 stroke="currentColor"
                                                 strokeWidth="1.8"
                                             >
+
                                                 <path
                                                     strokeLinecap="round"
                                                     strokeLinejoin="round"
@@ -384,19 +540,28 @@ export default function Welcome({ canLogin, canRegister }) {
                                                     strokeLinejoin="round"
                                                     d="M8 12h.01M16 12h.01"
                                                 />
+
                                             </svg>
 
                                         </div>
 
+
                                         <div className="leading-none">
 
-                                            <div className="text-xl sm:text-2xl lg:text-3xl font-extrabold tracking-tight text-slate-900">
-
+                                            <div
+                                                className="
+                                                    text-xl
+                                                    sm:text-2xl
+                                                    lg:text-3xl
+                                                    font-extrabold
+                                                    tracking-tight
+                                                    text-slate-900
+                                                "
+                                            >
                                                 Mauzo
                                                 <span className="text-emerald-600">
                                                     Vibe
                                                 </span>
-
                                             </div>
 
                                         </div>
@@ -404,10 +569,20 @@ export default function Welcome({ canLogin, canRegister }) {
                                     </Link>
 
 
-                                    {/* =================================================
-                DESKTOP MENU
-            ================================================= */}
-                                    <div className="hidden lg:flex items-center gap-7 xl:gap-9 text-sm font-semibold text-slate-700">
+                                    {/* DESKTOP MENU */}
+
+                                    <div
+                                        className="
+                                            hidden
+                                            lg:flex
+                                            items-center
+                                            gap-7
+                                            xl:gap-9
+                                            text-sm
+                                            font-semibold
+                                            text-slate-700
+                                        "
+                                    >
 
                                         <a
                                             href="#home"
@@ -416,12 +591,14 @@ export default function Welcome({ canLogin, canRegister }) {
                                             Home
                                         </a>
 
+
                                         <Link
                                             href={route("faq")}
                                             className="hover:text-emerald-600 transition"
                                         >
                                             FAQ
                                         </Link>
+
 
                                         <Link
                                             href={route("pricing")}
@@ -430,6 +607,7 @@ export default function Welcome({ canLogin, canRegister }) {
                                             Pricing
                                         </Link>
 
+
                                         <Link
                                             href={route("about")}
                                             className="hover:text-emerald-600 transition"
@@ -437,7 +615,8 @@ export default function Welcome({ canLogin, canRegister }) {
                                             About Us
                                         </Link>
 
-                                         <Link
+
+                                        <Link
                                             href={route("marketplace.index")}
                                             className="hover:text-emerald-600 transition"
                                         >
@@ -447,51 +626,57 @@ export default function Welcome({ canLogin, canRegister }) {
                                     </div>
 
 
-                                    {/* =================================================
-                DESKTOP LOGIN
-            ================================================= */}
+                                    {/* DESKTOP LOGIN */}
+
                                     <div className="hidden lg:block shrink-0">
 
                                         {canLogin && (
                                             <Link
                                                 href={route("login")}
                                                 className="
-                            group
-                            inline-flex
-                            items-center
-                            gap-2
-                            rounded-xl
-                            bg-emerald-600
-                            px-5
-                            xl:px-6
-                            py-3
-                            text-sm
-                            font-bold
-                            text-white
-                            shadow-lg
-                            shadow-emerald-600/20
-                            transition-all
-                            duration-200
-                            hover:-translate-y-0.5
-                            hover:bg-emerald-700
-                            hover:shadow-xl
-                        "
+                                                    group
+                                                    inline-flex
+                                                    items-center
+                                                    gap-2
+                                                    rounded-xl
+                                                    bg-emerald-600
+                                                    px-5
+                                                    xl:px-6
+                                                    py-3
+                                                    text-sm
+                                                    font-bold
+                                                    text-white
+                                                    shadow-lg
+                                                    shadow-emerald-600/20
+                                                    transition-all
+                                                    duration-200
+                                                    hover:-translate-y-0.5
+                                                    hover:bg-emerald-700
+                                                    hover:shadow-xl
+                                                "
                                             >
 
                                                 Sign In
 
                                                 <svg
-                                                    className="w-4 h-4 transition-transform group-hover:translate-x-1"
+                                                    className="
+                                                        w-4
+                                                        h-4
+                                                        transition-transform
+                                                        group-hover:translate-x-1
+                                                    "
                                                     fill="none"
                                                     viewBox="0 0 24 24"
                                                     stroke="currentColor"
                                                     strokeWidth="2"
                                                 >
+
                                                     <path
                                                         strokeLinecap="round"
                                                         strokeLinejoin="round"
                                                         d="M5 12h14M13 6l6 6-6 6"
                                                     />
+
                                                 </svg>
 
                                             </Link>
@@ -500,29 +685,32 @@ export default function Welcome({ canLogin, canRegister }) {
                                     </div>
 
 
-                                    {/* =================================================
-                MOBILE MENU BUTTON
-            ================================================= */}
+                                    {/* MOBILE BUTTON */}
+
                                     <button
                                         type="button"
-                                        onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
+                                        onClick={() =>
+                                            setMobileMenuOpen(
+                                                (previous) => !previous
+                                            )
+                                        }
                                         className="
-                    lg:hidden
-                    flex
-                    items-center
-                    justify-center
-                    w-11
-                    h-11
-                    rounded-xl
-                    border
-                    border-slate-200
-                    bg-white
-                    text-slate-700
-                    shadow-sm
-                    hover:border-emerald-300
-                    hover:text-emerald-600
-                    transition-all
-                "
+                                            lg:hidden
+                                            flex
+                                            items-center
+                                            justify-center
+                                            w-11
+                                            h-11
+                                            rounded-xl
+                                            border
+                                            border-slate-200
+                                            bg-white
+                                            text-slate-700
+                                            shadow-sm
+                                            hover:border-emerald-300
+                                            hover:text-emerald-600
+                                            transition-all
+                                        "
                                         aria-label="Toggle navigation menu"
                                         aria-expanded={mobileMenuOpen}
                                     >
@@ -538,142 +726,197 @@ export default function Welcome({ canLogin, canRegister }) {
                                 </div>
 
 
-                                {/* =================================================
-            MOBILE MENU
-        ================================================= */}
+                                {/* MOBILE MENU */}
+
                                 {mobileMenuOpen && (
                                     <div
                                         className="
-                    lg:hidden
-                    border-t
-                    border-slate-100
-                    py-4
-                    animate-in
-                    fade-in
-                    slide-in-from-top-2
-                    duration-200
-                "
+                                            lg:hidden
+                                            border-t
+                                            border-slate-100
+                                            py-4
+                                        "
                                     >
 
                                         <div className="flex flex-col gap-1">
 
+                                            {/* Home */}
+
                                             <a
                                                 href="#home"
-                                                onClick={() => setMobileMenuOpen(false)}
+                                                onClick={closeMobileMenu}
                                                 className="
-                            flex
-                            items-center
-                            justify-between
-                            px-4
-                            py-3
-                            rounded-xl
-                            text-sm
-                            font-semibold
-                            text-slate-700
-                            hover:bg-emerald-50
-                            hover:text-emerald-600
-                            transition
-                        "
+                                                    flex
+                                                    items-center
+                                                    justify-between
+                                                    px-4
+                                                    py-3
+                                                    rounded-xl
+                                                    text-sm
+                                                    font-semibold
+                                                    text-slate-700
+                                                    hover:bg-emerald-50
+                                                    hover:text-emerald-600
+                                                    transition
+                                                "
                                             >
-                                                <span>Home</span>
+
+                                                <span>
+                                                    Home
+                                                </span>
+
                                                 <ChevronRightIcon className="w-4 h-4" />
+
                                             </a>
 
 
+                                            {/* FAQ */}
+
                                             <Link
                                                 href={route("faq")}
-                                                onClick={() => setMobileMenuOpen(false)}
+                                                onClick={closeMobileMenu}
                                                 className="
-                            flex
-                            items-center
-                            justify-between
-                            px-4
-                            py-3
-                            rounded-xl
-                            text-sm
-                            font-semibold
-                            text-slate-700
-                            hover:bg-emerald-50
-                            hover:text-emerald-600
-                            transition
-                        "
+                                                    flex
+                                                    items-center
+                                                    justify-between
+                                                    px-4
+                                                    py-3
+                                                    rounded-xl
+                                                    text-sm
+                                                    font-semibold
+                                                    text-slate-700
+                                                    hover:bg-emerald-50
+                                                    hover:text-emerald-600
+                                                    transition
+                                                "
                                             >
-                                                <span>FAQ</span>
+
+                                                <span>
+                                                    FAQ
+                                                </span>
+
                                                 <ChevronRightIcon className="w-4 h-4" />
+
                                             </Link>
 
+
+                                            {/* Pricing */}
 
                                             <Link
                                                 href={route("pricing")}
-                                                onClick={() => setMobileMenuOpen(false)}
+                                                onClick={closeMobileMenu}
                                                 className="
-                            flex
-                            items-center
-                            justify-between
-                            px-4
-                            py-3
-                            rounded-xl
-                            text-sm
-                            font-semibold
-                            text-slate-700
-                            hover:bg-emerald-50
-                            hover:text-emerald-600
-                            transition
-                        "
+                                                    flex
+                                                    items-center
+                                                    justify-between
+                                                    px-4
+                                                    py-3
+                                                    rounded-xl
+                                                    text-sm
+                                                    font-semibold
+                                                    text-slate-700
+                                                    hover:bg-emerald-50
+                                                    hover:text-emerald-600
+                                                    transition
+                                                "
                                             >
-                                                <span>Pricing</span>
+
+                                                <span>
+                                                    Pricing
+                                                </span>
+
                                                 <ChevronRightIcon className="w-4 h-4" />
+
                                             </Link>
 
 
+                                            {/* About */}
+
                                             <Link
                                                 href={route("about")}
-                                                onClick={() => setMobileMenuOpen(false)}
+                                                onClick={closeMobileMenu}
                                                 className="
-                            flex
-                            items-center
-                            justify-between
-                            px-4
-                            py-3
-                            rounded-xl
-                            text-sm
-                            font-semibold
-                            text-slate-700
-                            hover:bg-emerald-50
-                            hover:text-emerald-600
-                            transition
-                        "
+                                                    flex
+                                                    items-center
+                                                    justify-between
+                                                    px-4
+                                                    py-3
+                                                    rounded-xl
+                                                    text-sm
+                                                    font-semibold
+                                                    text-slate-700
+                                                    hover:bg-emerald-50
+                                                    hover:text-emerald-600
+                                                    transition
+                                                "
                                             >
-                                                <span>About Us</span>
+
+                                                <span>
+                                                    About Us
+                                                </span>
+
                                                 <ChevronRightIcon className="w-4 h-4" />
+
+                                            </Link>
+
+
+                                            {/* Marketplace */}
+
+                                            <Link
+                                                href={route("marketplace.index")}
+                                                onClick={closeMobileMenu}
+                                                className="
+                                                    flex
+                                                    items-center
+                                                    justify-between
+                                                    px-4
+                                                    py-3
+                                                    rounded-xl
+                                                    text-sm
+                                                    font-semibold
+                                                    text-slate-700
+                                                    hover:bg-emerald-50
+                                                    hover:text-emerald-600
+                                                    transition
+                                                "
+                                            >
+
+                                                <span>
+                                                    MarketPlace
+                                                </span>
+
+                                                <ChevronRightIcon className="w-4 h-4" />
+
                                             </Link>
 
 
                                             {/* Mobile Sign In */}
+
                                             {canLogin && (
                                                 <Link
                                                     href={route("login")}
-                                                    onClick={() => setMobileMenuOpen(false)}
+                                                    onClick={closeMobileMenu}
                                                     className="
-                                mt-3
-                                flex
-                                items-center
-                                justify-center
-                                gap-2
-                                w-full
-                                rounded-xl
-                                bg-emerald-600
-                                px-5
-                                py-3
-                                text-sm
-                                font-bold
-                                text-white
-                                shadow-lg
-                                shadow-emerald-600/20
-                                hover:bg-emerald-700
-                                transition
-                            "
+                                                        mt-3
+                                                        flex
+                                                        items-center
+                                                        justify-center
+                                                        gap-2
+                                                        w-full
+                                                        rounded-xl
+                                                        bg-emerald-600
+                                                        px-5
+                                                        py-3
+                                                        text-sm
+                                                        font-bold
+                                                        text-white
+                                                        shadow-lg
+                                                        shadow-emerald-600/20
+                                                        hover:bg-emerald-700
+                                                        transition
+                                                    "
                                                 >
+
                                                     Sign In
 
                                                     <svg
@@ -683,12 +926,15 @@ export default function Welcome({ canLogin, canRegister }) {
                                                         stroke="currentColor"
                                                         strokeWidth="2"
                                                     >
+
                                                         <path
                                                             strokeLinecap="round"
                                                             strokeLinejoin="round"
                                                             d="M5 12h14M13 6l6 6-6 6"
                                                         />
+
                                                     </svg>
+
                                                 </Link>
                                             )}
 
@@ -701,30 +947,89 @@ export default function Welcome({ canLogin, canRegister }) {
 
                         </nav>
 
+
                         {/* =================================================
                             HERO CONTENT
                         ================================================== */}
+
                         <div className="flex-1 flex items-center">
 
-                            <div className="max-w-7xl w-full mx-auto px-5 sm:px-6 xl:px-8 py-10 lg:py-14">
+                            <div
+                                className="
+                                    max-w-7xl
+                                    w-full
+                                    mx-auto
+                                    px-5
+                                    sm:px-6
+                                    xl:px-8
+                                    py-10
+                                    lg:py-14
+                                "
+                            >
 
-                                <div className="grid grid-cols-1 lg:grid-cols-12 gap-10 lg:gap-16 items-center">
-
+                                <div
+                                    className="
+                                        grid
+                                        grid-cols-1
+                                        lg:grid-cols-12
+                                        gap-10
+                                        lg:gap-16
+                                        items-center
+                                    "
+                                >
 
                                     {/* =================================================
-                                        LEFT CONTENT
+                                        LEFT
                                     ================================================== */}
+
                                     <div className="lg:col-span-7 text-slate-950">
 
-
                                         {/* Badge */}
-                                        <div className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-emerald-50 border border-emerald-200 text-sm font-medium text-emerald-700 mb-6 shadow-sm">
+
+                                        <div
+                                            className="
+                                                inline-flex
+                                                items-center
+                                                gap-2
+                                                px-4
+                                                py-2
+                                                rounded-full
+                                                bg-emerald-50
+                                                border
+                                                border-emerald-200
+                                                text-sm
+                                                font-medium
+                                                text-emerald-700
+                                                mb-6
+                                                shadow-sm
+                                            "
+                                        >
 
                                             <span className="relative flex h-2.5 w-2.5">
 
-                                                <span className="absolute inline-flex h-full w-full rounded-full bg-emerald-400 opacity-75 animate-ping" />
+                                                <span
+                                                    className="
+                                                        absolute
+                                                        inline-flex
+                                                        h-full
+                                                        w-full
+                                                        rounded-full
+                                                        bg-emerald-400
+                                                        opacity-75
+                                                        animate-ping
+                                                    "
+                                                />
 
-                                                <span className="relative inline-flex h-2.5 w-2.5 rounded-full bg-emerald-600" />
+                                                <span
+                                                    className="
+                                                        relative
+                                                        inline-flex
+                                                        h-2.5
+                                                        w-2.5
+                                                        rounded-full
+                                                        bg-emerald-600
+                                                    "
+                                                />
 
                                             </span>
 
@@ -734,6 +1039,7 @@ export default function Welcome({ canLogin, canRegister }) {
 
 
                                         {/* Heading */}
+
                                         <h1
                                             className="
                                                 text-4xl
@@ -761,6 +1067,7 @@ export default function Welcome({ canLogin, canRegister }) {
 
 
                                         {/* Description */}
+
                                         <p
                                             className="
                                                 mt-6
@@ -800,67 +1107,57 @@ export default function Welcome({ canLogin, canRegister }) {
                                         </p>
 
 
-                                        {/* =================================================
-                                            FEATURES
-                                        ================================================== */}
+                                        {/* Features */}
+
                                         <div
                                             id="features"
-                                            className="mt-7 flex flex-wrap gap-x-6 gap-y-3 text-sm sm:text-base text-slate-700"
+                                            className="
+                                                mt-7
+                                                flex
+                                                flex-wrap
+                                                gap-x-6
+                                                gap-y-3
+                                                text-sm
+                                                sm:text-base
+                                                text-slate-700
+                                            "
                                         >
 
                                             <span className="flex items-center gap-2">
-
                                                 <span className="text-emerald-600">
                                                     ●
                                                 </span>
-
                                                 POS
-
                                             </span>
 
-
                                             <span className="flex items-center gap-2">
-
                                                 <span className="text-emerald-600">
                                                     ●
                                                 </span>
-
                                                 Inventory
-
                                             </span>
 
-
                                             <span className="flex items-center gap-2">
-
                                                 <span className="text-emerald-600">
                                                     ●
                                                 </span>
-
                                                 Customers
-
                                             </span>
 
-
                                             <span className="flex items-center gap-2">
-
                                                 <span className="text-emerald-600">
                                                     ●
                                                 </span>
-
                                                 Reports
-
                                             </span>
 
                                         </div>
 
 
-                                        {/* =================================================
-                                            CTA BUTTONS
-                                        ================================================== */}
+                                        {/* CTA */}
+
                                         <div className="mt-9 flex flex-col sm:flex-row gap-4">
 
-
-                                            {/* Start Free Trial */}
                                             {canRegister && (
                                                 <Link
                                                     href={route("register")}
@@ -888,24 +1185,31 @@ export default function Welcome({ canLogin, canRegister }) {
                                                     {trialButtonText}
 
                                                     <svg
-                                                        className="w-5 h-5 transition-transform duration-200 group-hover:translate-x-1"
+                                                        className="
+                                                            w-5
+                                                            h-5
+                                                            transition-transform
+                                                            duration-200
+                                                            group-hover:translate-x-1
+                                                        "
                                                         fill="none"
                                                         viewBox="0 0 24 24"
                                                         stroke="currentColor"
                                                         strokeWidth="2"
                                                     >
+
                                                         <path
                                                             strokeLinecap="round"
                                                             strokeLinejoin="round"
                                                             d="M5 12h14M13 6l6 6-6 6"
                                                         />
+
                                                     </svg>
 
                                                 </Link>
                                             )}
 
 
-                                            {/* Watch Demo */}
                                             <button
                                                 type="button"
                                                 className="
@@ -956,18 +1260,56 @@ export default function Welcome({ canLogin, canRegister }) {
                                         </div>
 
 
-                                        {/* =================================================
-                                            TRUST
-                                        ================================================== */}
-                                        <div className="mt-8 flex items-center gap-3 text-sm text-slate-600">
+                                        {/* Trust */}
+
+                                        <div
+                                            className="
+                                                mt-8
+                                                flex
+                                                items-center
+                                                gap-3
+                                                text-sm
+                                                text-slate-600
+                                            "
+                                        >
 
                                             <div className="flex -space-x-2">
 
-                                                <div className="w-8 h-8 rounded-full bg-emerald-600 border-2 border-white shadow-sm" />
+                                                <div
+                                                    className="
+                                                        w-8
+                                                        h-8
+                                                        rounded-full
+                                                        bg-emerald-600
+                                                        border-2
+                                                        border-white
+                                                        shadow-sm
+                                                    "
+                                                />
 
-                                                <div className="w-8 h-8 rounded-full bg-emerald-400 border-2 border-white shadow-sm" />
+                                                <div
+                                                    className="
+                                                        w-8
+                                                        h-8
+                                                        rounded-full
+                                                        bg-emerald-400
+                                                        border-2
+                                                        border-white
+                                                        shadow-sm
+                                                    "
+                                                />
 
-                                                <div className="w-8 h-8 rounded-full bg-emerald-200 border-2 border-white shadow-sm" />
+                                                <div
+                                                    className="
+                                                        w-8
+                                                        h-8
+                                                        rounded-full
+                                                        bg-emerald-200
+                                                        border-2
+                                                        border-white
+                                                        shadow-sm
+                                                    "
+                                                />
 
                                             </div>
 
@@ -983,6 +1325,7 @@ export default function Welcome({ canLogin, canRegister }) {
                                     {/* =================================================
                                         LOGIN CARD
                                     ================================================== */}
+
                                     <div className="lg:col-span-5">
 
                                         <div
@@ -1001,10 +1344,8 @@ export default function Welcome({ canLogin, canRegister }) {
                                             "
                                         >
 
+                                            {/* Icon */}
 
-                                            {/* =================================================
-                                                LOGIN ICON
-                                            ================================================== */}
                                             <div className="flex justify-center mb-5">
 
                                                 <div
@@ -1049,9 +1390,8 @@ export default function Welcome({ canLogin, canRegister }) {
                                             </div>
 
 
-                                            {/* =================================================
-                                                CARD HEADER
-                                            ================================================== */}
+                                            {/* Header */}
+
                                             <div className="text-center mb-7">
 
                                                 <h2
@@ -1066,27 +1406,22 @@ export default function Welcome({ canLogin, canRegister }) {
                                                 </h2>
 
                                                 <p className="mt-2 text-sm text-slate-500">
-
                                                     Sign in to continue to your
                                                     MauzoVibe account.
-
                                                 </p>
 
                                             </div>
 
 
-                                            {/* =================================================
-                                                LOGIN FORM
-                                            ================================================== */}
+                                            {/* Login Form */}
+
                                             <form
                                                 onSubmit={submit}
                                                 className="space-y-5"
                                             >
 
+                                                {/* Email */}
 
-                                                {/* =================================================
-                                                    EMAIL
-                                                ================================================== */}
                                                 <div>
 
                                                     <label
@@ -1102,9 +1437,20 @@ export default function Welcome({ canLogin, canRegister }) {
                                                         Username / Email
                                                     </label>
 
+
                                                     <div className="relative">
 
-                                                        <div className="absolute inset-y-0 left-0 flex items-center pl-4 pointer-events-none">
+                                                        <div
+                                                            className="
+                                                                absolute
+                                                                inset-y-0
+                                                                left-0
+                                                                flex
+                                                                items-center
+                                                                pl-4
+                                                                pointer-events-none
+                                                            "
+                                                        >
 
                                                             <svg
                                                                 className="w-5 h-5 text-slate-400"
@@ -1133,6 +1479,7 @@ export default function Welcome({ canLogin, canRegister }) {
 
                                                         <input
                                                             id="email"
+                                                            name="email"
                                                             type="email"
                                                             value={form.data.email}
                                                             autoComplete="username"
@@ -1175,9 +1522,8 @@ export default function Welcome({ canLogin, canRegister }) {
                                                 </div>
 
 
-                                                {/* =================================================
-                                                    PASSWORD
-                                                ================================================== */}
+                                                {/* Password */}
+
                                                 <div>
 
                                                     <div className="flex items-center justify-between mb-2">
@@ -1203,7 +1549,17 @@ export default function Welcome({ canLogin, canRegister }) {
 
                                                     <div className="relative">
 
-                                                        <div className="absolute inset-y-0 left-0 flex items-center pl-4 pointer-events-none">
+                                                        <div
+                                                            className="
+                                                                absolute
+                                                                inset-y-0
+                                                                left-0
+                                                                flex
+                                                                items-center
+                                                                pl-4
+                                                                pointer-events-none
+                                                            "
+                                                        >
 
                                                             <svg
                                                                 className="w-5 h-5 text-slate-400"
@@ -1234,6 +1590,7 @@ export default function Welcome({ canLogin, canRegister }) {
 
                                                         <input
                                                             id="password"
+                                                            name="password"
                                                             type={
                                                                 showPassword
                                                                     ? "text"
@@ -1268,13 +1625,18 @@ export default function Welcome({ canLogin, canRegister }) {
                                                         />
 
 
-                                                        {/* Show Password */}
                                                         <button
                                                             type="button"
                                                             onClick={() =>
                                                                 setShowPassword(
-                                                                    !showPassword
+                                                                    (previous) =>
+                                                                        !previous
                                                                 )
+                                                            }
+                                                            aria-label={
+                                                                showPassword
+                                                                    ? "Hide password"
+                                                                    : "Show password"
                                                             }
                                                             className="
                                                                 absolute
@@ -1290,7 +1652,6 @@ export default function Welcome({ canLogin, canRegister }) {
                                                         >
 
                                                             {showPassword ? (
-
                                                                 <svg
                                                                     className="w-5 h-5"
                                                                     fill="none"
@@ -1312,9 +1673,7 @@ export default function Welcome({ canLogin, canRegister }) {
                                                                     />
 
                                                                 </svg>
-
                                                             ) : (
-
                                                                 <svg
                                                                     className="w-5 h-5"
                                                                     fill="none"
@@ -1336,7 +1695,6 @@ export default function Welcome({ canLogin, canRegister }) {
                                                                     />
 
                                                                 </svg>
-
                                                             )}
 
                                                         </button>
@@ -1353,16 +1711,24 @@ export default function Welcome({ canLogin, canRegister }) {
                                                 </div>
 
 
-                                                {/* =================================================
-                                                    REMEMBER ME
-                                                ================================================== */}
+                                                {/* Remember */}
+
                                                 <div className="flex items-center justify-between">
 
-                                                    <label className="inline-flex items-center cursor-pointer select-none">
+                                                    <label
+                                                        className="
+                                                            inline-flex
+                                                            items-center
+                                                            cursor-pointer
+                                                            select-none
+                                                        "
+                                                    >
 
                                                         <input
                                                             type="checkbox"
-                                                            checked={form.data.remember}
+                                                            checked={
+                                                                form.data.remember
+                                                            }
                                                             onChange={(e) =>
                                                                 form.setData(
                                                                     "remember",
@@ -1393,9 +1759,8 @@ export default function Welcome({ canLogin, canRegister }) {
                                                 </div>
 
 
-                                                {/* =================================================
-                                                    LOGIN BUTTON
-                                                ================================================== */}
+                                                {/* Login Button */}
+
                                                 <button
                                                     type="submit"
                                                     disabled={form.processing}
@@ -1430,9 +1795,7 @@ export default function Welcome({ canLogin, canRegister }) {
                                                 >
 
                                                     {form.processing ? (
-
                                                         <>
-
                                                             <svg
                                                                 className="w-5 h-5 animate-spin"
                                                                 viewBox="0 0 24 24"
@@ -1457,19 +1820,21 @@ export default function Welcome({ canLogin, canRegister }) {
                                                             </svg>
 
                                                             Signing in...
-
                                                         </>
-
                                                     ) : (
-
                                                         <>
-
                                                             <span>
                                                                 Sign In
                                                             </span>
 
                                                             <svg
-                                                                className="w-5 h-5 transition-transform duration-200 group-hover:translate-x-1"
+                                                                className="
+                                                                    w-5
+                                                                    h-5
+                                                                    transition-transform
+                                                                    duration-200
+                                                                    group-hover:translate-x-1
+                                                                "
                                                                 fill="none"
                                                                 viewBox="0 0 24 24"
                                                                 stroke="currentColor"
@@ -1483,9 +1848,7 @@ export default function Welcome({ canLogin, canRegister }) {
                                                                 />
 
                                                             </svg>
-
                                                         </>
-
                                                     )}
 
                                                 </button>
@@ -1493,9 +1856,8 @@ export default function Welcome({ canLogin, canRegister }) {
                                             </form>
 
 
-                                            {/* =================================================
-                                                REGISTER
-                                            ================================================== */}
+                                            {/* Register */}
+
                                             {canRegister && (
                                                 <div
                                                     className="
@@ -1541,102 +1903,91 @@ export default function Welcome({ canLogin, canRegister }) {
 
 
                         {/* =================================================
-                            BOTTOM INFO
+                            FOOTER
                         ================================================== */}
-                        {/* <div className="hidden md:block pb-5">
 
-                            <div className="max-w-7xl mx-auto px-6 xl:px-8">
+                        <footer
+                            className="
+                                mt-auto
+                                border-t
+                                border-slate-200/70
+                                bg-white/90
+                                backdrop-blur-md
+                            "
+                        >
 
-                                <div className="flex items-center justify-between text-xs text-slate-500">
+                            <div
+                                className="
+                                    max-w-7xl
+                                    mx-auto
+                                    px-5
+                                    sm:px-6
+                                    xl:px-8
+                                    py-5
+                                "
+                            >
 
-                                    <span>
-                                        © {new Date().getFullYear()} MauzoVibe.
-                                        All rights reserved.
-                                    </span>
+                                <div
+                                    className="
+                                        flex
+                                        flex-col
+                                        sm:flex-row
+                                        items-center
+                                        justify-between
+                                        gap-4
+                                        text-xs
+                                        text-slate-500
+                                    "
+                                >
 
-
-                                    <div className="flex gap-5">
-
-                                        <a
-                                            href={route("privacy")}
-                                            className="hover:text-emerald-600 transition"
-                                        >
-                                            Privacy
-                                        </a>
-
-                                        <a
-                                            href={route("terms")}
-                                            className="hover:text-emerald-600 transition"
-                                        >
-                                            Terms
-                                        </a>
-
-                                        <a
-                                            href={route("support")}
-                                            className="hover:text-emerald-600 transition"
-                                        >
-                                            Support
-                                        </a>
-
-                                    </div>
-
-                                </div>
-
-                            </div>
-
-                        </div> */}
-
-                        {/* =================================================
-    FOOTER
-================================================= */}
-                        <footer className="mt-auto border-t border-slate-200/70 bg-white/90 backdrop-blur-md">
-
-                            <div className="max-w-7xl mx-auto px-5 sm:px-6 xl:px-8 py-5">
-
-                                <div className="
-            flex
-            flex-col
-            sm:flex-row
-            items-center
-            justify-between
-            gap-4
-            text-xs
-            text-slate-500
-        ">
-
-                                    {/* Copyright */}
                                     <span className="text-center sm:text-left">
-                                        © {new Date().getFullYear()} MauzoVibe.
+                                        © {currentYear} MauzoVibe.
                                         All rights reserved.
                                     </span>
 
-                                    {/* Footer Links */}
-                                    <div className="
-                flex
-                items-center
-                justify-center
-                flex-wrap
-                gap-x-5
-                gap-y-2
-            ">
+
+                                    <div
+                                        className="
+                                            flex
+                                            items-center
+                                            justify-center
+                                            flex-wrap
+                                            gap-x-5
+                                            gap-y-2
+                                        "
+                                    >
 
                                         <Link
                                             href={route("privacy")}
-                                            className="font-medium hover:text-emerald-600 transition"
+                                            className="
+                                                font-medium
+                                                hover:text-emerald-600
+                                                transition
+                                            "
                                         >
                                             Privacy
                                         </Link>
 
+
                                         <Link
                                             href={route("terms")}
-                                            className="font-medium hover:text-emerald-600 transition"
+                                            className="
+                                                font-medium
+                                                hover:text-emerald-600
+                                                transition
+                                            "
                                         >
                                             Terms
                                         </Link>
 
+
                                         <Link
                                             href={route("support")}
-                                            className="font-medium hover:text-emerald-600 transition"
+                                            className="
+                                                font-medium
+                                                hover:text-emerald-600
+                                                transition
+                                            "
                                         >
                                             Support
                                         </Link>
@@ -1657,3 +2008,4 @@ export default function Welcome({ canLogin, canRegister }) {
         </>
     );
 }
+
