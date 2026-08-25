@@ -913,4 +913,9 @@ Route::get(
     [MarketplaceController::class, 'category']
 )->name('marketplace.category');
 
+//View Details
+Route::get('/marketplace/listing/{listing:slug}', 
+    [MarketplaceController::class, 'show']
+)->name('marketplace.listing.show');
+
 require __DIR__.'/auth.php';

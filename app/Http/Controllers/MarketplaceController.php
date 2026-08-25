@@ -537,4 +537,138 @@ public function category(string $slug): Response
         'Bidhaa yako imewekwa sokoni kikamilifu!'
     );
     }
+
+    /**
+ * Show a single marketplace listing
+ */
+public function show(MarketplaceListing $listing): Response
+{
+    // Only approved/active listings are publicly visible
+    abort_unless($listing->status === 'active', 404);
+
+    $listing->load([
+        'category:id,name,slug,icon',
+        'user:id,name,email,phone',
+    ]);
+
+    /*
+    |--------------------------------------------------------------------------
+    | IMAGES
+    |--------------------------------------------------------------------------
+    */
+
+    $images = is_array($listing->images)
+        ? array_values(array_filter($listing->images))
+        : [];
+
+    /*
+    |--------------------------------------------------------------------------
+    | SELLER
+    |--------------------------------------------------------------------------
+    */
+
+    $seller = [
+        'id' => $listing->user?->id,
+        'name' => $listing->user?->name ?? 'MauzoVibe Seller',
+        'phone' => $listing->user?->phone,
+    ];
+
+    /*
+    |--------------------------------------------------------------------------
+    | RELATED PRODUCTS
+    |--------------------------------------------------------------------------
+    */
+
+    $relatedProducts = MarketplaceListing::where('status', 'active')
+        ->where('id', '!=', $listing->id)
+        ->where(
+            'marketplace_category_id',
+            $listing->marketplace_category_id
+        )
+        ->with('category:id,name,slug')
+        ->latest('created_at')
+        ->take(8)
+        ->get()
+        ->map(function ($item) {
+
+            $images = is_array($item->images)
+                ? array_values(array_filter($item->images))
+                : [];
+
+            return [
+                'id' => $item->id,
+                'title' => $item->title,
+                'slug' => $item->slug,
+                'price' => $item->price,
+
+                'formatted_price' =>
+                    'TZS ' . number_format($item->price),
+
+                'condition' => $item->condition,
+
+                'location' =>
+                    $item->location
+                    ?? $item->city
+                    ?? 'Tanzania',
+
+                'image' =>
+                    $images[0] ?? null,
+
+                'category' =>
+                    $item->category?->name,
+            ];
+        });
+
+    /*
+    |--------------------------------------------------------------------------
+    | LISTING DATA
+    |--------------------------------------------------------------------------
+    */
+
+    $product = [
+        'id' => $listing->id,
+
+        'title' => $listing->title,
+
+        'slug' => $listing->slug,
+
+        'description' => $listing->description,
+
+        'price' => $listing->price,
+
+        'formatted_price' =>
+            'TZS ' . number_format($listing->price),
+
+        'condition' => $listing->condition,
+
+        'location' =>
+            $listing->location
+            ?? $listing->city
+            ?? 'Tanzania',
+
+        'city' => $listing->city,
+
+        'images' => $images,
+
+        'category' => [
+            'id' => $listing->category?->id,
+            'name' => $listing->category?->name,
+            'slug' => $listing->category?->slug,
+            'icon' => $listing->category?->icon,
+        ],
+
+        'seller' => $seller,
+
+        'created_at' =>
+            $listing->created_at?->diffForHumans(),
+    ];
+
+    return Inertia::render(
+        'Marketplace/Listing/Show',
+        [
+            'product' => $product,
+            'relatedProducts' => $relatedProducts,
+        ]
+    );
+}
 }
