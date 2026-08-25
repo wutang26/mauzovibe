@@ -85,4 +85,6 @@ public function seller(): BelongsTo
             ->where('status', 'active')
             ->where('is_featured', true);
     }
+
+    
 }

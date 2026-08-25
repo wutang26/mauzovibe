@@ -681,4 +681,1457 @@ public function show(MarketplaceListing $listing): Response
         ]
     );
 }
+
+
+/**
+ * New products
+ */
+public function newProducts(Request $request): Response
+{
+    /*
+    |--------------------------------------------------------------------------
+    | CATEGORIES
+    |--------------------------------------------------------------------------
+    | Hizi zitatumika na MarketplacePublicLayout
+    | kwenye left sidebar.
+    |--------------------------------------------------------------------------
+    */
+
+    $categories = Cache::remember(
+        'marketplace.categories.public.v1',
+        now()->addMinutes(30),
+        function () {
+
+            return MarketplaceCategory::where('is_active', true)
+                ->orderBy('sort_order')
+                ->select([
+                    'id',
+                    'name',
+                    'slug',
+                    'icon',
+                    'listings_count',
+                ])
+                ->get()
+                ->map(function ($category) {
+
+                    $iconMap = [
+                        'Electronics' => 'fa-tv',
+                        'Vehicles' => 'fa-car-side',
+                        'Property' => 'fa-house',
+                        'Fashion' => 'fa-shirt',
+                        'Jobs' => 'fa-briefcase',
+                        'Services' => 'fa-screwdriver-wrench',
+                        'Furniture' => 'fa-couch',
+                        'Phones' => 'fa-mobile-screen-button',
+                        'Computers' => 'fa-laptop',
+                        'Beauty' => 'fa-wand-magic-sparkles',
+                        'Sports' => 'fa-dumbbell',
+                        'Agriculture' => 'fa-wheat-awn',
+                        'Animals' => 'fa-paw',
+                        'Baby Products' => 'fa-baby',
+                        'Books' => 'fa-book-open',
+                        'Gaming' => 'fa-gamepad',
+                        'Music' => 'fa-music',
+                        'Health' => 'fa-heart-pulse',
+                        'Industrial Equipment' => 'fa-industry',
+                        'Other' => 'fa-layer-group',
+                    ];
+
+                    return [
+                        'id' => $category->id,
+                        'name' => $category->name,
+                        'slug' => $category->slug,
+
+                        'icon' =>
+                            $iconMap[$category->name]
+                            ?? $category->icon
+                            ?? 'fa-tag',
+
+                        'listings_count' =>
+                            (int) ($category->listings_count ?? 0),
+                    ];
+                })
+                ->values();
+        }
+    );
+
+
+    /*
+    |--------------------------------------------------------------------------
+    | NEW PRODUCTS
+    |--------------------------------------------------------------------------
+    */
+
+    $products = MarketplaceListing::where('status', 'active')
+        ->where('condition', 'new')
+
+        ->with('category:id,name,slug,icon')
+
+        ->select([
+            'id',
+            'marketplace_category_id',
+            'title',
+            'slug',
+            'price',
+            'condition',
+            'location',
+            'city',
+            'images',
+            'created_at',
+        ])
+
+        ->latest('created_at')
+
+        ->paginate(24)
+
+        ->through(function ($listing) {
+
+            $images = is_array($listing->images)
+                ? array_values(
+                    array_filter($listing->images)
+                )
+                : [];
+
+            return [
+
+                'id' => $listing->id,
+
+                'title' => $listing->title,
+
+                'slug' => $listing->slug,
+
+                'price' => $listing->price,
+
+                'formatted_price' =>
+                    'TZS ' . number_format(
+                        $listing->price
+                    ),
+
+                'condition' => $listing->condition,
+
+                'location' =>
+                    $listing->location
+                    ?? $listing->city
+                    ?? 'Tanzania',
+
+                'city' => $listing->city,
+
+                /*
+                |--------------------------------------------------------------------------
+                | MAIN IMAGE
+                |--------------------------------------------------------------------------
+                */
+
+                'image' =>
+                    $images[0] ?? null,
+
+                /*
+                |--------------------------------------------------------------------------
+                | ALL IMAGES
+                |--------------------------------------------------------------------------
+                */
+
+                'images' => $images,
+
+                /*
+                |--------------------------------------------------------------------------
+                | CATEGORY
+                |--------------------------------------------------------------------------
+                */
+
+                'category' => $listing->category
+                    ? [
+                        'id' =>
+                            $listing->category->id,
+
+                        'name' =>
+                            $listing->category->name,
+
+                        'slug' =>
+                            $listing->category->slug,
+
+                        'icon' =>
+                            $listing->category->icon,
+                    ]
+                    : null,
+
+                /*
+                |--------------------------------------------------------------------------
+                | CREATED
+                |--------------------------------------------------------------------------
+                */
+
+                'created_at' =>
+                    $listing->created_at
+                        ?->diffForHumans(),
+            ];
+        });
+
+
+    /*
+    |--------------------------------------------------------------------------
+    | USER LOCATION
+    |--------------------------------------------------------------------------
+    */
+
+    $userLocation =
+        $request->user()?->city
+        ?? $request->user()?->location
+        ?? 'Tabora, Tanzania';
+
+
+    /*
+    |--------------------------------------------------------------------------
+    | RETURN PAGE
+    |--------------------------------------------------------------------------
+    */
+
+    return Inertia::render('Marketplace/New', [
+
+        /*
+        | Public layout
+        */
+        'categories' =>
+            $categories,
+
+        /*
+        | Products
+        */
+        'products' =>
+            $products,
+
+        /*
+        | Header location
+        */
+        'userLocation' =>
+            $userLocation,
+    ]);
+}
+/**
+ * Used products
+ */
+
+/**
+ * Stores / sellers
+ */
+// public function stores(): Response
+// {
+//     $stores = MarketplaceListing::where('status', 'active')
+//         ->with('user:id,name')
+//         ->get()
+//         ->groupBy('user_id')
+//         ->map(function ($listings) {
+//             $seller = $listings->first()->user;
+
+//             return [
+//                 'id' => $seller?->id,
+//                 'name' => $seller?->name ?? 'MauzoVibe Seller',
+//                 'products_count' => $listings->count(),
+//             ];
+//         })
+//         ->values();
+
+//     return Inertia::render('Marketplace/Stores', [
+//         'stores' => $stores,
+//     ]);
+// }
+
+/**
+ * --------------------------------------------------------------------------
+ * Marketplace Stores / Sellers
+ * --------------------------------------------------------------------------
+ */
+public function stores(Request $request): Response
+{
+    /*
+    |--------------------------------------------------------------------------
+    | CATEGORIES
+    |--------------------------------------------------------------------------
+    | Categories are required by MarketplacePublicLayout.
+    |--------------------------------------------------------------------------
+    */
+
+    $categories = Cache::remember(
+        'marketplace.public.categories.v1',
+        now()->addMinutes(30),
+        function () {
+
+            return MarketplaceCategory::where('is_active', true)
+                ->orderBy('sort_order')
+                ->select([
+                    'id',
+                    'name',
+                    'slug',
+                    'icon',
+                    'listings_count',
+                ])
+                ->get()
+                ->map(function ($category) {
+
+                    $iconMap = [
+
+                        'Electronics' =>
+                            'fa-tv',
+
+                        'Vehicles' =>
+                            'fa-car-side',
+
+                        'Property' =>
+                            'fa-house',
+
+                        'Fashion' =>
+                            'fa-shirt',
+
+                        'Jobs' =>
+                            'fa-briefcase',
+
+                        'Services' =>
+                            'fa-screwdriver-wrench',
+
+                        'Furniture' =>
+                            'fa-couch',
+
+                        'Phones' =>
+                            'fa-mobile-screen-button',
+
+                        'Computers' =>
+                            'fa-laptop',
+
+                        'Beauty' =>
+                            'fa-wand-magic-sparkles',
+
+                        'Sports' =>
+                            'fa-dumbbell',
+
+                        'Agriculture' =>
+                            'fa-wheat-awn',
+
+                        'Animals' =>
+                            'fa-paw',
+
+                        'Baby Products' =>
+                            'fa-baby',
+
+                        'Books' =>
+                            'fa-book-open',
+
+                        'Gaming' =>
+                            'fa-gamepad',
+
+                        'Music' =>
+                            'fa-music',
+
+                        'Health' =>
+                            'fa-heart-pulse',
+
+                        'Industrial Equipment' =>
+                            'fa-industry',
+
+                        'Other' =>
+                            'fa-layer-group',
+                    ];
+
+                    return [
+
+                        'id' =>
+                            $category->id,
+
+                        'name' =>
+                            $category->name,
+
+                        'slug' =>
+                            $category->slug,
+
+                        'icon' =>
+                            $iconMap[$category->name]
+                            ?? $category->icon
+                            ?? 'fa-tag',
+
+                        'listings_count' =>
+                            (int) (
+                                $category->listings_count
+                                ?? 0
+                            ),
+                    ];
+                })
+                ->values();
+        }
+    );
+
+
+    /*
+    |--------------------------------------------------------------------------
+    | QUICK CATEGORIES
+    |--------------------------------------------------------------------------
+    */
+
+    $quickCategories = $categories
+        ->take(10)
+        ->values();
+
+
+    /*
+    |--------------------------------------------------------------------------
+    | STORES
+    |--------------------------------------------------------------------------
+    |
+    | Each seller becomes one store.
+    | We only count active listings.
+    |--------------------------------------------------------------------------
+    */
+
+    $stores = MarketplaceListing::query()
+
+        ->where('status', 'active')
+
+        ->whereNotNull('user_id')
+
+        ->with([
+            'user:id,name,email,phone,city,location'
+        ])
+
+        ->select([
+            'id',
+            'user_id',
+            'title',
+            'price',
+            'condition',
+            'location',
+            'city',
+            'images',
+            'created_at',
+        ])
+
+        ->latest('created_at')
+
+        ->get()
+
+        ->groupBy('user_id')
+
+        ->map(function ($listings) {
+
+            $seller = $listings->first()?->user;
+
+            /*
+            |--------------------------------------------------------------------------
+            | Seller images
+            |--------------------------------------------------------------------------
+            |
+            | For now we use the first product image as the store cover.
+            | Later we can add a dedicated store_logo/store_banner column.
+            |--------------------------------------------------------------------------
+            */
+
+            $firstListing = $listings->first();
+
+            $images = is_array($firstListing?->images)
+                ? array_values(
+                    array_filter(
+                        $firstListing->images
+                    )
+                )
+                : [];
+
+
+            /*
+            |--------------------------------------------------------------------------
+            | LOCATION
+            |--------------------------------------------------------------------------
+            */
+
+            $location =
+                $seller?->city
+                ?? $seller?->location
+                ?? $firstListing?->location
+                ?? $firstListing?->city
+                ?? 'Tanzania';
+
+
+            /*
+            |--------------------------------------------------------------------------
+            | STORE DATA
+            |--------------------------------------------------------------------------
+            */
+
+            return [
+
+                'id' =>
+                    $seller?->id,
+
+                'name' =>
+                    $seller?->name
+                    ?? 'MauzoVibe Seller',
+
+                'email' =>
+                    $seller?->email,
+
+                'phone' =>
+                    $seller?->phone,
+
+                'location' =>
+                    $location,
+
+                'products_count' =>
+                    $listings->count(),
+
+                'new_products_count' =>
+                    $listings
+                        ->where('condition', 'new')
+                        ->count(),
+
+                'used_products_count' =>
+                    $listings
+                        ->where('condition', 'used')
+                        ->count(),
+
+                'image' =>
+                    $images[0] ?? null,
+
+                'latest_product' =>
+                    $firstListing?->title,
+
+                'latest_product_price' =>
+                    $firstListing?->price,
+
+                'created_at' =>
+                    $firstListing?->created_at
+                    ?->diffForHumans(),
+            ];
+        })
+
+        ->filter(function ($store) {
+
+            return !empty($store['id']);
+        })
+
+        ->values();
+
+
+    /*
+    |--------------------------------------------------------------------------
+    | USER LOCATION
+    |--------------------------------------------------------------------------
+    */
+
+    $userLocation =
+        $request->user()?->city
+        ?? $request->user()?->location
+        ?? 'Tabora, Tanzania';
+
+
+    /*
+    |--------------------------------------------------------------------------
+    | RESPONSE
+    |--------------------------------------------------------------------------
+    */
+
+    return Inertia::render(
+        'Marketplace/Stores',
+        [
+
+            'categories' =>
+                $categories,
+
+            'quickCategories' =>
+                $quickCategories,
+
+            'stores' =>
+                $stores,
+
+            'userLocation' =>
+                $userLocation,
+        ]
+    );
+}
+
+/**
+ * --------------------------------------------------------------------------
+ * Show Single Marketplace Store
+ * --------------------------------------------------------------------------
+ */
+public function storeShow(Request $request, $userId): Response
+{
+    /*
+    |--------------------------------------------------------------------------
+    | SELLER
+    |--------------------------------------------------------------------------
+    */
+
+    $seller = \App\Models\User::query()
+        ->select([
+            'id',
+            'name',
+            'email',
+            'phone',
+            'city',
+            'location',
+        ])
+        ->findOrFail($userId);
+
+
+    /*
+    |--------------------------------------------------------------------------
+    | STORE PRODUCTS
+    |--------------------------------------------------------------------------
+    */
+
+    $products = MarketplaceListing::query()
+
+        ->where('user_id', $seller->id)
+
+        ->where('status', 'active')
+
+        ->with([
+            'category:id,name,slug,icon',
+        ])
+
+        ->select([
+            'id',
+            'user_id',
+            'marketplace_category_id',
+            'title',
+            'slug',
+            'price',
+            'condition',
+            'location',
+            'city',
+            'images',
+            'created_at',
+        ])
+
+        ->latest('created_at')
+
+        ->paginate(24)
+
+        ->through(function ($listing) {
+
+            $images = is_array($listing->images)
+                ? array_values(
+                    array_filter($listing->images)
+                )
+                : [];
+
+            return [
+
+                'id' =>
+                    $listing->id,
+
+                'title' =>
+                    $listing->title,
+
+                'slug' =>
+                    $listing->slug,
+
+                'price' =>
+                    $listing->price,
+
+                'formatted_price' =>
+                    'TZS ' .
+                    number_format($listing->price),
+
+                'condition' =>
+                    $listing->condition,
+
+                'location' =>
+                    $listing->location
+                    ?? $listing->city
+                    ?? 'Tanzania',
+
+                'city' =>
+                    $listing->city,
+
+                'image' =>
+                    $images[0] ?? null,
+
+                'images' =>
+                    $images,
+
+                'category' =>
+                    $listing->category
+                        ? [
+                            'id' =>
+                                $listing->category->id,
+
+                            'name' =>
+                                $listing->category->name,
+
+                            'slug' =>
+                                $listing->category->slug,
+
+                            'icon' =>
+                                $listing->category->icon,
+                        ]
+                        : null,
+
+                'created_at' =>
+                    $listing->created_at
+                        ?->diffForHumans(),
+            ];
+        });
+
+
+    /*
+    |--------------------------------------------------------------------------
+    | STORE STATISTICS
+    |--------------------------------------------------------------------------
+    */
+
+    $activeProducts = MarketplaceListing::query()
+        ->where('user_id', $seller->id)
+        ->where('status', 'active');
+
+
+    $productsCount = (clone $activeProducts)->count();
+
+    $newProductsCount = (clone $activeProducts)
+        ->where('condition', 'new')
+        ->count();
+
+    $usedProductsCount = (clone $activeProducts)
+        ->where('condition', 'used')
+        ->count();
+
+
+    /*
+    |--------------------------------------------------------------------------
+    | STORE LOCATION
+    |--------------------------------------------------------------------------
+    */
+
+    $location =
+        $seller->city
+        ?? $seller->location
+        ?? 'Tanzania';
+
+
+    /*
+    |--------------------------------------------------------------------------
+    | STORE DATA
+    |--------------------------------------------------------------------------
+    */
+
+    $store = [
+
+        'id' =>
+            $seller->id,
+
+        'name' =>
+            $seller->name
+            ?? 'MauzoVibe Seller',
+
+        'email' =>
+            $seller->email,
+
+        'phone' =>
+            $seller->phone,
+
+        'city' =>
+            $seller->city,
+
+        'location' =>
+            $location,
+
+        'products_count' =>
+            $productsCount,
+
+        'new_products_count' =>
+            $newProductsCount,
+
+        'used_products_count' =>
+            $usedProductsCount,
+    ];
+
+
+    /*
+    |--------------------------------------------------------------------------
+    | USER LOCATION
+    |--------------------------------------------------------------------------
+    */
+
+    $userLocation =
+        $request->user()?->city
+        ?? $request->user()?->location
+        ?? 'Tabora, Tanzania';
+
+
+    /*
+    |--------------------------------------------------------------------------
+    | CATEGORIES
+    |--------------------------------------------------------------------------
+    */
+
+    $categories = Cache::remember(
+        'marketplace.public.categories.v1',
+        now()->addMinutes(30),
+        function () {
+
+            return MarketplaceCategory::where(
+                    'is_active',
+                    true
+                )
+
+                ->orderBy('sort_order')
+
+                ->select([
+                    'id',
+                    'name',
+                    'slug',
+                    'icon',
+                    'listings_count',
+                ])
+
+                ->get()
+
+                ->map(function ($category) {
+
+                    $iconMap = [
+
+                        'Electronics' => 'fa-tv',
+                        'Vehicles' => 'fa-car-side',
+                        'Property' => 'fa-house',
+                        'Fashion' => 'fa-shirt',
+                        'Jobs' => 'fa-briefcase',
+                        'Services' => 'fa-screwdriver-wrench',
+                        'Furniture' => 'fa-couch',
+                        'Phones' => 'fa-mobile-screen-button',
+                        'Computers' => 'fa-laptop',
+                        'Beauty' => 'fa-wand-magic-sparkles',
+                        'Sports' => 'fa-dumbbell',
+                        'Agriculture' => 'fa-wheat-awn',
+                        'Animals' => 'fa-paw',
+                        'Baby Products' => 'fa-baby',
+                        'Books' => 'fa-book-open',
+                        'Gaming' => 'fa-gamepad',
+                        'Music' => 'fa-music',
+                        'Health' => 'fa-heart-pulse',
+                        'Industrial Equipment' => 'fa-industry',
+                        'Other' => 'fa-layer-group',
+                    ];
+
+                    return [
+
+                        'id' =>
+                            $category->id,
+
+                        'name' =>
+                            $category->name,
+
+                        'slug' =>
+                            $category->slug,
+
+                        'icon' =>
+                            $iconMap[$category->name]
+                            ?? $category->icon
+                            ?? 'fa-tag',
+
+                        'listings_count' =>
+                            (int) (
+                                $category->listings_count
+                                ?? 0
+                            ),
+                    ];
+                })
+
+                ->values();
+        }
+    );
+
+
+    /*
+    |--------------------------------------------------------------------------
+    | RESPONSE
+    |--------------------------------------------------------------------------
+    */
+
+    return Inertia::render(
+        'Marketplace/Store',
+        [
+
+            'store' =>
+                $store,
+
+            'products' =>
+                $products,
+
+            'categories' =>
+                $categories,
+
+            'userLocation' =>
+                $userLocation,
+        ]
+    );
+}
+
+/**
+ * Special offers / featured products
+ */
+/**
+ * Special Offers
+ */
+public function offers(Request $request): Response
+{
+    /*
+    |--------------------------------------------------------------------------
+    | CATEGORIES
+    |--------------------------------------------------------------------------
+    */
+
+    $categories = Cache::remember(
+        'marketplace.categories.public.v1',
+        now()->addMinutes(30),
+        function () {
+
+            return MarketplaceCategory::where('is_active', true)
+                ->orderBy('sort_order')
+                ->select([
+                    'id',
+                    'name',
+                    'slug',
+                    'icon',
+                    'listings_count',
+                ])
+                ->get()
+                ->map(function ($category) {
+
+                    $iconMap = [
+                        'Electronics' => 'fa-tv',
+                        'Vehicles' => 'fa-car-side',
+                        'Property' => 'fa-house',
+                        'Fashion' => 'fa-shirt',
+                        'Jobs' => 'fa-briefcase',
+                        'Services' => 'fa-screwdriver-wrench',
+                        'Furniture' => 'fa-couch',
+                        'Phones' => 'fa-mobile-screen-button',
+                        'Computers' => 'fa-laptop',
+                        'Beauty' => 'fa-wand-magic-sparkles',
+                        'Sports' => 'fa-dumbbell',
+                        'Agriculture' => 'fa-wheat-awn',
+                        'Animals' => 'fa-paw',
+                        'Baby Products' => 'fa-baby',
+                        'Books' => 'fa-book-open',
+                        'Gaming' => 'fa-gamepad',
+                        'Music' => 'fa-music',
+                        'Health' => 'fa-heart-pulse',
+                        'Industrial Equipment' => 'fa-industry',
+                        'Other' => 'fa-layer-group',
+                    ];
+
+                    return [
+                        'id' => $category->id,
+                        'name' => $category->name,
+                        'slug' => $category->slug,
+
+                        'icon' =>
+                            $iconMap[$category->name]
+                            ?? $category->icon
+                            ?? 'fa-tag',
+
+                        'listings_count' =>
+                            (int) ($category->listings_count ?? 0),
+                    ];
+                })
+                ->values();
+        }
+    );
+
+
+    /*
+    |--------------------------------------------------------------------------
+    | QUICK CATEGORIES
+    |--------------------------------------------------------------------------
+    */
+
+    $quickCategories = $categories
+        ->take(10)
+        ->values();
+
+
+    /*
+    |--------------------------------------------------------------------------
+    | SPECIAL OFFERS
+    |--------------------------------------------------------------------------
+    */
+
+    $products = MarketplaceListing::where('status', 'active')
+
+        ->where('is_featured', true)
+
+        ->with('category:id,name,slug,icon')
+
+        ->select([
+            'id',
+            'marketplace_category_id',
+            'title',
+            'slug',
+            'price',
+            'condition',
+            'location',
+            'city',
+            'images',
+            'created_at',
+            'is_featured',
+        ])
+
+        ->latest('created_at')
+
+        ->paginate(24)
+
+        ->through(function ($listing) {
+
+            $images = is_array($listing->images)
+                ? array_values(
+                    array_filter($listing->images)
+                )
+                : [];
+
+            return [
+
+                'id' =>
+                    $listing->id,
+
+                'title' =>
+                    $listing->title,
+
+                'slug' =>
+                    $listing->slug,
+
+                'price' =>
+                    $listing->price,
+
+                'formatted_price' =>
+                    'TZS ' .
+                    number_format(
+                        $listing->price
+                    ),
+
+                'condition' =>
+                    $listing->condition,
+
+                'location' =>
+                    $listing->location
+                    ?? $listing->city
+                    ?? 'Tanzania',
+
+                'city' =>
+                    $listing->city,
+
+                'image' =>
+                    $images[0] ?? null,
+
+                'images' =>
+                    $images,
+
+                'category' =>
+                    $listing->category
+                        ? [
+                            'id' =>
+                                $listing->category->id,
+
+                            'name' =>
+                                $listing->category->name,
+
+                            'slug' =>
+                                $listing->category->slug,
+
+                            'icon' =>
+                                $listing->category->icon,
+                        ]
+                        : null,
+
+                'is_featured' =>
+                    (bool) $listing->is_featured,
+
+                'created_at' =>
+                    $listing->created_at
+                        ?->diffForHumans(),
+            ];
+        });
+
+
+    /*
+    |--------------------------------------------------------------------------
+    | USER LOCATION
+    |--------------------------------------------------------------------------
+    */
+
+    $userLocation =
+        $request->user()?->city
+        ?? $request->user()?->location
+        ?? 'Tabora, Tanzania';
+
+
+    /*
+    |--------------------------------------------------------------------------
+    | RESPONSE
+    |--------------------------------------------------------------------------
+    */
+
+    return Inertia::render(
+        'Marketplace/Offers',
+        [
+
+            'categories' =>
+                $categories,
+
+            'quickCategories' =>
+                $quickCategories,
+
+            'products' =>
+                $products,
+
+            'userLocation' =>
+                $userLocation,
+        ]
+    );
+}
+
+/**
+ * Marketplace help
+ */
+/**
+ * Marketplace Help
+ */
+public function help(Request $request): Response
+{
+    $categories = Cache::remember(
+        'marketplace.categories.public.v1',
+        now()->addMinutes(30),
+        function () {
+
+            return MarketplaceCategory::where('is_active', true)
+                ->orderBy('sort_order')
+                ->select([
+                    'id',
+                    'name',
+                    'slug',
+                    'icon',
+                    'listings_count',
+                ])
+                ->get()
+                ->map(function ($category) {
+
+                    $iconMap = [
+                        'Electronics' => 'fa-tv',
+                        'Vehicles' => 'fa-car-side',
+                        'Property' => 'fa-house',
+                        'Fashion' => 'fa-shirt',
+                        'Jobs' => 'fa-briefcase',
+                        'Services' => 'fa-screwdriver-wrench',
+                        'Furniture' => 'fa-couch',
+                        'Phones' => 'fa-mobile-screen-button',
+                        'Computers' => 'fa-laptop',
+                        'Beauty' => 'fa-wand-magic-sparkles',
+                        'Sports' => 'fa-dumbbell',
+                        'Agriculture' => 'fa-wheat-awn',
+                        'Animals' => 'fa-paw',
+                        'Baby Products' => 'fa-baby',
+                        'Books' => 'fa-book-open',
+                        'Gaming' => 'fa-gamepad',
+                        'Music' => 'fa-music',
+                        'Health' => 'fa-heart-pulse',
+                        'Industrial Equipment' => 'fa-industry',
+                        'Other' => 'fa-layer-group',
+                    ];
+
+                    return [
+                        'id' => $category->id,
+                        'name' => $category->name,
+                        'slug' => $category->slug,
+                        'icon' =>
+                            $iconMap[$category->name]
+                            ?? $category->icon
+                            ?? 'fa-tag',
+                        'listings_count' =>
+                            (int) ($category->listings_count ?? 0),
+                    ];
+                })
+                ->values();
+        }
+    );
+
+    $userLocation =
+        $request->user()?->city
+        ?? $request->user()?->location
+        ?? 'Tabora, Tanzania';
+
+    return Inertia::render('Marketplace/Help', [
+        'categories' => $categories,
+        'userLocation' => $userLocation,
+    ]);
+}
+
+/**
+ * Used products
+ */
+public function usedProducts(Request $request): Response
+{
+    /*
+    |--------------------------------------------------------------------------
+    | CATEGORIES
+    |--------------------------------------------------------------------------
+    */
+
+    $categories = Cache::remember(
+        'marketplace.public.categories.v1',
+        now()->addMinutes(30),
+        function () {
+
+            return MarketplaceCategory::where('is_active', true)
+                ->orderBy('sort_order')
+                ->select([
+                    'id',
+                    'name',
+                    'slug',
+                    'icon',
+                    'listings_count',
+                ])
+                ->get()
+                ->map(function ($category) {
+
+                    $iconMap = [
+
+                        'Electronics' =>
+                            'fa-tv',
+
+                        'Vehicles' =>
+                            'fa-car-side',
+
+                        'Property' =>
+                            'fa-house',
+
+                        'Fashion' =>
+                            'fa-shirt',
+
+                        'Jobs' =>
+                            'fa-briefcase',
+
+                        'Services' =>
+                            'fa-screwdriver-wrench',
+
+                        'Furniture' =>
+                            'fa-couch',
+
+                        'Phones' =>
+                            'fa-mobile-screen-button',
+
+                        'Computers' =>
+                            'fa-laptop',
+
+                        'Beauty' =>
+                            'fa-wand-magic-sparkles',
+
+                        'Sports' =>
+                            'fa-dumbbell',
+
+                        'Agriculture' =>
+                            'fa-wheat-awn',
+
+                        'Animals' =>
+                            'fa-paw',
+
+                        'Baby Products' =>
+                            'fa-baby',
+
+                        'Books' =>
+                            'fa-book-open',
+
+                        'Gaming' =>
+                            'fa-gamepad',
+
+                        'Music' =>
+                            'fa-music',
+
+                        'Health' =>
+                            'fa-heart-pulse',
+
+                        'Industrial Equipment' =>
+                            'fa-industry',
+
+                        'Other' =>
+                            'fa-layer-group',
+                    ];
+
+                    return [
+                        'id' =>
+                            $category->id,
+
+                        'name' =>
+                            $category->name,
+
+                        'slug' =>
+                            $category->slug,
+
+                        'icon' =>
+                            $iconMap[$category->name]
+                            ?? $category->icon
+                            ?? 'fa-tag',
+
+                        'listings_count' =>
+                            (int) (
+                                $category->listings_count
+                                ?? 0
+                            ),
+                    ];
+                });
+        }
+    );
+
+
+    /*
+    |--------------------------------------------------------------------------
+    | QUICK CATEGORIES
+    |--------------------------------------------------------------------------
+    */
+
+    $quickCategories = $categories
+        ->take(10)
+        ->values();
+
+
+    /*
+    |--------------------------------------------------------------------------
+    | USED PRODUCTS
+    |--------------------------------------------------------------------------
+    */
+
+    $products = MarketplaceListing::where(
+            'status',
+            'active'
+        )
+
+        ->where(
+            'condition',
+            'used'
+        )
+
+        ->with(
+            'category:id,name,slug,icon'
+        )
+
+        ->latest('created_at')
+
+        ->select([
+            'id',
+            'marketplace_category_id',
+            'title',
+            'slug',
+            'price',
+            'condition',
+            'location',
+            'city',
+            'images',
+            'created_at',
+        ])
+
+        ->paginate(24)
+
+        ->through(function ($listing) {
+
+            $images = is_array($listing->images)
+                ? array_values(
+                    array_filter(
+                        $listing->images
+                    )
+                )
+                : [];
+
+            return [
+
+                'id' =>
+                    $listing->id,
+
+                'title' =>
+                    $listing->title,
+
+                'slug' =>
+                    $listing->slug,
+
+                'price' =>
+                    $listing->price,
+
+                'formatted_price' =>
+                    'TZS ' .
+                    number_format(
+                        $listing->price
+                    ),
+
+                'condition' =>
+                    $listing->condition,
+
+                'location' =>
+                    $listing->location
+                    ?? $listing->city
+                    ?? 'Tanzania',
+
+                'city' =>
+                    $listing->city,
+
+                'image' =>
+                    $images[0] ?? null,
+
+                'images' =>
+                    $images,
+
+                'category' =>
+                    $listing->category
+                        ? [
+                            'id' =>
+                                $listing->category->id,
+
+                            'name' =>
+                                $listing->category->name,
+
+                            'slug' =>
+                                $listing->category->slug,
+
+                            'icon' =>
+                                $listing->category->icon,
+                        ]
+                        : null,
+
+                'created_at' =>
+                    $listing->created_at
+                        ? $listing->created_at
+                            ->diffForHumans()
+                        : null,
+            ];
+        });
+
+
+    /*
+    |--------------------------------------------------------------------------
+    | USER LOCATION
+    |--------------------------------------------------------------------------
+    */
+
+    $userLocation =
+        $request->user()?->city
+        ?? $request->user()?->location
+        ?? 'Tabora, Tanzania';
+
+
+    /*
+    |--------------------------------------------------------------------------
+    | RESPONSE
+    |--------------------------------------------------------------------------
+    */
+
+    return Inertia::render(
+        'Marketplace/Used',
+        [
+
+            'categories' =>
+                $categories,
+
+            'quickCategories' =>
+                $quickCategories,
+
+            'products' =>
+                $products,
+
+            'userLocation' =>
+                $userLocation,
+        ]
+    );
+}
 }

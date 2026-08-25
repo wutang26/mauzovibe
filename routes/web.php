@@ -918,4 +918,26 @@ Route::get('/marketplace/listing/{listing:slug}',
     [MarketplaceController::class, 'show']
 )->name('marketplace.listing.show');
 
+// =====================================================
+// MARKETPLACE NAVIGATION PAGES
+// =====================================================
+
+Route::get('/marketplace/new', [MarketplaceController::class, 'newProducts'])
+    ->name('marketplace.new');
+
+Route::get('/marketplace/used', [MarketplaceController::class, 'usedProducts'])
+    ->name('marketplace.used');
+
+Route::get('/marketplace/stores', [MarketplaceController::class, 'stores'])
+    ->name('marketplace.stores');
+
+Route::get('/marketplace/store/{userId}', [MarketplaceController::class,'storeShow'
+])->name('marketplace.store');
+
+Route::get('/marketplace/offers', [MarketplaceController::class, 'offers'])
+    ->name('marketplace.offers');
+
+Route::get('/marketplace/help', [MarketplaceController::class, 'help'])
+    ->name('marketplace.help');
+
 require __DIR__.'/auth.php';

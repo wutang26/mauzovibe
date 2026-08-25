@@ -266,7 +266,7 @@ export default function Home({
 
                                     {/* NEW */}
                                     <Link
-                                        href="#"
+                                        href={route('marketplace.new')}
                                         className="text-gray-700 hover:text-green-600 transition whitespace-nowrap shrink-0"
                                     >
                                         Bidhaa Mpya
@@ -275,16 +275,16 @@ export default function Home({
 
                                     {/* USED */}
                                     <Link
-                                        href="#"
+                                        href={route('marketplace.used')}
                                         className="text-gray-700 hover:text-green-600 transition whitespace-nowrap shrink-0"
                                     >
-                                        Bidhaa Zinazotumika
+                                        Bidhaa Zilizotumika
                                     </Link>
 
 
                                     {/* STORES */}
                                     <Link
-                                        href="#"
+                                        href={route("marketplace.stores")}
                                         className="text-gray-700 hover:text-green-600 transition whitespace-nowrap shrink-0 hidden sm:inline"
                                     >
                                         Maduka
@@ -293,7 +293,7 @@ export default function Home({
 
                                     {/* OFFERS */}
                                     <Link
-                                        href="#"
+                                         href={route("marketplace.offers")}
                                         className="text-gray-700 hover:text-green-600 transition whitespace-nowrap shrink-0 hidden md:inline"
                                     >
                                         Ofa Maalum
@@ -302,7 +302,7 @@ export default function Home({
 
                                     {/* HELP */}
                                     <Link
-                                        href="#"
+                                        href={route("marketplace.help")}
                                         className="text-gray-700 hover:text-green-600 transition whitespace-nowrap shrink-0 hidden lg:inline"
                                     >
                                         Msaada

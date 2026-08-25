@@ -30,6 +30,8 @@ class User extends Authenticatable
         'phone',
         'password',
         'branch_id',
+        'city',
+        'location',
     ];
 
     /**
