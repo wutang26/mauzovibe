@@ -17,30 +17,30 @@ class MarketplaceCategory extends Model
     }
 }
 
-// app/Models/MarketplaceListing.php
-class MarketplaceListing extends Model
-{
-    use SoftDeletes;
+// // app/Models/MarketplaceListing.php
+// class MarketplaceListing extends Model
+// {
+//     use SoftDeletes;
 
-    protected $fillable = [
-        'user_id', 'marketplace_category_id', 'title', 'slug', 'description',
-        'price', 'condition', 'location', 'city', 'region', 'images',
-        'status', 'is_featured', 'views'
-    ];
+//     protected $fillable = [
+//         'user_id', 'marketplace_category_id', 'title', 'slug', 'description',
+//         'price', 'condition', 'location', 'city', 'region', 'images',
+//         'status', 'is_featured', 'views'
+//     ];
 
-    protected $casts = [
-        'images' => 'array',
-        'is_featured' => 'boolean',
-    ];
+//     protected $casts = [
+//         'images' => 'array',
+//         'is_featured' => 'boolean',
+//     ];
 
-    public function user()
-    {
-        return $this->belongsTo(User::class);
-    }
+//     public function user()
+//     {
+//         return $this->belongsTo(User::class);
+//     }
 
-    public function category()
-    {
-        return $this->belongsTo(MarketplaceCategory::class, 'marketplace_category_id');
-    }
-}
+//     public function category()
+//     {
+//         return $this->belongsTo(MarketplaceCategory::class, 'marketplace_category_id');
+//     }
+// }
 
