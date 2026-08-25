@@ -33,14 +33,30 @@ class MarketplaceListing extends Model
         'views_count' => 'integer',
     ];
 
-    /**
-     * Seller / owner
-     */
-    public function user(): BelongsTo
-    {
-        return $this->belongsTo(User::class);
-    }
+    // /**
+    //  * Seller / owner
+    //  */
+    // public function user(): BelongsTo
+    // {
+    //     return $this->belongsTo(User::class);
+    // }
+/**
+ * Seller / owner
+ */
+public function user(): BelongsTo
+{
+    return $this->belongsTo(User::class, 'user_id');
+}
 
+/**
+ * Seller relationship
+ *
+ * Alias ya user() kwa Marketplace UI
+ */
+public function seller(): BelongsTo
+{
+    return $this->belongsTo(User::class, 'user_id');
+}
     /**
      * Marketplace category
      */
