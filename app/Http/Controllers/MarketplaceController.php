@@ -324,6 +324,83 @@ public function dashboard(): Response
 
 
     /**
+ * Marketplace Category Page
+ */
+public function category(string $slug): Response
+{
+    $category = MarketplaceCategory::where('slug', $slug)
+        ->where('is_active', true)
+        ->firstOrFail();
+
+    $listings = MarketplaceListing::where(
+            'marketplace_category_id',
+            $category->id
+        )
+        ->where('status', 'active')
+        ->latest()
+        ->with([
+            'category:id,name,slug'
+        ])
+        ->select([
+            'id',
+            'marketplace_category_id',
+            'title',
+            'slug',
+            'price',
+            'condition',
+            'location',
+            'city',
+            'images',
+            'created_at',
+        ])
+        ->paginate(24)
+        ->through(function ($listing) {
+
+            return [
+                'id' => $listing->id,
+
+                'title' => $listing->title,
+
+                'slug' => $listing->slug,
+
+                'price' => $listing->price,
+
+                'formatted_price' =>
+                    'TZS ' . number_format($listing->price),
+
+                'condition' => $listing->condition,
+
+                'location' =>
+                    $listing->location
+                    ?? $listing->city
+                    ?? 'Tanzania',
+
+                'image' =>
+                    is_array($listing->images)
+                    && count($listing->images) > 0
+                        ? $listing->images[0]
+                        : null,
+
+                'category' =>
+                    $listing->category?->name,
+
+                'created_at' =>
+                    $listing->created_at?->diffForHumans(),
+            ];
+        });
+
+    return Inertia::render('Marketplace/Category', [
+        'category' => [
+            'id' => $category->id,
+            'name' => $category->name,
+            'slug' => $category->slug,
+            'icon' => $category->icon,
+        ],
+
+        'listings' => $listings,
+    ]);
+}
+    /**
      * Store a new listing
      */
     public function store(Request $request)

@@ -907,4 +907,10 @@ Route::post('/marketplace/register', [
     'store'
 ])->name('marketplace.register.store');
 
+// kwaajili ya Kila Category
+Route::get(
+    '/marketplace/category/{slug}',
+    [MarketplaceController::class, 'category']
+)->name('marketplace.category');
+
 require __DIR__.'/auth.php';
