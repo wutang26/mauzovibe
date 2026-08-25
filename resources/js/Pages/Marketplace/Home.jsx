@@ -230,7 +230,8 @@ export default function Home({
 
                             {/* LOGO */}
                             <Link
-                                href={route('marketplace.index')}
+                                // href={route('marketplace.index')}
+                                href={route('welcome')}
                                 className="flex items-center gap-2 shrink-0"
                             >
 
