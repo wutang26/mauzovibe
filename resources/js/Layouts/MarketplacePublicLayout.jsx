@@ -106,9 +106,11 @@ export default function MarketplacePublicLayout({
                             ================================================== */}
                             <div className="flex items-center gap-2.5 sm:gap-3 md:gap-4 ml-auto shrink-0">
 
-                                {/* FAVOURITES */}
+                                {/* =================================================
+        FAVOURITES
+    ================================================== */}
                                 <Link
-                                    href="#"
+                                    href={route("marketplace.offers")}
                                     className="relative flex items-center gap-1.5 text-gray-700 hover:text-green-600 transition"
                                 >
                                     <i className="fa-regular fa-heart text-lg"></i>
@@ -117,30 +119,34 @@ export default function MarketplacePublicLayout({
                                         Favourites
                                     </span>
 
-                                    <span className="
-                                        absolute
-                                        -top-1.5
-                                        -right-2
-                                        md:static
-                                        md:ml-0.5
-                                        bg-green-600
-                                        text-white
-                                        text-[10px]
-                                        rounded-full
-                                        w-4
-                                        h-4
-                                        flex
-                                        items-center
-                                        justify-center
-                                    ">
+                                    <span
+                                        className="
+                absolute
+                -top-1.5
+                -right-2
+                md:static
+                md:ml-0.5
+                bg-green-600
+                text-white
+                text-[10px]
+                rounded-full
+                w-4
+                h-4
+                flex
+                items-center
+                justify-center
+            "
+                                    >
                                         1
                                     </span>
                                 </Link>
 
 
-                                {/* MESSAGES */}
+                                {/* =================================================
+        MESSAGES
+    ================================================== */}
                                 <Link
-                                    href="#"
+                                    href={route("marketplace.help")}
                                     className="relative flex items-center gap-1.5 text-gray-700 hover:text-green-600 transition"
                                 >
                                     <i className="fa-regular fa-comment text-lg"></i>
@@ -149,30 +155,34 @@ export default function MarketplacePublicLayout({
                                         Messages
                                     </span>
 
-                                    <span className="
-                                        absolute
-                                        -top-1.5
-                                        -right-2
-                                        md:static
-                                        md:ml-0.5
-                                        bg-green-600
-                                        text-white
-                                        text-[10px]
-                                        rounded-full
-                                        w-4
-                                        h-4
-                                        flex
-                                        items-center
-                                        justify-center
-                                    ">
+                                    <span
+                                        className="
+                absolute
+                -top-1.5
+                -right-2
+                md:static
+                md:ml-0.5
+                bg-green-600
+                text-white
+                text-[10px]
+                rounded-full
+                w-4
+                h-4
+                flex
+                items-center
+                justify-center
+            "
+                                    >
                                         2
                                     </span>
                                 </Link>
 
 
-                                {/* CART */}
+                                {/* =================================================
+        CART
+    ================================================== */}
                                 <Link
-                                    href="#"
+                                    href={route("marketplace.index")}
                                     className="relative flex items-center gap-1.5 text-gray-700 hover:text-green-600 transition"
                                 >
                                     <i className="fa-solid fa-cart-shopping text-lg"></i>
@@ -181,51 +191,53 @@ export default function MarketplacePublicLayout({
                                         Cart
                                     </span>
 
-                                    <span className="
-                                        absolute
-                                        -top-1.5
-                                        -right-2
-                                        md:static
-                                        md:ml-0.5
-                                        bg-green-600
-                                        text-white
-                                        text-[10px]
-                                        rounded-full
-                                        w-4
-                                        h-4
-                                        flex
-                                        items-center
-                                        justify-center
-                                    ">
+                                    <span
+                                        className="
+                absolute
+                -top-1.5
+                -right-2
+                md:static
+                md:ml-0.5
+                bg-green-600
+                text-white
+                text-[10px]
+                rounded-full
+                w-4
+                h-4
+                flex
+                items-center
+                justify-center
+            "
+                                    >
                                         1
                                     </span>
                                 </Link>
 
 
                                 {/* =================================================
-                                    AUTH
-                                ================================================== */}
+        AUTH
+    ================================================== */}
                                 {auth?.user ? (
 
                                     <Link
                                         href={route("marketplace.dashboard")}
                                         className="
-                                            bg-green-600
-                                            hover:bg-green-700
-                                            text-white
-                                            px-3
-                                            py-1.5
-                                            sm:px-4
-                                            sm:py-2
-                                            rounded-full
-                                            text-sm
-                                            font-medium
-                                            transition
-                                            whitespace-nowrap
-                                            flex
-                                            items-center
-                                            gap-1.5
-                                        "
+                bg-green-600
+                hover:bg-green-700
+                text-white
+                px-3
+                py-1.5
+                sm:px-4
+                sm:py-2
+                rounded-full
+                text-sm
+                font-medium
+                transition
+                whitespace-nowrap
+                flex
+                items-center
+                gap-1.5
+            "
                                     >
                                         <i className="fa-solid fa-store"></i>
 
@@ -243,23 +255,23 @@ export default function MarketplacePublicLayout({
                                     <Link
                                         href={route("login")}
                                         className="
-                                            bg-green-600
-                                            hover:bg-green-700
-                                            text-white
-                                            px-4
-                                            sm:px-5
-                                            py-2
-                                            sm:py-2.5
-                                            rounded-xl
-                                            font-medium
-                                            flex
-                                            items-center
-                                            gap-2
-                                            transition
-                                            text-sm
-                                            sm:text-base
-                                            whitespace-nowrap
-                                        "
+                bg-green-600
+                hover:bg-green-700
+                text-white
+                px-4
+                sm:px-5
+                py-2
+                sm:py-2.5
+                rounded-xl
+                font-medium
+                flex
+                items-center
+                gap-2
+                transition
+                text-sm
+                sm:text-base
+                whitespace-nowrap
+            "
                                     >
                                         <i className="fa-solid fa-upload"></i>
 
@@ -331,6 +343,9 @@ export default function MarketplacePublicLayout({
                     {/* =========================================================
                         SECONDARY NAVIGATION
                     ========================================================= */}
+                    {/* =========================================================
+    SECONDARY NAVIGATION
+========================================================= */}
                     <div className="border-t border-gray-100 bg-white">
 
                         <div className="max-w-7xl mx-auto px-3 sm:px-4">
@@ -339,38 +354,37 @@ export default function MarketplacePublicLayout({
 
                                 {/* NAVIGATION */}
                                 <div className="
-                                    flex
-                                    items-center
-                                    gap-3
-                                    sm:gap-4
-                                    lg:gap-6
-                                    overflow-x-auto
-                                    scrollbar-hide
-                                    flex-1
-                                    min-w-0
-                                ">
+                flex
+                items-center
+                gap-3
+                sm:gap-4
+                lg:gap-6
+                overflow-x-auto
+                scrollbar-hide
+                flex-1
+                min-w-0
+            ">
 
                                     {/* CATEGORIES */}
                                     <button
                                         type="button"
-                                        onClick={() =>
-                                            setShowCategories(!showCategories)
-                                        }
+                                        onClick={() => setShowCategories(true)}
                                         className="
-                                            bg-green-600
-                                            hover:bg-green-700
-                                            text-white
-                                            px-3
-                                            py-1.5
-                                            rounded-lg
-                                            flex
-                                            items-center
-                                            gap-1.5
-                                            font-medium
-                                            text-sm
-                                            whitespace-nowrap
-                                            shrink-0
-                                        "
+                        bg-green-600
+                        hover:bg-green-700
+                        text-white
+                        px-3
+                        py-1.5
+                        rounded-lg
+                        flex
+                        items-center
+                        gap-1.5
+                        font-medium
+                        text-sm
+                        whitespace-nowrap
+                        shrink-0
+                        transition
+                    "
                                     >
                                         <i className="fa-solid fa-bars"></i>
 
@@ -384,42 +398,42 @@ export default function MarketplacePublicLayout({
                                     <Link
                                         href={route("marketplace.index")}
                                         className="
-                                            text-gray-700
-                                            hover:text-green-600
-                                            transition
-                                            whitespace-nowrap
-                                            shrink-0
-                                        "
+                        text-gray-700
+                        hover:text-green-600
+                        transition
+                        whitespace-nowrap
+                        shrink-0
+                    "
                                     >
                                         Home
                                     </Link>
 
 
-                                    {/* NEW */}
+                                    {/* NEW PRODUCTS */}
                                     <Link
                                         href={route("marketplace.new")}
                                         className="
-                                            text-gray-700
-                                            hover:text-green-600
-                                            transition
-                                            whitespace-nowrap
-                                            shrink-0
-                                        "
+                        text-gray-700
+                        hover:text-green-600
+                        transition
+                        whitespace-nowrap
+                        shrink-0
+                    "
                                     >
                                         Bidhaa Mpya
                                     </Link>
 
 
-                                    {/* USED */}
+                                    {/* USED PRODUCTS */}
                                     <Link
-                                        href="#"
+                                        href={route("marketplace.used")}
                                         className="
-                                            text-gray-700
-                                            hover:text-green-600
-                                            transition
-                                            whitespace-nowrap
-                                            shrink-0
-                                        "
+                        text-gray-700
+                        hover:text-green-600
+                        transition
+                        whitespace-nowrap
+                        shrink-0
+                    "
                                     >
                                         Bidhaa Zinazotumika
                                     </Link>
@@ -427,15 +441,15 @@ export default function MarketplacePublicLayout({
 
                                     {/* STORES */}
                                     <Link
-                                        href="#"
+                                        href={route("marketplace.stores")}
                                         className="
-                                            text-gray-700
-                                            hover:text-green-600
-                                            transition
-                                            whitespace-nowrap
-                                            shrink-0
-                                            hidden sm:inline
-                                        "
+                        text-gray-700
+                        hover:text-green-600
+                        transition
+                        whitespace-nowrap
+                        shrink-0
+                        hidden sm:inline
+                    "
                                     >
                                         Maduka
                                     </Link>
@@ -443,15 +457,15 @@ export default function MarketplacePublicLayout({
 
                                     {/* OFFERS */}
                                     <Link
-                                        href="#"
+                                        href={route("marketplace.offers")}
                                         className="
-                                            text-gray-700
-                                            hover:text-green-600
-                                            transition
-                                            whitespace-nowrap
-                                            shrink-0
-                                            hidden md:inline
-                                        "
+                        text-gray-700
+                        hover:text-green-600
+                        transition
+                        whitespace-nowrap
+                        shrink-0
+                        hidden md:inline
+                    "
                                     >
                                         Ofa Maalum
                                     </Link>
@@ -459,15 +473,15 @@ export default function MarketplacePublicLayout({
 
                                     {/* HELP */}
                                     <Link
-                                        href="#"
+                                        href={route("marketplace.help")}
                                         className="
-                                            text-gray-700
-                                            hover:text-green-600
-                                            transition
-                                            whitespace-nowrap
-                                            shrink-0
-                                            hidden lg:inline
-                                        "
+                        text-gray-700
+                        hover:text-green-600
+                        transition
+                        whitespace-nowrap
+                        shrink-0
+                        hidden lg:inline
+                    "
                                     >
                                         Msaada
                                     </Link>
@@ -477,17 +491,24 @@ export default function MarketplacePublicLayout({
 
                                 {/* LOCATION */}
                                 <div className="
-                                    flex
-                                    items-center
-                                    gap-1.5
-                                    text-gray-600
-                                    shrink-0
-                                    pl-2
-                                    bg-white
-                                ">
+                flex
+                items-center
+                gap-1.5
+                text-gray-600
+                shrink-0
+                pl-2
+                bg-white
+            ">
                                     <i className="fa-solid fa-location-dot text-green-600"></i>
 
-                                    <span className="hidden sm:inline truncate max-w-[120px] lg:max-w-none text-sm">
+                                    <span className="
+                    hidden
+                    sm:inline
+                    truncate
+                    max-w-[120px]
+                    lg:max-w-none
+                    text-sm
+                ">
                                         {userLocation}
                                     </span>
 
@@ -588,9 +609,8 @@ export default function MarketplacePublicLayout({
                                             <span className="flex items-center gap-3 text-gray-700 group-hover:text-green-700 min-w-0">
 
                                                 <i
-                                                    className={`fa-solid ${
-                                                        cat.icon || "fa-tag"
-                                                    } w-5 text-gray-400 group-hover:text-green-600 shrink-0`}
+                                                    className={`fa-solid ${cat.icon || "fa-tag"
+                                                        } w-5 text-gray-400 group-hover:text-green-600 shrink-0`}
                                                 ></i>
 
                                                 <span className="truncate">
@@ -706,9 +726,8 @@ export default function MarketplacePublicLayout({
                                                     ">
 
                                                         <i
-                                                            className={`fa-solid ${
-                                                                cat.icon || "fa-tag"
-                                                            } w-5 text-gray-400 group-hover:text-green-600 shrink-0`}
+                                                            className={`fa-solid ${cat.icon || "fa-tag"
+                                                                } w-5 text-gray-400 group-hover:text-green-600 shrink-0`}
                                                         ></i>
 
                                                         <span className="truncate">

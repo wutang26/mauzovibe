@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import { Head, Link, usePage } from '@inertiajs/react';
 import '@fortawesome/fontawesome-free/css/all.min.css';
 
@@ -6,9 +6,28 @@ export default function Home({
     categories = [],
     quickCategories = [],
     featuredProducts = [],
-    userLocation = 'Tabora, Tanzania',
+    userLocation: serverUserLocation = null,
 }) {
     const { auth } = usePage().props;
+
+    /*
+    |--------------------------------------------------------------------------
+    | CURRENT USER
+    |--------------------------------------------------------------------------
+    */
+    const user = auth?.user ?? null;
+
+    /*
+    |--------------------------------------------------------------------------
+    | LOCATION STATE
+    |--------------------------------------------------------------------------
+    */
+    const [currentLocation, setCurrentLocation] = useState(
+        serverUserLocation || 'Tanzania'
+    );
+
+    const [locationLoading, setLocationLoading] = useState(true);
+
 
     /*
     |--------------------------------------------------------------------------
@@ -16,6 +35,163 @@ export default function Home({
     |--------------------------------------------------------------------------
     */
     const [showAllCategories, setShowAllCategories] = useState(false);
+
+
+    /*
+    |--------------------------------------------------------------------------
+    | GET CURRENT USER LOCATION
+    |--------------------------------------------------------------------------
+    */
+    useEffect(() => {
+        let cancelled = false;
+
+        const fallbackLocation = serverUserLocation || 'Tanzania';
+
+        /*
+        |----------------------------------------------------------------------
+        | Browser does not support geolocation
+        |----------------------------------------------------------------------
+        */
+        if (!navigator.geolocation) {
+            setCurrentLocation(fallbackLocation);
+            setLocationLoading(false);
+            return;
+        }
+
+        /*
+        |----------------------------------------------------------------------
+        | Get GPS coordinates
+        |----------------------------------------------------------------------
+        */
+        navigator.geolocation.getCurrentPosition(
+            async (position) => {
+                if (cancelled) {
+                    return;
+                }
+
+                const latitude = position.coords.latitude;
+                const longitude = position.coords.longitude;
+
+                try {
+                    /*
+                    |----------------------------------------------------------
+                    | Reverse geocoding using OpenStreetMap Nominatim
+                    |----------------------------------------------------------
+                    */
+                    const response = await fetch(
+                        `https://nominatim.openstreetmap.org/reverse?format=jsonv2&lat=${latitude}&lon=${longitude}&zoom=10&addressdetails=1`,
+                        {
+                            headers: {
+                                Accept: 'application/json',
+                            },
+                        }
+                    );
+
+                    if (!response.ok) {
+                        throw new Error(
+                            `Location request failed: ${response.status}`
+                        );
+                    }
+
+                    const data = await response.json();
+
+                    if (cancelled) {
+                        return;
+                    }
+
+                    const address = data?.address || {};
+
+                    /*
+                    |----------------------------------------------------------
+                    | Try to get the most useful city/town/region
+                    |----------------------------------------------------------
+                    */
+                    const city =
+                        address.city ||
+                        address.town ||
+                        address.municipality ||
+                        address.village ||
+                        address.city_district ||
+                        address.county ||
+                        '';
+
+                    const region =
+                        address.state ||
+                        address.region ||
+                        '';
+
+                    const country =
+                        address.country ||
+                        '';
+
+                    /*
+                    |----------------------------------------------------------
+                    | Build readable location
+                    |----------------------------------------------------------
+                    */
+                    let readableLocation = '';
+
+                    if (city && country) {
+                        readableLocation = `${city}, ${country}`;
+                    } else if (city && region) {
+                        readableLocation = `${city}, ${region}`;
+                    } else if (region && country) {
+                        readableLocation = `${region}, ${country}`;
+                    } else if (country) {
+                        readableLocation = country;
+                    } else if (data?.display_name) {
+                        readableLocation = data.display_name;
+                    }
+
+                    setCurrentLocation(
+                        readableLocation || fallbackLocation
+                    );
+                } catch (error) {
+                    console.error(
+                        'Reverse geocoding failed:',
+                        error
+                    );
+
+                    if (!cancelled) {
+                        setCurrentLocation(fallbackLocation);
+                    }
+                } finally {
+                    if (!cancelled) {
+                        setLocationLoading(false);
+                    }
+                }
+            },
+
+            (error) => {
+                if (cancelled) {
+                    return;
+                }
+
+                console.warn(
+                    'Unable to access current location:',
+                    error.message
+                );
+
+                /*
+                |----------------------------------------------------------------
+                | If user denies GPS permission, use server location/fallback
+                |----------------------------------------------------------------
+                */
+                setCurrentLocation(fallbackLocation);
+                setLocationLoading(false);
+            },
+
+            {
+                enableHighAccuracy: true,
+                timeout: 10000,
+                maximumAge: 300000,
+            }
+        );
+
+        return () => {
+            cancelled = true;
+        };
+    }, [serverUserLocation]);
 
 
     /*
@@ -63,7 +239,6 @@ export default function Home({
                                     <i className="fa-solid fa-store text-white text-sm sm:text-base"></i>
 
                                 </div>
-
 
                                 <div className="hidden min-[400px]:block">
 
@@ -160,7 +335,7 @@ export default function Home({
 
 
                                 {/* AUTH */}
-                                {auth?.user ? (
+                                {user ? (
 
                                     <Link
                                         href={route('marketplace.dashboard')}
@@ -242,7 +417,9 @@ export default function Home({
                                     {/* CATEGORIES */}
                                     <button
                                         type="button"
-                                        onClick={() => setShowAllCategories(true)}
+                                        onClick={() =>
+                                            setShowAllCategories(true)
+                                        }
                                         className="bg-green-600 hover:bg-green-700 text-white px-3 py-1.5 rounded-lg flex items-center gap-1.5 font-medium text-sm whitespace-nowrap shrink-0 transition"
                                     >
 
@@ -284,7 +461,7 @@ export default function Home({
 
                                     {/* STORES */}
                                     <Link
-                                        href={route("marketplace.stores")}
+                                        href={route('marketplace.stores')}
                                         className="text-gray-700 hover:text-green-600 transition whitespace-nowrap shrink-0 hidden sm:inline"
                                     >
                                         Maduka
@@ -293,7 +470,7 @@ export default function Home({
 
                                     {/* OFFERS */}
                                     <Link
-                                         href={route("marketplace.offers")}
+                                        href={route('marketplace.offers')}
                                         className="text-gray-700 hover:text-green-600 transition whitespace-nowrap shrink-0 hidden md:inline"
                                     >
                                         Ofa Maalum
@@ -302,7 +479,7 @@ export default function Home({
 
                                     {/* HELP */}
                                     <Link
-                                        href={route("marketplace.help")}
+                                        href={route('marketplace.help')}
                                         className="text-gray-700 hover:text-green-600 transition whitespace-nowrap shrink-0 hidden lg:inline"
                                     >
                                         Msaada
@@ -311,17 +488,37 @@ export default function Home({
                                 </div>
 
 
-                                {/* LOCATION */}
+                                {/* =================================================
+                                    CURRENT LOCATION
+                                ================================================= */}
                                 <div className="flex items-center gap-1.5 text-gray-600 shrink-0 pl-2 bg-white">
 
-                                    <i className="fa-solid fa-location-dot text-green-600"></i>
+                                    <i
+                                        className={`fa-solid ${
+                                            locationLoading
+                                                ? 'fa-spinner fa-spin'
+                                                : 'fa-location-dot'
+                                        } text-green-600`}
+                                    ></i>
 
+
+                                    {/* DESKTOP / TABLET */}
                                     <span className="hidden sm:inline truncate max-w-[120px] lg:max-w-none text-sm">
-                                        {userLocation}
+
+                                        {locationLoading
+                                            ? 'Inatafuta...'
+                                            : currentLocation}
+
                                     </span>
 
-                                    <span className="sm:hidden text-xs">
-                                        Tabora
+
+                                    {/* MOBILE */}
+                                    <span className="sm:hidden text-xs truncate max-w-[75px]">
+
+                                        {locationLoading
+                                            ? '...'
+                                            : currentLocation.split(',')[0]}
+
                                     </span>
 
                                 </div>
@@ -373,7 +570,9 @@ export default function Home({
                                                 <span className="flex items-center gap-3 text-gray-700 group-hover:text-green-700 min-w-0">
 
                                                     <i
-                                                        className={`fa-solid ${cat.icon || 'fa-tag'} w-5 text-gray-400 group-hover:text-green-600 shrink-0`}
+                                                        className={`fa-solid ${
+                                                            cat.icon || 'fa-tag'
+                                                        } w-5 text-gray-400 group-hover:text-green-600 shrink-0`}
                                                     ></i>
 
                                                     <span className="truncate">
@@ -408,7 +607,6 @@ export default function Home({
                             RIGHT CONTENT
                         ================================================= */}
                         <div className="flex-1 space-y-5 sm:space-y-6 min-w-0">
-
 
                             {/* =================================================
                                 HERO
@@ -453,7 +651,7 @@ export default function Home({
                                             </Link>
 
 
-                                            {auth?.user ? (
+                                            {user ? (
 
                                                 <Link
                                                     href={route('marketplace.dashboard')}
@@ -602,7 +800,6 @@ export default function Home({
                             ================================================= */}
                             <section>
 
-                                {/* SECTION HEADER */}
                                 <div className="flex items-center justify-between gap-3 mb-3 sm:mb-4">
 
                                     <div>
@@ -624,7 +821,6 @@ export default function Home({
                                     </div>
 
 
-                                    {/* VIEW MORE */}
                                     {categories.length > 7 && (
 
                                         <button
@@ -656,7 +852,6 @@ export default function Home({
                                 </div>
 
 
-                                {/* CATEGORY GRID */}
                                 <div className="grid grid-cols-2 min-[400px]:grid-cols-3 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 xl:grid-cols-7 gap-2.5 sm:gap-3">
 
                                     {visibleQuickCategories.length > 0 ? (
@@ -669,7 +864,6 @@ export default function Home({
                                                 className="bg-white border border-gray-200 rounded-xl p-3 sm:p-4 text-center hover:shadow-md hover:border-green-400 hover:-translate-y-0.5 transition-all group"
                                             >
 
-                                                {/* ICON */}
                                                 <div className="w-10 h-10 sm:w-12 sm:h-12 mx-auto mb-1.5 sm:mb-2 bg-green-50 text-green-600 rounded-xl flex items-center justify-center group-hover:bg-green-100 group-hover:scale-105 transition">
 
                                                     <i
@@ -681,13 +875,11 @@ export default function Home({
                                                 </div>
 
 
-                                                {/* NAME */}
                                                 <div className="font-semibold text-xs sm:text-sm text-gray-800 line-clamp-1 group-hover:text-green-700">
                                                     {cat.name}
                                                 </div>
 
 
-                                                {/* COUNT */}
                                                 <div className="text-[10px] sm:text-xs text-gray-500 mt-0.5">
 
                                                     {Number(
@@ -727,7 +919,6 @@ export default function Home({
                                 </div>
 
 
-                                {/* VIEW ALL INFO */}
                                 {!showAllCategories &&
                                     remainingCategories.length > 0 && (
 
@@ -876,7 +1067,7 @@ export default function Home({
                                         </p>
 
 
-                                        {auth?.user ? (
+                                        {user ? (
 
                                             <Link
                                                 href={route('marketplace.dashboard')}
@@ -933,7 +1124,6 @@ export default function Home({
 
                             </div>
 
-
                             <div>
 
                                 <div className="font-semibold text-sm text-gray-900">
@@ -957,7 +1147,6 @@ export default function Home({
                                 <i className="fa-solid fa-comments"></i>
 
                             </div>
-
 
                             <div>
 
@@ -983,7 +1172,6 @@ export default function Home({
 
                             </div>
 
-
                             <div>
 
                                 <div className="font-semibold text-sm text-gray-900">
@@ -1007,7 +1195,6 @@ export default function Home({
                                 <i className="fa-solid fa-headset"></i>
 
                             </div>
-
 
                             <div>
 
