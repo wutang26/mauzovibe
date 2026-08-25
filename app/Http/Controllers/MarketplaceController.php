@@ -1,7 +1,6 @@
 <?php
 
 namespace App\Http\Controllers;
-
 use App\Models\MarketplaceCategory;
 use App\Models\MarketplaceListing;
 use Illuminate\Http\Request;
@@ -10,7 +9,7 @@ use Inertia\Response;
 use Illuminate\Support\Str;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Cache;
-
+use Illuminate\Support\Facades\Storage;
 class MarketplaceController extends Controller
 {
     /**
@@ -443,19 +442,30 @@ public function category(string $slug): Response
         */
 
         $imagePaths = [];
-
         if ($request->hasFile('images')) {
 
-            foreach ($request->file('images') as $image) {
+    foreach ($request->file('images') as $image) {
 
-                $path = $image->store(
-                    'marketplace',
-                    'public'
-                );
+        $path = $image->store(
+            'marketplace',
+            'public'
+        );
 
-                $imagePaths[] = '/storage/' . $path;
-            }
-        }
+        $imagePaths[] = Storage::disk('public')->url($path);
+    }
+}
+        // if ($request->hasFile('images')) {
+
+        //     foreach ($request->file('images') as $image) {
+
+        //         $path = $image->store(
+        //             'marketplace',
+        //             'public'
+        //         );
+
+        //         $imagePaths[] = '/storage/' . $path;
+        //     }
+        // }
 
 
         /*
