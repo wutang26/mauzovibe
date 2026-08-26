@@ -1068,43 +1068,47 @@ export default function Welcome({
 
                                         {/* Description */}
 
-                                        <p
-                                            className="
-                                                mt-6
-                                                max-w-2xl
-                                                text-base
-                                                sm:text-lg
-                                                lg:text-xl
-                                                leading-8
-                                                text-slate-600
-                                            "
-                                        >
+                                                                    <p
+                                    className="
+                                        mt-6
+                                        max-w-2xl
+                                        text-base
+                                        sm:text-lg
+                                        lg:text-xl
+                                        leading-8
+                                        text-slate-600
+                                    "
+                                >
+                                    MauzoVibe inakupa kila kitu unachohitaji kukuza biashara yako
+                                    sehemu moja. Simamia{" "}
 
-                                            Simamia biashara yako kwa mfumo mmoja
-                                            wenye nguvu. Dhibiti{" "}
+                                    <span className="font-semibold text-slate-900">
+                                        Wauzo
+                                    </span>
+                                    ,{" "}
 
-                                            <span className="font-semibold text-slate-900">
-                                                mauzo
-                                            </span>
-                                            ,{" "}
+                                    <span className="font-semibold text-slate-900">
+                                        Stock
+                                    </span>
+                                    ,{" "}
 
-                                            <span className="font-semibold text-slate-900">
-                                                stock
-                                            </span>
-                                            ,{" "}
+                                    <span className="font-semibold text-slate-900">
+                                        Wateja
+                                    </span>
+                                    ,{" "}
 
-                                            <span className="font-semibold text-slate-900">
-                                                wateja
-                                            </span>
-                                            ,{" "}
+                                    <span className="font-semibold text-slate-900">
+                                        Faida
+                                    </span>{" "}
 
-                                            <span className="font-semibold text-slate-900">
-                                                faida
-                                            </span>{" "}
+                                    na Ripoti kwa urahisi, au tumia{" "}
 
-                                            na ripoti kwa urahisi.
+                                    <span className="font-semibold text-emerald-600">
+                                        MauzoVibe Ecommerce
+                                    </span>{" "}
 
-                                        </p>
+                                    kuuza na kununua bidhaa kupitia Marketplace yetu.
+                                </p>
 
 
                                         {/* Features */}
