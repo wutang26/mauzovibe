@@ -54,7 +54,7 @@ export default function AuthLayout({ children, title, subtitle }) {
                                     />
                                 </svg>
 
-                                +255 (0)748565656
+                                +255 (0)746856656
                             </span>
 
                         </div>
@@ -268,6 +268,14 @@ export default function AuthLayout({ children, title, subtitle }) {
                             >
                                 About Us
                             </a>
+
+                             <a
+                                href={route("marketplace.index")}
+                                className="hover:text-emerald-600 transition"
+                            >
+                                Marketplace
+                            </a>
+
 
                         </div>
 

@@ -52,7 +52,7 @@ export default function PublicLayout({ children }) {
                                     />
                                 </svg>
 
-                                +255 0748565656
+                                +255 0746856656
                             </span>
 
                         </div>
@@ -183,6 +183,13 @@ export default function PublicLayout({ children }) {
                             >
                                 About Us
                             </Link>
+                             <Link
+                                href={route("marketplace.index")}
+                                className="hover:text-emerald-600 transition"
+                            >
+                                MarketPlace
+                            </Link>
+
 
                         </div>
 
