@@ -1,12 +1,25 @@
 import { Head, Link } from "@inertiajs/react";
 import MarketplaceLayout from "@/Layouts/MarketplaceLayout";
 
+// export default function Category({
+//     category,
+//     listings,
+// }) {
+//     const products = listings?.data ?? [];
+
 export default function Category({
     category,
     listings,
 }) {
-    const products = listings?.data ?? [];
+    const products =
+        listings?.data ??
+        listings?.listings ??
+        [];
 
+    const total =
+        listings?.total ??
+        products.length ??
+        0;
     return (
         <MarketplaceLayout>
 
@@ -78,9 +91,9 @@ export default function Category({
                             </h2>
 
                             <p className="text-sm text-slate-500">
-                                {listings?.total ?? 0} bidhaa
+                                Total: {listings?.total ?? "NO TOTAL"} | Data: {listings?.data?.length ?? "NO DATA"} bidhaa
                             </p>
-                        </div>
+                             </div>
 
                     </div>
 
@@ -97,7 +110,8 @@ export default function Category({
 
                                 <Link
                                     key={product.id}
-                                    href={`/marketplace/product/${product.slug}`}
+                                    // href={`/marketplace/product/${product.slug}`}
+                                    href={route('marketplace.listing.show', product.slug)}
                                     className="group bg-white rounded-2xl border border-slate-200 overflow-hidden hover:shadow-lg transition"
                                 >
 

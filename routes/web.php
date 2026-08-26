@@ -939,5 +939,7 @@ Route::get('/marketplace/offers', [MarketplaceController::class, 'offers'])
 
 Route::get('/marketplace/help', [MarketplaceController::class, 'help'])
     ->name('marketplace.help');
+Route::get('/marketplace/search', [MarketplaceController::class,'search'
+])->name('marketplace.search');
 
 require __DIR__.'/auth.php';

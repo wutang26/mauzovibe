@@ -1,4 +1,5 @@
 import { useState } from "react";
+import { Head, Link, router, usePage } from "@inertiajs/react";
 import { Head, Link, usePage } from "@inertiajs/react";
 import "@fortawesome/fontawesome-free/css/all.min.css";
 
@@ -12,6 +13,26 @@ export default function MarketplacePublicLayout({
 
     const [showCategories, setShowCategories] = useState(false);
 
+    const [searchQuery, setSearchQuery] = useState("");
+
+const handleSearch = (e) => {
+    e.preventDefault();
+
+    const query = searchQuery.trim();
+
+    if (!query) {
+        return;
+    }
+
+    router.get(
+        route("marketplace.search"),
+        { q: query },
+        {
+            preserveState: true,
+            preserveScroll: false,
+        }
+    );
+};
     return (
         <>
             <Head title={title} />
@@ -56,10 +77,17 @@ export default function MarketplacePublicLayout({
                             {/* =================================================
                                 DESKTOP SEARCH
                             ================================================== */}
-                            <div className="flex-1 max-w-2xl relative hidden sm:block">
-
+                                                    {/* =================================================
+                                DESKTOP SEARCH
+                            ================================================== */}
+                            <form
+                                onSubmit={handleSearch}
+                                className="flex-1 max-w-2xl relative hidden sm:block"
+                            >
                                 <input
                                     type="text"
+                                    value={searchQuery}
+                                    onChange={(e) => setSearchQuery(e.target.value)}
                                     placeholder="Tafuta bidhaa, mfano: iPhone 15, Laptop..."
                                     className="
                                         w-full
@@ -77,7 +105,8 @@ export default function MarketplacePublicLayout({
                                 />
 
                                 <button
-                                    type="button"
+                                    type="submit"
+                                    aria-label="Tafuta"
                                     className="
                                         absolute
                                         right-1.5
@@ -97,8 +126,7 @@ export default function MarketplacePublicLayout({
                                 >
                                     <i className="fa-solid fa-magnifying-glass text-sm"></i>
                                 </button>
-
-                            </div>
+                            </form>
 
 
                             {/* =================================================
@@ -290,52 +318,59 @@ export default function MarketplacePublicLayout({
                         {/* =====================================================
                             MOBILE SEARCH
                         ====================================================== */}
-                        <div className="mt-2.5 sm:hidden">
+                      {/* =====================================================
+    MOBILE SEARCH
+====================================================== */}
+<form
+    onSubmit={handleSearch}
+    className="mt-2.5 sm:hidden"
+>
+    <div className="relative">
 
-                            <div className="relative">
+        <input
+            type="text"
+            value={searchQuery}
+            onChange={(e) => setSearchQuery(e.target.value)}
+            placeholder="Tafuta bidhaa..."
+            className="
+                w-full
+                border border-gray-300
+                rounded-full
+                py-2.5
+                pl-4
+                pr-12
+                text-sm
+                focus:outline-none
+                focus:ring-2
+                focus:ring-green-500/30
+                focus:border-green-500
+            "
+        />
 
-                                <input
-                                    type="text"
-                                    placeholder="Tafuta bidhaa..."
-                                    className="
-                                        w-full
-                                        border border-gray-300
-                                        rounded-full
-                                        py-2.5
-                                        pl-4
-                                        pr-12
-                                        text-sm
-                                        focus:outline-none
-                                        focus:ring-2
-                                        focus:ring-green-500/30
-                                        focus:border-green-500
-                                    "
-                                />
+        <button
+            type="submit"
+            aria-label="Tafuta"
+            className="
+                absolute
+                right-1.5
+                top-1/2
+                -translate-y-1/2
+                bg-green-600
+                hover:bg-green-700
+                text-white
+                w-9
+                h-9
+                rounded-full
+                flex
+                items-center
+                justify-center
+            "
+        >
+            <i className="fa-solid fa-magnifying-glass text-sm"></i>
+        </button>
 
-                                <button
-                                    type="button"
-                                    className="
-                                        absolute
-                                        right-1.5
-                                        top-1/2
-                                        -translate-y-1/2
-                                        bg-green-600
-                                        hover:bg-green-700
-                                        text-white
-                                        w-9
-                                        h-9
-                                        rounded-full
-                                        flex
-                                        items-center
-                                        justify-center
-                                    "
-                                >
-                                    <i className="fa-solid fa-magnifying-glass text-sm"></i>
-                                </button>
-
-                            </div>
-
-                        </div>
+    </div>
+</form>
 
                     </div>
 

@@ -1,5 +1,6 @@
 import { useEffect, useState } from 'react';
-import { Head, Link, usePage } from '@inertiajs/react';
+// import { Head, Link, usePage } from '@inertiajs/react';
+import { Head, Link, usePage, router } from '@inertiajs/react';
 import '@fortawesome/fontawesome-free/css/all.min.css';
 
 export default function Home({
@@ -16,6 +17,9 @@ export default function Home({
     |--------------------------------------------------------------------------
     */
     const user = auth?.user ?? null;
+
+    const [search, setSearch] = useState('');
+    const [searching, setSearching] = useState(false);
 
     /*
     |--------------------------------------------------------------------------
@@ -36,6 +40,37 @@ export default function Home({
     */
     const [showAllCategories, setShowAllCategories] = useState(false);
 
+    const handleSearch = (e) => {
+    e?.preventDefault();
+
+    const query = search.trim();
+
+    if (!query) {
+        router.get(
+            route('marketplace.index'),
+            {},
+            {
+                preserveState: true,
+                preserveScroll: true,
+            }
+        );
+        return;
+    }
+
+    setSearching(true);
+
+    router.get(
+        route('marketplace.index'),
+        {
+            search: query,
+        },
+        {
+            preserveState: true,
+            preserveScroll: true,
+            onFinish: () => setSearching(false),
+        }
+    );
+};
 
     /*
     |--------------------------------------------------------------------------
@@ -257,22 +292,32 @@ export default function Home({
 
 
                             {/* DESKTOP SEARCH */}
-                            <div className="flex-1 max-w-2xl relative hidden sm:block">
-
+                           <form
+                                onSubmit={handleSearch}
+                                className="flex-1 max-w-2xl relative hidden sm:block"
+                            >
                                 <input
                                     type="text"
+                                    value={search}
+                                    onChange={(e) => setSearch(e.target.value)}
                                     placeholder="Tafuta bidhaa, mfano: iPhone 15, Laptop..."
                                     className="w-full border border-gray-300 rounded-full py-2.5 pl-5 pr-14 text-sm focus:outline-none focus:ring-2 focus:ring-green-500/30 focus:border-green-500"
                                 />
 
                                 <button
-                                    type="button"
-                                    className="absolute right-1.5 top-1/2 -translate-y-1/2 bg-green-600 hover:bg-green-700 text-white w-9 h-9 rounded-full flex items-center justify-center transition"
+                                    type="submit"
+                                    disabled={searching}
+                                    className="absolute right-1.5 top-1/2 -translate-y-1/2 bg-green-600 hover:bg-green-700 disabled:bg-green-400 text-white w-9 h-9 rounded-full flex items-center justify-center transition"
                                 >
-                                    <i className="fa-solid fa-magnifying-glass text-sm"></i>
+                                    <i
+                                        className={`fa-solid ${
+                                            searching
+                                                ? 'fa-spinner fa-spin'
+                                                : 'fa-magnifying-glass'
+                                        } text-sm`}
+                                    ></i>
                                 </button>
-
-                            </div>
+                            </form>
 
 
                             {/* RIGHT ACTIONS */}
@@ -378,28 +423,36 @@ export default function Home({
 
 
                         {/* MOBILE SEARCH */}
-                        <div className="mt-2.5 sm:hidden">
+                        <form
+    onSubmit={handleSearch}
+    className="mt-2.5 sm:hidden"
+>
+    <div className="relative">
 
-                            <div className="relative">
+        <input
+            type="text"
+            value={search}
+            onChange={(e) => setSearch(e.target.value)}
+            placeholder="Tafuta bidhaa..."
+            className="w-full border border-gray-300 rounded-full py-2.5 pl-4 pr-12 text-sm focus:outline-none focus:ring-2 focus:ring-green-500/30 focus:border-green-500"
+        />
 
-                                <input
-                                    type="text"
-                                    placeholder="Tafuta bidhaa..."
-                                    className="w-full border border-gray-300 rounded-full py-2.5 pl-4 pr-12 text-sm focus:outline-none focus:ring-2 focus:ring-green-500/30 focus:border-green-500"
-                                />
+        <button
+            type="submit"
+            disabled={searching}
+            className="absolute right-1.5 top-1/2 -translate-y-1/2 bg-green-600 hover:bg-green-700 disabled:bg-green-400 text-white w-9 h-9 rounded-full flex items-center justify-center transition"
+        >
+            <i
+                className={`fa-solid ${
+                    searching
+                        ? 'fa-spinner fa-spin'
+                        : 'fa-magnifying-glass'
+                } text-sm`}
+            ></i>
+        </button>
 
-                                <button
-                                    type="button"
-                                    className="absolute right-1.5 top-1/2 -translate-y-1/2 bg-green-600 hover:bg-green-700 text-white w-9 h-9 rounded-full flex items-center justify-center transition"
-                                >
-
-                                    <i className="fa-solid fa-magnifying-glass text-sm"></i>
-
-                                </button>
-
-                            </div>
-
-                        </div>
+    </div>
+</form>
 
                     </div>
 
@@ -883,15 +936,12 @@ export default function Home({
 
                                                 <div className="text-[10px] sm:text-xs text-gray-500 mt-0.5">
 
-                                                    {Number(
-                                                        cat.listings_count ||
-                                                        cat.products_count ||
-                                                        0
-                                                    ).toLocaleString()}
-
-                                                    {' '}
-
-                                                    bidhaa
+                                                  {Number(
+                                                    cat.listings_count ??
+                                                    cat.products_count ??
+                                                    cat.total ??
+                                                    0
+                                                ).toLocaleString()}
 
                                                 </div>
 
