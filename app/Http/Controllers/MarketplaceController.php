@@ -281,59 +281,136 @@ public function dashboard(): Response
     /**
      * Show the form to create a new listing
      */
-    public function create(): Response
-    {
-        $categories = MarketplaceCategory::where('is_active', true)
-            ->orderBy('sort_order')
-            ->select([
-                'id',
-                'name',
-                'slug',
-                'icon',
-            ])
-            ->get()
-            ->map(function ($category) {
+    // public function create(): Response
+    // {
+        
+    //     $categories = MarketplaceCategory::where('is_active', true)
+    //         ->orderBy('sort_order')
+    //         ->select([
+    //             'id',
+    //             'name',
+    //             'slug',
+    //             'icon',
+    //         ])
+    //         ->get()
+    //         ->map(function ($category) {
 
-                $iconMap = [
+    //             $iconMap = [
 
-                    'Electronics' => 'fa-tv',
-                    'Vehicles' => 'fa-car-side',
-                    'Property' => 'fa-house',
-                    'Fashion' => 'fa-shirt',
-                    'Jobs' => 'fa-briefcase',
-                    'Services' => 'fa-screwdriver-wrench',
-                    'Furniture' => 'fa-couch',
-                    'Phones' => 'fa-mobile-screen-button',
-                    'Computers' => 'fa-laptop',
-                    'Beauty' => 'fa-wand-magic-sparkles',
-                    'Sports' => 'fa-dumbbell',
-                    'Agriculture' => 'fa-wheat-awn',
-                    'Animals' => 'fa-paw',
-                    'Baby Products' => 'fa-baby',
-                    'Books' => 'fa-book-open',
-                    'Gaming' => 'fa-gamepad',
-                    'Music' => 'fa-music',
-                    'Health' => 'fa-heart-pulse',
-                    'Industrial Equipment' => 'fa-industry',
-                    'Other' => 'fa-layer-group',
-                ];
+    //                 'Electronics' => 'fa-tv',
+    //                 'Vehicles' => 'fa-car-side',
+    //                 'Property' => 'fa-house',
+    //                 'Fashion' => 'fa-shirt',
+    //                 'Jobs' => 'fa-briefcase',
+    //                 'Services' => 'fa-screwdriver-wrench',
+    //                 'Furniture' => 'fa-couch',
+    //                 'Phones' => 'fa-mobile-screen-button',
+    //                 'Computers' => 'fa-laptop',
+    //                 'Beauty' => 'fa-wand-magic-sparkles',
+    //                 'Sports' => 'fa-dumbbell',
+    //                 'Agriculture' => 'fa-wheat-awn',
+    //                 'Animals' => 'fa-paw',
+    //                 'Baby Products' => 'fa-baby',
+    //                 'Books' => 'fa-book-open',
+    //                 'Gaming' => 'fa-gamepad',
+    //                 'Music' => 'fa-music',
+    //                 'Health' => 'fa-heart-pulse',
+    //                 'Industrial Equipment' => 'fa-industry',
+    //                 'Other' => 'fa-layer-group',
+    //             ];
 
-                return [
-                    'id' => $category->id,
-                    'name' => $category->name,
-                    'slug' => $category->slug,
+    //             return [
+    //                 'id' => $category->id,
+    //                 'name' => $category->name,
+    //                 'slug' => $category->slug,
 
-                    'icon' => $iconMap[$category->name]
-                        ?? $category->icon
-                        ?? 'fa-tag',
-                ];
-            });
+    //                 'icon' => $iconMap[$category->name]
+    //                     ?? $category->icon
+    //                     ?? 'fa-tag',
+    //             ];
+    //         });
 
-        return Inertia::render('Marketplace/Create', [
-            'categories' => $categories,
-        ]);
+    //     return Inertia::render('Marketplace/Create', [
+    //         'categories' => $categories,
+    //     ]);
+    // }
+
+    /**
+ * Show the form to create a new listing
+ */
+public function create(Request $request): Response
+{
+    /*
+    |--------------------------------------------------------------------------
+    | CHECK SELLER PHONE
+    |--------------------------------------------------------------------------
+    | User lazima awe na phone kabla ya kuweka bidhaa.
+    |--------------------------------------------------------------------------
+    */
+
+    if (empty($request->user()?->phone)) {
+        return redirect()
+            ->route('marketplace.complete-profile');
     }
 
+
+    /*
+    |--------------------------------------------------------------------------
+    | CATEGORIES
+    |--------------------------------------------------------------------------
+    */
+
+    $categories = MarketplaceCategory::where('is_active', true)
+        ->orderBy('sort_order')
+        ->select([
+            'id',
+            'name',
+            'slug',
+            'icon',
+        ])
+        ->get()
+        ->map(function ($category) {
+
+            $iconMap = [
+
+                'Electronics' => 'fa-tv',
+                'Vehicles' => 'fa-car-side',
+                'Property' => 'fa-house',
+                'Fashion' => 'fa-shirt',
+                'Jobs' => 'fa-briefcase',
+                'Services' => 'fa-screwdriver-wrench',
+                'Furniture' => 'fa-couch',
+                'Phones' => 'fa-mobile-screen-button',
+                'Computers' => 'fa-laptop',
+                'Beauty' => 'fa-wand-magic-sparkles',
+                'Sports' => 'fa-dumbbell',
+                'Agriculture' => 'fa-wheat-awn',
+                'Animals' => 'fa-paw',
+                'Baby Products' => 'fa-baby',
+                'Books' => 'fa-book-open',
+                'Gaming' => 'fa-gamepad',
+                'Music' => 'fa-music',
+                'Health' => 'fa-heart-pulse',
+                'Industrial Equipment' => 'fa-industry',
+                'Other' => 'fa-layer-group',
+            ];
+
+            return [
+                'id' => $category->id,
+                'name' => $category->name,
+                'slug' => $category->slug,
+
+                'icon' =>
+                    $iconMap[$category->name]
+                    ?? $category->icon
+                    ?? 'fa-tag',
+            ];
+        });
+
+    return Inertia::render('Marketplace/Create', [
+        'categories' => $categories,
+    ]);
+}
 
     /**
  * Marketplace Category Page
@@ -460,14 +537,25 @@ public function category(string $slug): Response
 
     foreach ($request->file('images') as $image) {
 
-        $path = $image->store(
-            'marketplace',
-            'public'
-        );
+    //     $path = $image->store(
+    //         'marketplace',
+    //         'public'
+    //     );
 
-        $imagePaths[] = Storage::disk('public')->url($path);
-    }
-}
+    //     $imagePaths[] = Storage::disk('public')->url($path);
+    // }
+    //Comment Kwa Muda Nisije nika overight cloud S3
+        // $disk = config('filesystems.default');
+
+        //     $path = $image->store(
+        //         'marketplace',
+        //         $disk
+        //     );
+
+        //     $imagePaths[] = Storage::disk($disk)->url($path);
+        //     }
+         //MWISHO Comment Kwa Muda Nisije nika overight cloud S3
+         
         // if ($request->hasFile('images')) {
 
         //     foreach ($request->file('images') as $image) {
@@ -561,7 +649,7 @@ public function category(string $slug): Response
         'Bidhaa yako imewekwa sokoni kikamilifu!'
     );
     }
-
+    }
     /**
  * Show a single marketplace listing
  */
@@ -2347,5 +2435,124 @@ public function search(Request $request): Response
 
         'userLocation' => $userLocation,
     ]);
+}
+
+//Complete Profile
+/**
+ * Complete Marketplace Seller Profile
+ */
+public function completeProfile(Request $request): Response
+{
+    return Inertia::render('Marketplace/CompleteProfile', [
+        'phone' => $request->user()?->phone,
+    ]);
+}
+
+
+/**
+ * Update Marketplace Seller Profile
+ */
+// public function updateProfile(Request $request)
+// {
+//     $validated = $request->validate([
+//         'phone' => [
+//             'required',
+//             'string',
+//             'regex:/^(?:\+255|255|0)(6|7)\d{8}$/',
+//         ],
+//     ], [
+//         'phone.required' =>
+//             'Tafadhali weka namba yako ya simu.',
+
+//         'phone.regex' =>
+//             'Weka namba sahihi ya Tanzania, mfano 0712345678.',
+//     ]);
+
+//     $phone = $validated['phone'];
+
+//     /*
+//     |--------------------------------------------------------------------------
+//     | Normalize phone number
+//     |--------------------------------------------------------------------------
+//     | 0712345678 -> +255712345678
+//     | 255712345678 -> +255712345678
+//     | +255712345678 -> +255712345678
+//     |--------------------------------------------------------------------------
+//     */
+
+//     if (str_starts_with($phone, '0')) {
+//         $phone = '+255' . substr($phone, 1);
+//     } elseif (str_starts_with($phone, '255')) {
+//         $phone = '+' . $phone;
+//     }
+
+//     $request->user()->update([
+//         'phone' => $phone,
+//     ]);
+
+//     return redirect()
+//         ->route('marketplace.create')
+//         ->with(
+//             'success',
+//             'Namba yako ya simu imehifadhiwa. Sasa unaweza kuweka bidhaa.'
+//         );
+// }
+
+/**
+ * Update Marketplace Seller Profile
+ */
+public function updateProfile(Request $request)
+{
+    $validated = $request->validate([
+        'phone' => [
+            'required',
+            'string',
+            'regex:/^(?:\+255|255|0)(6|7)\d{8}$/',
+        ],
+    ], [
+        'phone.required' =>
+            'Tafadhali weka namba yako ya simu.',
+
+        'phone.regex' =>
+            'Weka namba sahihi ya Tanzania, mfano 0712345678.',
+    ]);
+
+    $phone = $validated['phone'];
+
+    /*
+    |--------------------------------------------------------------------------
+    | NORMALIZE PHONE NUMBER
+    |--------------------------------------------------------------------------
+    */
+
+    if (str_starts_with($phone, '0')) {
+        $phone = '+255' . substr($phone, 1);
+    } elseif (str_starts_with($phone, '255')) {
+        $phone = '+' . $phone;
+    }
+
+    /*
+    |--------------------------------------------------------------------------
+    | SAVE PHONE
+    |--------------------------------------------------------------------------
+    */
+
+    $user = $request->user();
+
+    $user->phone = $phone;
+    $user->save();
+
+    /*
+    |--------------------------------------------------------------------------
+    | CONTINUE TO CREATE LISTING
+    |--------------------------------------------------------------------------
+    */
+
+    return redirect()
+        ->route('marketplace.create')
+        ->with(
+            'success',
+            'Namba yako ya simu imehifadhiwa. Sasa unaweza kuweka bidhaa.'
+        );
 }
 }

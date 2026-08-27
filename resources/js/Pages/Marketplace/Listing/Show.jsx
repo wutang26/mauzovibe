@@ -29,7 +29,10 @@ export default function Show({
             : [];
 
     const [activeImage, setActiveImage] = useState(0);
+    // const [showPhone, setShowPhone] = useState(false);
     const [showPhone, setShowPhone] = useState(false);
+    const [showOfferModal, setShowOfferModal] = useState(false);
+    const [offerAmount, setOfferAmount] = useState("");
 
     const currentImage =
         images[activeImage] ?? null;
@@ -68,6 +71,31 @@ export default function Show({
 
     const sellerPhone =
         product?.seller?.phone ?? null;
+
+        //Show Contact Page
+        const openWhatsApp = () => {
+    if (!sellerPhone) {
+        alert("Seller hajaweka namba ya simu.");
+        return;
+    }
+
+    let phone = sellerPhone.replace(/\D/g, "");
+
+    // Tanzania numbers: 07XXXXXXXX / 06XXXXXXXX
+    if (phone.startsWith("0")) {
+        phone = "255" + phone.substring(1);
+    }
+
+    const message = encodeURIComponent(
+        `Habari ${product?.seller?.name ?? ""}, nimeona bidhaa yako "${product.title}" kwenye MauzoVibe. Naomba maelezo zaidi.`
+    );
+
+    window.open(
+        `https://wa.me/${phone}?text=${message}`,
+        "_blank"
+    );
+};
+//Mwisho wa Show contacts
 
     return (
         <>
@@ -285,42 +313,58 @@ export default function Show({
                                     {/* ACTIONS */}
                                     <div className="mt-6 space-y-3">
 
+                                       <div className="space-y-2">
+    <button
+        type="button"
+        onClick={() => setShowPhone(true)}
+        className="flex w-full items-center justify-center gap-2 rounded-xl bg-green-600 px-5 py-3.5 font-bold text-white transition hover:bg-green-700"
+    >
+        <Phone size={19} />
+
+        {showPhone && sellerPhone
+            ? sellerPhone
+            : "Show Contact"}
+    </button>
+
+    {showPhone && sellerPhone && (
+        <a
+            href={`tel:${sellerPhone}`}
+            className="flex w-full items-center justify-center gap-2 rounded-xl border border-green-200 bg-green-50 px-5 py-3 text-sm font-semibold text-green-700 hover:bg-green-100"
+        >
+            <Phone size={17} />
+            Piga simu kwa Seller
+        </a>
+    )}
+
+    {showPhone && !sellerPhone && (
+        <div className="rounded-xl bg-red-50 px-4 py-3 text-center text-sm font-medium text-red-600">
+            Seller hajaweka namba ya simu.
+        </div>
+    )}
+</div>
+
+
                                         <button
-                                            type="button"
-                                            onClick={() =>
-                                                setShowPhone(
-                                                    true
-                                                )
-                                            }
-                                            className="flex w-full items-center justify-center gap-2 rounded-xl bg-green-600 px-5 py-3.5 font-bold text-white transition hover:bg-green-700"
-                                        >
-                                            <Phone size={19} />
+                                        type="button"
+                                        onClick={openWhatsApp}
+                                        disabled={!sellerPhone}
+                                        className="flex w-full items-center justify-center gap-2 rounded-xl border-2 border-green-600 px-5 py-3.5 font-bold text-green-700 transition hover:bg-green-50 disabled:cursor-not-allowed disabled:opacity-50"
+                                    >
+                                        <MessageCircle size={19} />
 
-                                            {showPhone &&
-                                            sellerPhone
-                                                ? sellerPhone
-                                                : "Show Contact"}
-                                        </button>
+                                        {sellerPhone
+                                            ? "Chat with Seller"
+                                            : "Seller hana WhatsApp"}
+                                    </button>
 
 
                                         <button
-                                            type="button"
-                                            className="flex w-full items-center justify-center gap-2 rounded-xl border-2 border-green-600 px-5 py-3.5 font-bold text-green-700 transition hover:bg-green-50"
-                                        >
-                                            <MessageCircle
-                                                size={19}
-                                            />
-
-                                            Chat with Seller
-                                        </button>
-
-
-                                        <button
-                                            type="button"
-                                            className="flex w-full items-center justify-center gap-2 rounded-xl border border-slate-200 px-5 py-3.5 font-bold text-slate-700 transition hover:bg-slate-50"
-                                        >
-                                            Make an Offer
-                                        </button>
+                                        type="button"
+                                        onClick={() => setShowOfferModal(true)}
+                                        className="flex w-full items-center justify-center gap-2 rounded-xl border border-slate-200 px-5 py-3.5 font-bold text-slate-700 transition hover:bg-slate-50"
+                                    >
+                                        Make an Offer
+                                    </button>
 
                                     </div>
 
@@ -538,6 +582,81 @@ export default function Show({
                     </div>
 
                 </div>
+                {showOfferModal && (
+    <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 px-4">
+        <div className="w-full max-w-md rounded-2xl bg-white p-6 shadow-2xl">
+
+            <div className="flex items-center justify-between">
+                <h2 className="text-xl font-bold text-slate-900">
+                    Make an Offer
+                </h2>
+
+                <button
+                    type="button"
+                    onClick={() => setShowOfferModal(false)}
+                    className="text-slate-400 hover:text-slate-700"
+                >
+                    ✕
+                </button>
+            </div>
+
+            <p className="mt-2 text-sm text-slate-500">
+                Weka bei unayopendekeza kwa bidhaa hii.
+            </p>
+
+            <div className="mt-5">
+                <label className="text-sm font-semibold text-slate-700">
+                    Bei yako
+                </label>
+
+                <div className="mt-2 flex items-center overflow-hidden rounded-xl border border-slate-300 focus-within:border-green-600">
+                    <span className="bg-slate-50 px-3 py-3 text-sm font-semibold text-slate-500">
+                        TZS
+                    </span>
+
+                    <input
+                        type="number"
+                        min="0"
+                        value={offerAmount}
+                        onChange={(e) =>
+                            setOfferAmount(e.target.value)
+                        }
+                        placeholder="Mfano 150000"
+                        className="w-full border-0 px-3 py-3 outline-none focus:ring-0"
+                    />
+                </div>
+            </div>
+
+            <div className="mt-5 flex gap-3">
+                <button
+                    type="button"
+                    onClick={() => setShowOfferModal(false)}
+                    className="flex-1 rounded-xl border border-slate-200 px-4 py-3 font-semibold text-slate-600 hover:bg-slate-50"
+                >
+                    Cancel
+                </button>
+
+                <button
+                    type="button"
+                    disabled={!offerAmount}
+                    onClick={() => {
+                        alert(
+                            `Offer yako ya TZS ${Number(
+                                offerAmount
+                            ).toLocaleString()} imeandaliwa.`
+                        );
+
+                        setShowOfferModal(false);
+                    }}
+                    className="flex-1 rounded-xl bg-green-600 px-4 py-3 font-bold text-white hover:bg-green-700 disabled:cursor-not-allowed disabled:opacity-50"
+                >
+                    Send Offer
+                </button>
+            </div>
+
+        </div>
+    </div>
+)}
             </MarketplaceLayout>
         </>
     );

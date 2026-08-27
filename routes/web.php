@@ -942,4 +942,19 @@ Route::get('/marketplace/help', [MarketplaceController::class, 'help'])
 Route::get('/marketplace/search', [MarketplaceController::class,'search'
 ])->name('marketplace.search');
 
+//Update Profile kuendelea kuuza
+Route::middleware('auth')->group(function () {
+
+    Route::get(
+        '/marketplace/complete-profile',
+        [MarketplaceController::class, 'completeProfile']
+    )->name('marketplace.complete-profile');
+
+    Route::put(
+        '/marketplace/complete-profile',
+        [MarketplaceController::class, 'updateProfile']
+    )->name('marketplace.complete-profile.update');
+
+});
+
 require __DIR__.'/auth.php';
