@@ -1,6 +1,5 @@
 import { useState } from "react";
 import { Head, Link, router, usePage } from "@inertiajs/react";
-import { Head, Link, usePage } from "@inertiajs/react";
 import "@fortawesome/fontawesome-free/css/all.min.css";
 
 export default function MarketplacePublicLayout({
