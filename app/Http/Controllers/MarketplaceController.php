@@ -649,7 +649,7 @@ public function category(string $slug): Response
         'Bidhaa yako imewekwa sokoni kikamilifu!'
     );
     }
-    }
+        }}
     /**
  * Show a single marketplace listing
  */
