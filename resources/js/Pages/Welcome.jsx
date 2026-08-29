@@ -18,6 +18,7 @@ import {
 export default function Welcome({
     canLogin = true,
     canRegister = true,
+    dailyPosts = [],
 }) {
     /*
     |--------------------------------------------------------------------------
@@ -37,6 +38,7 @@ export default function Welcome({
     const [showPassword, setShowPassword] = useState(false);
     const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
     const [daysRemaining, setDaysRemaining] = useState(null);
+    const [currentPost, setCurrentPost] = useState(0);
 
     /*
     |--------------------------------------------------------------------------
@@ -90,6 +92,19 @@ export default function Welcome({
         return () => clearInterval(interval);
     }, [trialEndsAt]);
 
+    useEffect(() => {
+    if (!dailyPosts || dailyPosts.length <= 1) {
+        return;
+    }
+
+    const interval = setInterval(() => {
+        setCurrentPost((previous) =>
+            (previous + 1) % dailyPosts.length
+        );
+    }, 5000);
+
+    return () => clearInterval(interval);
+}, [dailyPosts]);
     /*
     |--------------------------------------------------------------------------
     | TRIAL BUTTON
@@ -620,7 +635,7 @@ export default function Welcome({
                                             href={route("marketplace.index")}
                                             className="hover:text-emerald-600 transition"
                                         >
-                                            MarketPlace
+                                          🛍️  MarketPlace
                                         </Link>
 
                                     </div>
@@ -1066,50 +1081,281 @@ export default function Welcome({
                                         </h1>
 
 
-                                        {/* Description */}
-
-                                                                    <p
+                                     
+{/* DAILY POSTS SLIDER */}
+<div className="mt-7 w-full max-w-2xl">
+    <div
+        className="
+            relative
+            overflow-hidden
+            rounded-2xl
+            border
+            border-slate-200
+            bg-white/90
+            shadow-xl
+            shadow-slate-900/10
+            backdrop-blur-sm
+            min-h-[230px]
+            sm:min-h-[260px]
+        "
+    >
+        {dailyPosts.length > 0 ? (
+            <>
+                {dailyPosts.map((post, index) => (
+                    <div
+                        key={post.id ?? index}
+                        className={`
+                            absolute
+                            inset-0
+                            transition-all
+                            duration-700
+                            ease-in-out
+                            ${
+                                index === currentPost
+                                    ? "opacity-100 translate-x-0"
+                                    : "opacity-0 translate-x-8 pointer-events-none"
+                            }
+                        `}
+                    >
+                        <div className="grid grid-cols-1 sm:grid-cols-2 h-full">
+                            
+                            {/* IMAGE */}
+                            <div className="relative h-[230px] sm:h-[260px]">
+                                <img
+                                    src={
+                                        post.image_url ??
+                                        post.image ??
+                                        "/images/shop.jpg"
+                                    }
+                                    alt={post.title ?? "MauzoVibe Daily Post"}
                                     className="
-                                        mt-6
-                                        max-w-2xl
-                                        text-base
-                                        sm:text-lg
-                                        lg:text-xl
-                                        leading-8
-                                        text-slate-600
+                                        h-full
+                                        w-full
+                                        object-cover
+                                    "
+                                />
+
+                                <div
+                                    className="
+                                        absolute
+                                        inset-0
+                                        bg-gradient-to-t
+                                        from-black/50
+                                        via-transparent
+                                        to-transparent
+                                    "
+                                />
+                            </div>
+
+                            {/* POST CONTENT */}
+                            <div
+                                className="
+                                    flex
+                                    flex-col
+                                    justify-center
+                                    p-5
+                                    sm:p-6
+                                    bg-white
+                                "
+                            >
+                                {post.post_type && (
+                                    <span
+                                        className="
+                                            inline-flex
+                                            w-fit
+                                            rounded-full
+                                            bg-emerald-50
+                                            px-3
+                                            py-1
+                                            text-xs
+                                            font-bold
+                                            text-emerald-700
+                                            mb-3
+                                        "
+                                    >
+                                        {post.post_type}
+                                    </span>
+                                )}
+
+                                <h3
+                                    className="
+                                        text-lg
+                                        sm:text-xl
+                                        font-extrabold
+                                        text-slate-900
+                                        leading-tight
                                     "
                                 >
-                                    MauzoVibe inakupa kila kitu unachohitaji kukuza biashara yako
-                                    sehemu moja. Simamia{" "}
+                                    {post.title}
+                                </h3>
 
-                                    <span className="font-semibold text-slate-900">
-                                        Wauzo
-                                    </span>
-                                    ,{" "}
+                                {post.message && (
+                                    <p
+                                        className="
+                                            mt-2
+                                            text-sm
+                                            leading-6
+                                            text-slate-600
+                                            line-clamp-4
+                                        "
+                                    >
+                                        {post.message}
+                                    </p>
+                                )}
+                            </div>
+                        </div>
+                    </div>
+                ))}
 
-                                    <span className="font-semibold text-slate-900">
-                                        Stock
-                                    </span>
-                                    ,{" "}
+                {/* ARROWS */}
+                {dailyPosts.length > 1 && (
+                    <>
+                        <button
+                            type="button"
+                            onClick={() =>
+                                setCurrentPost(
+                                    (currentPost - 1 + dailyPosts.length) %
+                                        dailyPosts.length
+                                )
+                            }
+                            className="
+                                absolute
+                                left-3
+                                top-1/2
+                                -translate-y-1/2
+                                z-20
+                                flex
+                                h-9
+                                w-9
+                                items-center
+                                justify-center
+                                rounded-full
+                                bg-white/90
+                                text-slate-700
+                                shadow-lg
+                                hover:bg-emerald-600
+                                hover:text-white
+                                transition
+                            "
+                            aria-label="Previous post"
+                        >
+                            ‹
+                        </button>
 
-                                    <span className="font-semibold text-slate-900">
-                                        Wateja
-                                    </span>
-                                    ,{" "}
+                        <button
+                            type="button"
+                            onClick={() =>
+                                setCurrentPost(
+                                    (currentPost + 1) %
+                                        dailyPosts.length
+                                )
+                            }
+                            className="
+                                absolute
+                                right-3
+                                top-1/2
+                                -translate-y-1/2
+                                z-20
+                                flex
+                                h-9
+                                w-9
+                                items-center
+                                justify-center
+                                rounded-full
+                                bg-white/90
+                                text-slate-700
+                                shadow-lg
+                                hover:bg-emerald-600
+                                hover:text-white
+                                transition
+                            "
+                            aria-label="Next post"
+                        >
+                            ›
+                        </button>
+                    </>
+                )}
 
-                                    <span className="font-semibold text-slate-900">
-                                        Faida
-                                    </span>{" "}
+                {/* DOTS */}
+                {dailyPosts.length > 1 && (
+                    <div
+                        className="
+                            absolute
+                            bottom-3
+                            left-1/2
+                            -translate-x-1/2
+                            z-20
+                            flex
+                            items-center
+                            gap-1.5
+                        "
+                    >
+                        {dailyPosts.map((_, index) => (
+                            <button
+                                key={index}
+                                type="button"
+                                onClick={() => setCurrentPost(index)}
+                                aria-label={`Go to post ${index + 1}`}
+                                className={`
+                                    h-2
+                                    rounded-full
+                                    transition-all
+                                    duration-300
+                                    ${
+                                        index === currentPost
+                                            ? "w-6 bg-emerald-600"
+                                            : "w-2 bg-slate-300 hover:bg-emerald-400"
+                                    }
+                                `}
+                            />
+                        ))}
+                    </div>
+                )}
+            </>
+        ) : (
+            /* EMPTY STATE */
+            <div
+                className="
+                    flex
+                    h-full
+                    min-h-[230px]
+                    sm:min-h-[260px]
+                    items-center
+                    justify-center
+                    text-center
+                    px-6
+                "
+            >
+                <div>
+                    <div
+                        className="
+                            mx-auto
+                            mb-3
+                            flex
+                            h-12
+                            w-12
+                            items-center
+                            justify-center
+                            rounded-xl
+                            bg-emerald-50
+                            text-emerald-600
+                        "
+                    >
+                        +
+                    </div>
 
-                                    na Ripoti kwa urahisi, au tumia{" "}
+                    <p className="text-sm font-semibold text-slate-600">
+                        MauzoVibe Daily Posts
+                    </p>
 
-                                    <span className="font-semibold text-emerald-600">
-                                        MauzoVibe Ecommerce
-                                    </span>{" "}
-
-                                    kuuza na kununua bidhaa kupitia Marketplace yetu.
-                                </p>
-
+                    <p className="mt-1 text-xs text-slate-400">
+                        New offers and announcements will appear here.
+                    </p>
+                </div>
+            </div>
+        )}
+    </div>
+</div>
 
                                         {/* Features */}
 
@@ -1160,108 +1406,211 @@ export default function Welcome({
 
                                         {/* CTA */}
 
-                                        <div className="mt-9 flex flex-col sm:flex-row gap-4">
+                                      
+                                 
+<div className="mt-9 flex flex-col sm:flex-row items-stretch sm:items-center gap-3">
 
-                                            {canRegister && (
-                                                <Link
-                                                    href={route("register")}
-                                                    className="
-                                                        group
-                                                        inline-flex
-                                                        items-center
-                                                        justify-center
-                                                        gap-3
-                                                        px-7
-                                                        py-3.5
-                                                        rounded-xl
-                                                        bg-emerald-600
-                                                        hover:bg-emerald-700
-                                                        text-white
-                                                        font-bold
-                                                        shadow-xl
-                                                        shadow-emerald-600/20
-                                                        hover:-translate-y-1
-                                                        transition-all
-                                                        duration-200
-                                                    "
-                                                >
+    {/* Start Free Trial */}
+    {canRegister && (
+        <Link
+            href={route("register")}
+            className="
+                group
+                inline-flex
+                items-center
+                justify-center
+                gap-2.5
+                px-6
+                py-3.5
+                rounded-xl
+                bg-emerald-600
+                hover:bg-emerald-700
+                text-white
+                font-bold
+                shadow-xl
+                shadow-emerald-600/20
+                hover:-translate-y-1
+                transition-all
+                duration-200
+                whitespace-nowrap
+            "
+        >
+            {/* 👋 Hand Icon */}
+            <span
+                className="
+                    text-xl
+                    leading-none
+                    transition-transform
+                    duration-200
+                    group-hover:scale-110
+                    group-hover:-rotate-6
+                "
+            >
+                👋
+            </span>
 
-                                                    {trialButtonText}
+            <span>
+                {trialButtonText}
+            </span>
 
-                                                    <svg
-                                                        className="
-                                                            w-5
-                                                            h-5
-                                                            transition-transform
-                                                            duration-200
-                                                            group-hover:translate-x-1
-                                                        "
-                                                        fill="none"
-                                                        viewBox="0 0 24 24"
-                                                        stroke="currentColor"
-                                                        strokeWidth="2"
-                                                    >
+            {/* Arrow */}
+            {/* <svg
+                className="
+                    w-5
+                    h-5
+                    transition-transform
+                    duration-200
+                    group-hover:translate-x-1
+                "
+                fill="none"
+                viewBox="0 0 24 24"
+                stroke="currentColor"
+                strokeWidth="2"
+            >
+                <path
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                    d="M5 12h14M13 6l6 6-6 6"
+                />
+            </svg> */}
+        </Link>
+    )}
 
-                                                        <path
-                                                            strokeLinecap="round"
-                                                            strokeLinejoin="round"
-                                                            d="M5 12h14M13 6l6 6-6 6"
-                                                        />
+    {/* Watch Demo */}
+    <button
+        type="button"
+        className="
+            group
+            inline-flex
+            items-center
+            justify-center
+            gap-3
+            px-6
+            py-3.5
+            rounded-xl
+            bg-white/90
+            hover:bg-white
+            border
+            border-slate-300
+            text-slate-900
+            font-semibold
+            shadow-sm
+            transition-all
+            duration-200
+            hover:-translate-y-0.5
+            hover:shadow-md
+            whitespace-nowrap
+        "
+    >
+        {/* ▶ Play Icon */}
+        <span
+            className="
+                flex
+                items-center
+                justify-center
+                w-8
+                h-8
+                rounded-full
+                bg-emerald-100
+                text-emerald-600
+                group-hover:bg-emerald-600
+                group-hover:text-white
+                transition-all
+                duration-200
+                group-hover:scale-110
+            "
+        >
+            ▶
+        </span>
 
-                                                    </svg>
+        <span>
+            Watch Demo
+        </span>
+    </button>
 
-                                                </Link>
-                                            )}
+    {/* MauzoVibe Ecommerce */}
+    <Link
+        href={route("marketplace.index")}
+        className="
+            group
+            inline-flex
+            items-center
+            justify-center
+            gap-2.5
+            px-5
+            py-3
+            rounded-xl
+            bg-white/90
+            hover:bg-white
+            border
+            border-emerald-300
+            text-slate-900
+            font-bold
+            shadow-sm
+            transition-all
+            duration-200
+            hover:-translate-y-0.5
+            hover:shadow-md
+            whitespace-nowrap
+        "
+    >
+        {/* 🛍️ Shopping Icon */}
+        <span
+            className="
+                flex
+                items-center
+                justify-center
+                w-8
+                h-8
+                rounded-lg
+                bg-emerald-100
+                text-emerald-600
+                group-hover:bg-emerald-600
+                group-hover:text-white
+                transition-all
+                duration-200
+                group-hover:scale-110
+            "
+        >
+            🛍️
+        </span>
+
+        {/* Brand */}
+        <span className="flex flex-col items-start leading-tight">
+            <span className="text-sm font-extrabold">
+                MauzoVibe
+            </span>
+
+            <span className="text-xs text-emerald-600 font-semibold">
+                Ecommerce
+            </span>
+        </span>
+
+        {/* Arrow */}
+        {/* <svg
+            className="
+                w-4
+                h-4
+                transition-transform
+                duration-200
+                group-hover:translate-x-1
+            "
+            fill="none"
+            viewBox="0 0 24 24"
+            stroke="currentColor"
+            strokeWidth="2"
+        >
+            <path
+                strokeLinecap="round"
+                strokeLinejoin="round"
+                d="M5 12h14M13 6l6 6-6 6"
+            />
+        </svg> */}
+    </Link>
+
+</div>
 
 
-                                            <button
-                                                type="button"
-                                                className="
-                                                    group
-                                                    inline-flex
-                                                    items-center
-                                                    justify-center
-                                                    gap-3
-                                                    px-7
-                                                    py-3.5
-                                                    rounded-xl
-                                                    bg-white/90
-                                                    hover:bg-white
-                                                    border
-                                                    border-slate-300
-                                                    text-slate-900
-                                                    font-semibold
-                                                    shadow-sm
-                                                    transition-all
-                                                    duration-200
-                                                    hover:-translate-y-0.5
-                                                    hover:shadow-md
-                                                "
-                                            >
-
-                                                <span
-                                                    className="
-                                                        flex
-                                                        items-center
-                                                        justify-center
-                                                        w-8
-                                                        h-8
-                                                        rounded-full
-                                                        bg-emerald-100
-                                                        text-emerald-600
-                                                        group-hover:bg-emerald-600
-                                                        group-hover:text-white
-                                                        transition-all
-                                                    "
-                                                >
-                                                    ▶
-                                                </span>
-
-                                                Watch Demo
-
-                                            </button>
-
-                                        </div>
 
 
                                         {/* Trust */}

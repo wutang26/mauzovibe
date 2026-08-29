@@ -24,6 +24,7 @@ use App\Http\Controllers\MarketplaceController;
 use App\Http\Controllers\Marketplace\MarketplaceProfileController;
 use App\Http\Controllers\MarketplaceListingActionController;
 use App\Http\Controllers\Marketplace\MarketplaceSellerController;
+use App\Http\Controllers\DailyPostController;
 use Inertia\Inertia;
 
 
@@ -1107,4 +1108,27 @@ Route::middleware(['auth'])->group(function () {
     )->name('marketplace.earnings');
 
 });
+
+//Daily Posts
+// Route::middleware(['auth'])->prefix('admin')->name('admin.')->group(function () {
+
+//     Route::resource('daily-posts', \App\Http\Controllers\Admin\DailyPostController::class);
+
+// });
+Route::middleware(['auth'])
+    ->prefix('admin')
+    ->name('admin.')
+    ->group(function () {
+
+        Route::resource(
+            'daily-posts',
+            DailyPostController::class
+        )->except(['show']);
+
+        Route::patch(
+            'daily-posts/{dailyPost}/toggle',
+            [DailyPostController::class, 'toggle']
+        )->name('daily-posts.toggle');
+
+    });
 require __DIR__.'/auth.php';

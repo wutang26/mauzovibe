@@ -18,6 +18,7 @@ import {
     ArrowPathRoundedSquareIcon,
     DocumentMagnifyingGlassIcon,
     FlagIcon,
+    NewspaperIcon,
 } from "@heroicons/react/24/outline";
 
 export default function Sidebar({ open }) {
@@ -105,6 +106,7 @@ export default function Sidebar({ open }) {
                     icon: CubeIcon,
                     link: route("admin.lowstock.index"),
                 },
+                
             ],
         },
 
@@ -178,8 +180,25 @@ export default function Sidebar({ open }) {
                 },
                     ],
         },
+        // Daily Welcome Page Posts
 
-        // MarketPlace
+{
+    name: "Daily Posts",
+    icon: NewspaperIcon,
+    children: [
+        {
+            name: "All Daily Posts",
+            icon: NewspaperIcon,
+            link: route("admin.daily-posts.index"),
+        },
+        {
+            name: "Add Daily Post",
+            icon: ClipboardDocumentListIcon,
+            link: route("admin.daily-posts.create"),
+        },
+    ],
+},
+       
 
        // Marketplace
 

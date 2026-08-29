@@ -186,7 +186,7 @@ export default function PublicLayout({ children }) {
                              <Link
                                 href={route("marketplace.index")}
                                 className="hover:text-emerald-600 transition"
-                            >
+                            > 🛍️
                                 MarketPlace
                             </Link>
 
