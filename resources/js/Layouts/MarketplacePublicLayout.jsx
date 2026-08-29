@@ -8,30 +8,40 @@ export default function MarketplacePublicLayout({
     categories = [],
     userLocation = "Tabora, Tanzania",
 }) {
-    const { auth } = usePage().props;
+    // const { auth } = usePage().props;
+    const { auth, marketplace = {} } = usePage().props;
+
+    const favouriteCount = marketplace.favouriteCount ?? 0;
+    const unreadMessageCount = marketplace.unreadMessageCount ?? 0;
+    const cartCount = marketplace.cartCount ?? 0;
 
     const [showCategories, setShowCategories] = useState(false);
 
     const [searchQuery, setSearchQuery] = useState("");
 
-const handleSearch = (e) => {
-    e.preventDefault();
+    const handleSearch = (e) => {
+        e.preventDefault();
 
-    const query = searchQuery.trim();
+        const query = searchQuery.trim();
 
-    if (!query) {
-        return;
-    }
-
-    router.get(
-        route("marketplace.search"),
-        { q: query },
-        {
-            preserveState: true,
-            preserveScroll: false,
+        if (!query) {
+            return;
         }
-    );
-};
+
+        router.get(
+            route("marketplace.search"),
+            { q: query },
+            {
+                preserveState: true,
+                preserveScroll: false,
+                replace: true,
+            }
+        );
+    };
+
+    const clearSearch = () => {
+        setSearchQuery("");
+    };
     return (
         <>
             <Head title={title} />
@@ -72,11 +82,7 @@ const handleSearch = (e) => {
                                 </div>
                             </Link>
 
-
                             {/* =================================================
-                                DESKTOP SEARCH
-                            ================================================== */}
-                                                    {/* =================================================
                                 DESKTOP SEARCH
                             ================================================== */}
                             <form
@@ -128,17 +134,28 @@ const handleSearch = (e) => {
                             </form>
 
 
+
                             {/* =================================================
-                                RIGHT ACTIONS
-                            ================================================== */}
+                            RIGHT ACTIONS
+                        ================================================= */}
                             <div className="flex items-center gap-2.5 sm:gap-3 md:gap-4 ml-auto shrink-0">
 
-                                {/* =================================================
-        FAVOURITES
-    ================================================== */}
+                                {/* FAVOURITES */}
                                 <Link
-                                    href={route("marketplace.offers")}
-                                    className="relative flex items-center gap-1.5 text-gray-700 hover:text-green-600 transition"
+                                    href={route("marketplace.favourites")}
+                                    preserveScroll
+                                    className="
+                                    relative
+                                    z-10
+                                    flex
+                                    items-center
+                                    gap-1.5
+                                    text-gray-700
+                                    hover:text-green-600
+                                    transition
+                                    cursor-pointer
+                                    select-none
+                                "
                                 >
                                     <i className="fa-regular fa-heart text-lg"></i>
 
@@ -146,35 +163,50 @@ const handleSearch = (e) => {
                                         Favourites
                                     </span>
 
-                                    <span
-                                        className="
-                absolute
-                -top-1.5
-                -right-2
-                md:static
-                md:ml-0.5
-                bg-green-600
-                text-white
-                text-[10px]
-                rounded-full
-                w-4
-                h-4
-                flex
-                items-center
-                justify-center
-            "
-                                    >
-                                        1
-                                    </span>
+                                    {favouriteCount > 0 && (
+                                        <span
+                                            className="
+                                            absolute
+                                            -top-2
+                                            -right-2
+                                            md:static
+                                            md:ml-0.5
+                                            bg-green-600
+                                            text-white
+                                            text-[10px]
+                                            font-semibold
+                                            rounded-full
+                                            min-w-4
+                                            h-4
+                                            px-1
+                                            flex
+                                            items-center
+                                            justify-center
+                                            pointer-events-none
+                                        "
+                                        >
+                                            {favouriteCount > 99 ? "99+" : favouriteCount}
+                                        </span>
+                                    )}
                                 </Link>
 
 
-                                {/* =================================================
-        MESSAGES
-    ================================================== */}
+                                {/* MESSAGES */}
                                 <Link
-                                    href={route("marketplace.help")}
-                                    className="relative flex items-center gap-1.5 text-gray-700 hover:text-green-600 transition"
+                                    href={route("marketplace.messages")}
+                                    preserveScroll
+                                    className="
+                                    relative
+                                    z-10
+                                    flex
+                                    items-center
+                                    gap-1.5
+                                    text-gray-700
+                                    hover:text-green-600
+                                    transition
+                                    cursor-pointer
+                                    select-none
+                                "
                                 >
                                     <i className="fa-regular fa-comment text-lg"></i>
 
@@ -182,35 +214,52 @@ const handleSearch = (e) => {
                                         Messages
                                     </span>
 
-                                    <span
-                                        className="
-                absolute
-                -top-1.5
-                -right-2
-                md:static
-                md:ml-0.5
-                bg-green-600
-                text-white
-                text-[10px]
-                rounded-full
-                w-4
-                h-4
-                flex
-                items-center
-                justify-center
-            "
-                                    >
-                                        2
-                                    </span>
+                                    {unreadMessageCount > 0 && (
+                                        <span
+                                            className="
+                                            absolute
+                                            -top-2
+                                            -right-2
+                                            md:static
+                                            md:ml-0.5
+                                            bg-green-600
+                                            text-white
+                                            text-[10px]
+                                            font-semibold
+                                            rounded-full
+                                            min-w-4
+                                            h-4
+                                            px-1
+                                            flex
+                                            items-center
+                                            justify-center
+                                            pointer-events-none
+                                        "
+                                        >
+                                            {unreadMessageCount > 99
+                                                ? "99+"
+                                                : unreadMessageCount}
+                                        </span>
+                                    )}
                                 </Link>
 
 
-                                {/* =================================================
-        CART
-    ================================================== */}
+                                {/* CART */}
                                 <Link
-                                    href={route("marketplace.index")}
-                                    className="relative flex items-center gap-1.5 text-gray-700 hover:text-green-600 transition"
+                                    href={route("marketplace.cart")}
+                                    preserveScroll
+                                    className="
+                                    relative
+                                    z-10
+                                    flex
+                                    items-center
+                                    gap-1.5
+                                    text-gray-700
+                                    hover:text-green-600
+                                    transition
+                                    cursor-pointer
+                                    select-none
+                                "
                                 >
                                     <i className="fa-solid fa-cart-shopping text-lg"></i>
 
@@ -218,53 +267,56 @@ const handleSearch = (e) => {
                                         Cart
                                     </span>
 
-                                    <span
-                                        className="
-                absolute
-                -top-1.5
-                -right-2
-                md:static
-                md:ml-0.5
-                bg-green-600
-                text-white
-                text-[10px]
-                rounded-full
-                w-4
-                h-4
-                flex
-                items-center
-                justify-center
-            "
-                                    >
-                                        1
-                                    </span>
+                                    {cartCount > 0 && (
+                                        <span
+                                            className="
+                                            absolute
+                                            -top-2
+                                            -right-2
+                                            md:static
+                                            md:ml-0.5
+                                            bg-green-600
+                                            text-white
+                                            text-[10px]
+                                            font-semibold
+                                            rounded-full
+                                            min-w-4
+                                            h-4
+                                            px-1
+                                            flex
+                                            items-center
+                                            justify-center
+                                            pointer-events-none
+                                        "
+                                        >
+                                            {cartCount > 99 ? "99+" : cartCount}
+                                        </span>
+                                    )}
                                 </Link>
 
 
-                                {/* =================================================
-        AUTH
-    ================================================== */}
+                                {/* SELLER */}
                                 {auth?.user ? (
-
                                     <Link
                                         href={route("marketplace.dashboard")}
                                         className="
-                bg-green-600
-                hover:bg-green-700
-                text-white
-                px-3
-                py-1.5
-                sm:px-4
-                sm:py-2
-                rounded-full
-                text-sm
-                font-medium
-                transition
-                whitespace-nowrap
-                flex
-                items-center
-                gap-1.5
-            "
+                                        z-10
+                                        bg-green-600
+                                        hover:bg-green-700
+                                        text-white
+                                        px-3
+                                        py-1.5
+                                        sm:px-4
+                                        sm:py-2
+                                        rounded-full
+                                        text-sm
+                                        font-medium
+                                        transition
+                                        whitespace-nowrap
+                                        flex
+                                        items-center
+                                        gap-1.5
+                                    "
                                     >
                                         <i className="fa-solid fa-store"></i>
 
@@ -276,80 +328,102 @@ const handleSearch = (e) => {
                                             Seller
                                         </span>
                                     </Link>
-
                                 ) : (
-
                                     <Link
                                         href={route("login")}
                                         className="
-                bg-green-600
-                hover:bg-green-700
-                text-white
-                px-4
-                sm:px-5
-                py-2
-                sm:py-2.5
-                rounded-xl
-                font-medium
-                flex
-                items-center
-                gap-2
-                transition
-                text-sm
-                sm:text-base
-                whitespace-nowrap
-            "
+                                        z-10
+                                        bg-green-600
+                                        hover:bg-green-700
+                                        text-white
+                                        px-4
+                                        sm:px-5
+                                        py-2
+                                        sm:py-2.5
+                                        rounded-xl
+                                        font-medium
+                                        flex
+                                        items-center
+                                        gap-2
+                                        transition
+                                        text-sm
+                                        sm:text-base
+                                        whitespace-nowrap
+                                    "
                                     >
                                         <i className="fa-solid fa-upload"></i>
-
-                                        <span>
-                                            Uza Bidhaa
-                                        </span>
+                                        <span>Uza Bidhaa</span>
                                     </Link>
-
                                 )}
-
                             </div>
 
                         </div>
 
-
                         {/* =====================================================
-                            MOBILE SEARCH
-                        ====================================================== */}
-                      {/* =====================================================
     MOBILE SEARCH
 ====================================================== */}
-<form
-    onSubmit={handleSearch}
-    className="mt-2.5 sm:hidden"
->
-    <div className="relative">
+                        <form
+                            onSubmit={handleSearch}
+                            className="mt-2.5 sm:hidden"
+                        >
+                            <div className="relative">
 
-        <input
-            type="text"
-            value={searchQuery}
-            onChange={(e) => setSearchQuery(e.target.value)}
-            placeholder="Tafuta bidhaa..."
-            className="
+                                <input
+                                    type="text"
+                                    value={searchQuery}
+                                    onChange={(e) => setSearchQuery(e.target.value)}
+                                    placeholder="Tafuta bidhaa..."
+                                    className="
                 w-full
-                border border-gray-300
+                border
+                border-gray-300
                 rounded-full
                 py-2.5
                 pl-4
-                pr-12
+                pr-24
                 text-sm
+                bg-gray-50
+                focus:bg-white
                 focus:outline-none
                 focus:ring-2
                 focus:ring-green-500/30
                 focus:border-green-500
+                transition
             "
-        />
+                                />
 
-        <button
-            type="submit"
-            aria-label="Tafuta"
-            className="
+                                {/* CLEAR */}
+                                {searchQuery && (
+                                    <button
+                                        type="button"
+                                        onClick={clearSearch}
+                                        className="
+                    absolute
+                    right-12
+                    top-1/2
+                    -translate-y-1/2
+                    w-7
+                    h-7
+                    rounded-full
+                    text-gray-400
+                    hover:text-gray-700
+                    hover:bg-gray-100
+                    flex
+                    items-center
+                    justify-center
+                    z-10
+                "
+                                        aria-label="Futa utafutaji"
+                                    >
+                                        <i className="fa-solid fa-xmark text-xs"></i>
+                                    </button>
+                                )}
+
+                                {/* SEARCH BUTTON */}
+                                <button
+                                    type="submit"
+                                    aria-label="Tafuta"
+                                    className="
                 absolute
                 right-1.5
                 top-1/2
@@ -363,13 +437,16 @@ const handleSearch = (e) => {
                 flex
                 items-center
                 justify-center
+                transition
+                shadow-sm
+                z-10
             "
-        >
-            <i className="fa-solid fa-magnifying-glass text-sm"></i>
-        </button>
+                                >
+                                    <i className="fa-solid fa-magnifying-glass text-sm"></i>
+                                </button>
 
-    </div>
-</form>
+                            </div>
+                        </form>
 
                     </div>
 

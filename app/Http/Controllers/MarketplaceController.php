@@ -10,6 +10,8 @@ use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\Storage;
+use App\Models\MarketplaceMessage;
+use App\Models\MarketplaceCartItem;
 use Illuminate\Support\Str;
 use Inertia\Inertia;
 use Inertia\Response;
@@ -1867,4 +1869,47 @@ class MarketplaceController extends Controller
 
         return back();
     }
+
+    private function getMarketplaceHeaderCounts(): array
+{
+    if (!auth()->check()) {
+        return [
+            'favouritesCount' => 0,
+            'messagesCount' => 0,
+            'cartCount' => 0,
+        ];
+    }
+
+    $userId = auth()->id();
+
+    return [
+        'favouritesCount' =>
+            SavedListing::where(
+                'user_id',
+                $userId
+            )->count(),
+
+        'messagesCount' =>
+            MarketplaceMessage::where(
+                'receiver_id',
+                $userId
+            )
+                ->where(
+                    'is_read',
+                    false
+                )
+                ->count(),
+
+        'cartCount' =>
+            MarketplaceCartItem::whereHas(
+                'cart',
+                function ($query) use ($userId) {
+                    $query->where(
+                        'user_id',
+                        $userId
+                    );
+                }
+            )->sum('quantity'),
+    ];
+}
 }

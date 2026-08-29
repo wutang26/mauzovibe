@@ -1,11 +1,13 @@
 import { Head, Link } from "@inertiajs/react";
-import MarketplaceLayout from "@/Layouts/MarketplaceLayout";
+import MarketplaceBrowseLayout from "@/Layouts/MarketplaceBrowseLayout";
 
-// export default function Category({
-//     category,
-//     listings,
-// }) {
-//     const products = listings?.data ?? [];
+import {
+    Package,
+    MapPin,
+    ChevronRight,
+    Plus,
+    SlidersHorizontal,
+} from "lucide-react";
 
 export default function Category({
     category,
@@ -20,255 +22,582 @@ export default function Category({
         listings?.total ??
         products.length ??
         0;
+
+    const categoryName =
+        category?.name ?? "Category";
+
     return (
-        <MarketplaceLayout>
+        <MarketplaceBrowseLayout>
 
-            <Head title={`${category.name} - Marketplace`} />
+            <Head
+                title={`${categoryName} - MauzoVibe Marketplace`}
+            />
 
-            <div className="min-h-screen bg-slate-50">
+            <div className="w-full">
 
                 {/* =====================================================
-                    HEADER
+                    BREADCRUMB
                 ====================================================== */}
+                <div className="mb-5">
 
-                <div className="bg-white border-b">
-                    <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6">
+                    <div className="flex items-center gap-2 text-sm text-slate-500">
 
-                        <div className="flex items-center gap-2 text-sm text-slate-500 mb-4">
+                        <Link
+                            href={route("marketplace.index")}
+                            className="transition hover:text-green-600"
+                        >
+                            Marketplace
+                        </Link>
 
-                            <Link
-                                href="/marketplace"
-                                className="hover:text-green-600"
-                            >
-                                Marketplace
-                            </Link>
+                        <ChevronRight
+                            size={15}
+                            className="shrink-0 text-slate-400"
+                        />
 
-                            <span>/</span>
-
-                            <span className="text-slate-900">
-                                {category.name}
-                            </span>
-
-                        </div>
-
-
-                        <div className="flex items-center justify-between gap-4">
-
-                            <div>
-                                <h1 className="text-2xl sm:text-3xl font-bold text-slate-900">
-                                    {category.name}
-                                </h1>
-
-                                <p className="mt-1 text-slate-500">
-                                    Bidhaa za {category.name} zinazopatikana
-                                    kwenye MauzoVibe.
-                                </p>
-                            </div>
-
-                            <div className="hidden sm:flex items-center justify-center w-14 h-14 rounded-2xl bg-green-50 text-green-600 text-2xl">
-                                {category.icon ? "●" : "●"}
-                            </div>
-
-                        </div>
+                        <span className="truncate font-medium text-slate-900">
+                            {categoryName}
+                        </span>
 
                     </div>
+
                 </div>
 
 
                 {/* =====================================================
-                    CONTENT
+                    CATEGORY HEADER
                 ====================================================== */}
+                <div className="mb-6 rounded-2xl border border-slate-200 bg-white p-5 sm:p-6">
 
-                <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+                    <div className="flex flex-col gap-5 sm:flex-row sm:items-center sm:justify-between">
 
-                    {/* RESULTS COUNT */}
+                        {/* CATEGORY INFORMATION */}
+                        <div className="flex min-w-0 items-center gap-4">
 
-                    <div className="flex items-center justify-between mb-6">
+                            {/* CATEGORY ICON */}
+                            <div className="
+                                flex
+                                h-14
+                                w-14
+                                shrink-0
+                                items-center
+                                justify-center
+                                rounded-2xl
+                                bg-green-50
+                                text-green-600
+                            ">
+                                <Package size={28} />
+                            </div>
 
-                        <div>
-                            <h2 className="text-lg font-semibold text-slate-900">
-                                Bidhaa za {category.name}
-                            </h2>
 
-                            <p className="text-sm text-slate-500">
-                                Total: {listings?.total ?? "NO TOTAL"} | Data: {listings?.data?.length ?? "NO DATA"} bidhaa
-                            </p>
-                             </div>
+                            {/* TITLE */}
+                            <div className="min-w-0">
+
+                                <h1 className="
+                                    text-xl
+                                    font-bold
+                                    text-slate-900
+                                    sm:text-2xl
+                                ">
+                                    {categoryName}
+                                </h1>
+
+                                <p className="
+                                    mt-1
+                                    text-sm
+                                    leading-6
+                                    text-slate-500
+                                ">
+                                    Bidhaa za{" "}
+                                    {categoryName}{" "}
+                                    zinazopatikana kwenye MauzoVibe.
+                                </p>
+
+                            </div>
+
+                        </div>
+
+
+                        {/* ADD PRODUCT */}
+                        <Link
+                            href={route("marketplace.dashboard")}
+                            className="
+                                inline-flex
+                                w-full
+                                items-center
+                                justify-center
+                                gap-2
+                                rounded-xl
+                                bg-green-600
+                                px-5
+                                py-3
+                                text-sm
+                                font-semibold
+                                text-white
+                                shadow-sm
+                                transition
+                                hover:bg-green-700
+                                focus:outline-none
+                                focus:ring-2
+                                focus:ring-green-500
+                                focus:ring-offset-2
+                                sm:w-auto
+                            "
+                        >
+                            <Plus size={18} />
+
+                            Weka Bidhaa
+                        </Link>
+
+                    </div>
+
+                </div>
+
+
+                {/* =====================================================
+                    RESULTS HEADER
+                ====================================================== */}
+                <div className="
+                    mb-4
+                    flex
+                    flex-col
+                    gap-3
+                    sm:flex-row
+                    sm:items-center
+                    sm:justify-between
+                ">
+
+                    <div>
+
+                        <h2 className="
+                            text-lg
+                            font-bold
+                            text-slate-900
+                        ">
+                            Bidhaa za {categoryName}
+                        </h2>
+
+                        <p className="
+                            mt-1
+                            text-sm
+                            text-slate-500
+                        ">
+                            {total}{" "}
+                            {total === 1
+                                ? "bidhaa imepatikana"
+                                : "bidhaa zimepatikana"}
+                        </p>
 
                     </div>
 
 
-                    {/* =================================================
-                        PRODUCTS
-                    ================================================== */}
+                    {/* FILTER BUTTON */}
+                    <button
+                        type="button"
+                        className="
+                            inline-flex
+                            w-fit
+                            items-center
+                            gap-2
+                            rounded-xl
+                            border
+                            border-slate-200
+                            bg-white
+                            px-4
+                            py-2.5
+                            text-sm
+                            font-medium
+                            text-slate-700
+                            transition
+                            hover:bg-slate-50
+                            hover:text-slate-900
+                        "
+                    >
+                        <SlidersHorizontal size={17} />
 
-                    {products.length > 0 ? (
+                        Filter
+                    </button>
 
-                        <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-4">
+                </div>
 
-                            {products.map((product) => (
 
-                                <Link
-                                    key={product.id}
-                                    // href={`/marketplace/product/${product.slug}`}
-                                    href={route('marketplace.listing.show', product.slug)}
-                                    className="group bg-white rounded-2xl border border-slate-200 overflow-hidden hover:shadow-lg transition"
-                                >
+                {/* =====================================================
+                    PRODUCTS
+                ====================================================== */}
+                {products.length > 0 ? (
 
-                                    {/* IMAGE */}
+                    <div className="
+                        grid
+                        grid-cols-2
+                        gap-3
+                        sm:grid-cols-3
+                        sm:gap-4
+                        lg:grid-cols-4
+                        xl:grid-cols-5
+                    ">
 
-                                    <div className="aspect-square bg-slate-100 overflow-hidden">
+                        {products.map((product) => (
 
-                                        {product.image ? (
+                            <Link
+                                key={product.id}
+                                href={route(
+                                    "marketplace.listing.show",
+                                    product.slug
+                                )}
+                                className="
+                                    group
+                                    overflow-hidden
+                                    rounded-2xl
+                                    border
+                                    border-slate-200
+                                    bg-white
+                                    transition
+                                    duration-200
+                                    hover:-translate-y-0.5
+                                    hover:border-green-200
+                                    hover:shadow-lg
+                                "
+                            >
 
-                                            <img
-                                                src={product.image}
-                                                alt={product.title}
-                                                className="w-full h-full object-cover group-hover:scale-105 transition duration-300"
-                                            />
+                                {/* =================================================
+                                    PRODUCT IMAGE
+                                ================================================== */}
+                                <div className="
+                                    relative
+                                    aspect-square
+                                    overflow-hidden
+                                    bg-slate-100
+                                ">
 
-                                        ) : (
+                                    {product.image ? (
 
-                                            <div className="w-full h-full flex items-center justify-center text-slate-400">
+                                        <img
+                                            src={product.image}
+                                            alt={product.title}
+                                            loading="lazy"
+                                            className="
+                                                h-full
+                                                w-full
+                                                object-cover
+                                                transition
+                                                duration-500
+                                                group-hover:scale-105
+                                            "
+                                        />
 
-                                                <div className="text-center">
-                                                    <div className="text-4xl mb-2">
-                                                        📦
-                                                    </div>
+                                    ) : (
 
-                                                    <span className="text-xs">
-                                                        Hakuna picha
-                                                    </span>
-                                                </div>
+                                        <div className="
+                                            flex
+                                            h-full
+                                            w-full
+                                            flex-col
+                                            items-center
+                                            justify-center
+                                            text-slate-400
+                                        ">
 
-                                            </div>
+                                            <Package size={38} />
 
-                                        )}
+                                            <span className="
+                                                mt-2
+                                                text-xs
+                                            ">
+                                                Hakuna picha
+                                            </span>
+
+                                        </div>
+
+                                    )}
+
+
+                                    {/* =================================================
+                                        CONDITION BADGE
+                                    ================================================== */}
+                                    {product.condition && (
+
+                                        <div className="
+                                            absolute
+                                            left-2
+                                            top-2
+                                        ">
+
+                                            <span className="
+                                                rounded-full
+                                                bg-white/95
+                                                px-2.5
+                                                py-1
+                                                text-[10px]
+                                                font-semibold
+                                                capitalize
+                                                text-slate-700
+                                                shadow-sm
+                                                backdrop-blur-sm
+                                            ">
+                                                {product.condition}
+                                            </span>
+
+                                        </div>
+
+                                    )}
+
+                                </div>
+
+
+                                {/* =================================================
+                                    PRODUCT DETAILS
+                                ================================================== */}
+                                <div className="p-3 sm:p-4">
+
+                                    {/* PRODUCT TITLE */}
+                                    <h3 className="
+                                        line-clamp-2
+                                        text-sm
+                                        font-semibold
+                                        leading-snug
+                                        text-slate-900
+                                        transition
+                                        group-hover:text-green-600
+                                    ">
+                                        {product.title}
+                                    </h3>
+
+
+                                    {/* PRICE */}
+                                    <div className="mt-2">
+
+                                        <p className="
+                                            text-base
+                                            font-extrabold
+                                            text-green-600
+                                            sm:text-lg
+                                        ">
+                                            {product.formatted_price ??
+                                                `TZS ${Number(
+                                                    product.price ?? 0
+                                                ).toLocaleString()}`}
+                                        </p>
 
                                     </div>
 
 
-                                    {/* DETAILS */}
+                                    {/* LOCATION */}
+                                    {product.location && (
 
-                                    <div className="p-4">
+                                        <div className="
+                                            mt-2
+                                            flex
+                                            min-w-0
+                                            items-center
+                                            gap-1.5
+                                            text-xs
+                                            text-slate-500
+                                        ">
 
-                                        <h3 className="font-medium text-slate-900 line-clamp-2 group-hover:text-green-600 transition">
-                                            {product.title}
-                                        </h3>
+                                            <MapPin
+                                                size={13}
+                                                className="shrink-0"
+                                            />
 
-
-                                        <div className="mt-2">
-
-                                            <p className="text-lg font-bold text-green-600">
-                                                {product.formatted_price}
-                                            </p>
-
-                                        </div>
-
-
-                                        <div className="mt-2 flex items-center justify-between text-xs text-slate-500">
-
-                                            <span>
+                                            <span className="truncate">
                                                 {product.location}
                                             </span>
 
-                                            {product.condition && (
-                                                <span className="capitalize">
-                                                    {product.condition}
-                                                </span>
-                                            )}
-
                                         </div>
 
-                                    </div>
+                                    )}
 
-                                </Link>
+                                </div>
 
-                            ))}
-
-                        </div>
-
-                    ) : (
-
-                        /* =================================================
-                            EMPTY STATE
-                        ================================================== */
-
-                        <div className="bg-white border border-slate-200 rounded-2xl py-16 px-6 text-center">
-
-                            <div className="text-6xl mb-4">
-                                📦
-                            </div>
-
-                            <h3 className="text-xl font-semibold text-slate-900">
-                                Hakuna bidhaa bado
-                            </h3>
-
-                            <p className="mt-2 text-slate-500 max-w-md mx-auto">
-                                Hakuna bidhaa zilizowekwa kwenye category ya{" "}
-                                <strong>{category.name}</strong> bado.
-                            </p>
-
-                            <Link
-                                href="/marketplace/dashboard"
-                                className="inline-flex mt-6 px-5 py-3 rounded-xl bg-green-600 text-white font-semibold hover:bg-green-700 transition"
-                            >
-                                Weka Bidhaa
                             </Link>
 
+                        ))}
+
+                    </div>
+
+                ) : (
+
+                    /* =====================================================
+                        EMPTY STATE
+                    ====================================================== */
+                    <div className="
+                        rounded-2xl
+                        border
+                        border-slate-200
+                        bg-white
+                        px-6
+                        py-14
+                        text-center
+                        sm:py-20
+                    ">
+
+                        {/* ICON */}
+                        <div className="
+                            mx-auto
+                            flex
+                            h-20
+                            w-20
+                            items-center
+                            justify-center
+                            rounded-full
+                            bg-green-50
+                            text-green-600
+                        ">
+
+                            <Package size={38} />
+
                         </div>
 
-                    )}
+
+                        {/* TITLE */}
+                        <h3 className="
+                            mt-5
+                            text-xl
+                            font-bold
+                            text-slate-900
+                        ">
+                            Hakuna bidhaa bado
+                        </h3>
 
 
-                    {/* =================================================
-                        PAGINATION
-                    ================================================== */}
+                        {/* DESCRIPTION */}
+                        <p className="
+                            mx-auto
+                            mt-2
+                            max-w-md
+                            text-sm
+                            leading-6
+                            text-slate-500
+                        ">
 
-                    {listings?.links && listings.links.length > 3 && (
+                            Hakuna bidhaa zilizowekwa kwenye category ya{" "}
 
-                        <div className="flex flex-wrap justify-center gap-2 mt-8">
+                            <strong className="
+                                font-semibold
+                                text-slate-700
+                            ">
+                                {categoryName}
+                            </strong>{" "}
 
-                            {listings.links.map((link, index) => (
+                            bado.
 
-                                link.url ? (
+                        </p>
 
+
+                        {/* BROWSE MARKETPLACE */}
+                        <Link
+                            href={route("marketplace.index")}
+                            className="
+                                mt-6
+                                inline-flex
+                                items-center
+                                gap-2
+                                rounded-xl
+                                bg-green-600
+                                px-6
+                                py-3
+                                text-sm
+                                font-semibold
+                                text-white
+                                transition
+                                hover:bg-green-700
+                                focus:outline-none
+                                focus:ring-2
+                                focus:ring-green-500
+                                focus:ring-offset-2
+                            "
+                        >
+                            <ChevronRight size={18} />
+
+                            Browse Marketplace
+                        </Link>
+
+                    </div>
+
+                )}
+
+
+                {/* =====================================================
+                    PAGINATION
+                ====================================================== */}
+                {listings?.links &&
+                    listings.links.length > 3 && (
+
+                        <div className="
+                            mt-8
+                            flex
+                            flex-wrap
+                            items-center
+                            justify-center
+                            gap-2
+                        ">
+
+                            {listings.links.map((link, index) => {
+
+                                const label = link.label
+                                    ?.replace("&laquo;", "«")
+                                    ?.replace("&raquo;", "»");
+
+                                /* =================================================
+                                    DISABLED PAGINATION
+                                ================================================== */
+                                if (!link.url) {
+
+                                    return (
+                                        <span
+                                            key={index}
+                                            className="
+                                                rounded-xl
+                                                bg-slate-100
+                                                px-3.5
+                                                py-2
+                                                text-sm
+                                                text-slate-400
+                                            "
+                                            dangerouslySetInnerHTML={{
+                                                __html: label,
+                                            }}
+                                        />
+                                    );
+
+                                }
+
+
+                                /* =================================================
+                                    ACTIVE / NORMAL PAGINATION
+                                ================================================== */
+                                return (
                                     <Link
                                         key={index}
                                         href={link.url}
                                         preserveScroll
-                                        className={`px-4 py-2 rounded-lg text-sm font-medium ${
-                                            link.active
-                                                ? "bg-green-600 text-white"
-                                                : "bg-white border border-slate-200 text-slate-700 hover:bg-slate-50"
-                                        }`}
+                                        className={`
+                                            rounded-xl
+                                            px-3.5
+                                            py-2
+                                            text-sm
+                                            font-medium
+                                            transition
+                                            ${
+                                                link.active
+                                                    ? "bg-green-600 text-white shadow-sm"
+                                                    : "border border-slate-200 bg-white text-slate-700 hover:border-green-200 hover:bg-green-50 hover:text-green-700"
+                                            }
+                                        `}
                                         dangerouslySetInnerHTML={{
-                                            __html: link.label,
+                                            __html: label,
                                         }}
                                     />
+                                );
 
-                                ) : (
-
-                                    <span
-                                        key={index}
-                                        className="px-4 py-2 rounded-lg text-sm text-slate-400 bg-slate-100"
-                                        dangerouslySetInnerHTML={{
-                                            __html: link.label,
-                                        }}
-                                    />
-
-                                )
-
-                            ))}
+                            })}
 
                         </div>
 
                     )}
 
-                </div>
-
             </div>
 
-        </MarketplaceLayout>
+        </MarketplaceBrowseLayout>
     );
 }
+

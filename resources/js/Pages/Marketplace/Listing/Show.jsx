@@ -1,6 +1,6 @@
 import { Head, Link, router } from "@inertiajs/react";
 import { useState } from "react";
-import MarketplaceLayout from "@/Layouts/MarketplaceLayout";
+import MarketplaceBrowseLayout from "@/Layouts/MarketplaceBrowseLayout";
 
 import {
     ArrowLeft,
@@ -29,8 +29,8 @@ export default function Show({
             : [];
 
     const [activeImage, setActiveImage] = useState(0);
-    // const [showPhone, setShowPhone] = useState(false);
     const [showPhone, setShowPhone] = useState(false);
+
     const [showOfferModal, setShowOfferModal] = useState(false);
     const [offerAmount, setOfferAmount] = useState("");
 
@@ -38,14 +38,19 @@ export default function Show({
     const [reportReason, setReportReason] = useState("");
     const [reportDescription, setReportDescription] = useState("");
     const [reporting, setReporting] = useState(false);
-    
+
     const [saved, setSaved] = useState(
-    product?.is_saved ?? false
-);
-const [saving, setSaving] = useState(false);
+        product?.is_saved ?? false
+    );
+
+    const [saving, setSaving] = useState(false);
 
     const currentImage =
         images[activeImage] ?? null;
+
+    /* =========================================================
+       IMAGE NAVIGATION
+    ========================================================= */
 
     const nextImage = () => {
         if (!images.length) return;
@@ -60,9 +65,13 @@ const [saving, setSaving] = useState(false);
 
         setActiveImage(
             (activeImage - 1 + images.length) %
-            images.length
+                images.length
         );
     };
+
+    /* =========================================================
+       SHARE PRODUCT
+    ========================================================= */
 
     const shareProduct = async () => {
         const url = window.location.href;
@@ -73,16 +82,21 @@ const [saving, setSaving] = useState(false);
                 text: product.title,
                 url,
             });
-        } else {
+        } else if (navigator.clipboard) {
             await navigator.clipboard.writeText(url);
             alert("Link ya bidhaa imenakiliwa.");
+        } else {
+            alert("Imeshindikana kunakili link ya bidhaa.");
         }
     };
+
+    /* =========================================================
+       SELLER CONTACT
+    ========================================================= */
 
     const sellerPhone =
         product?.seller?.phone ?? null;
 
-    //Show Contact Page
     const openWhatsApp = () => {
         if (!sellerPhone) {
             alert("Seller hajaweka namba ya simu.");
@@ -105,9 +119,11 @@ const [saving, setSaving] = useState(false);
             "_blank"
         );
     };
-    //Mwisho wa Show contacts
 
-    //Submit Report
+    /* =========================================================
+       REPORT LISTING
+    ========================================================= */
+
     const submitReport = () => {
         if (!reportReason) {
             alert("Tafadhali chagua sababu ya kuripoti.");
@@ -138,51 +154,57 @@ const [saving, setSaving] = useState(false);
         );
     };
 
-    //Save Listing
-    // Save / Unsave Listing
-const saveListing = () => {
-    if (saving) return;
+    /* =========================================================
+       SAVE / UNSAVE LISTING
+    ========================================================= */
 
-    setSaving(true);
+    const saveListing = () => {
+        if (saving) return;
 
-    router.post(
-        `/marketplace/listing/${product.id}/save`,
-        {},
-        {
-            preserveScroll: true,
+        setSaving(true);
 
-            onSuccess: () => {
-                setSaved((current) => !current);
-            },
+        router.post(
+            `/marketplace/listing/${product.id}/save`,
+            {},
+            {
+                preserveScroll: true,
 
-            onFinish: () => {
-                setSaving(false);
-            },
-        }
-    );
-};
+                onSuccess: () => {
+                    setSaved((current) => !current);
+                },
+
+                onFinish: () => {
+                    setSaving(false);
+                },
+            }
+        );
+    };
 
     return (
         <>
-            <Head title={product.title} />
+            <Head title={product?.title ?? "Product"} />
 
-            <MarketplaceLayout>
+            <MarketplaceBrowseLayout>
+
                 <div className="min-h-screen bg-slate-50">
 
                     {/* =====================================================
-                        CONTENT
+                        MAIN CONTENT
                     ====================================================== */}
 
                     <div className="mx-auto max-w-7xl px-4 py-6">
 
-                        {/* BACK */}
+                        {/* =================================================
+                            BACK
+                        ================================================= */}
+
                         <Link
                             href={
                                 product?.category?.slug
                                     ? `/marketplace/category/${product.category.slug}`
                                     : "/marketplace"
                             }
-                            className="mb-5 inline-flex items-center gap-2 text-sm font-medium text-slate-600 hover:text-green-600"
+                            className="mb-5 inline-flex items-center gap-2 text-sm font-medium text-slate-600 transition hover:text-green-600"
                         >
                             <ArrowLeft size={18} />
 
@@ -192,13 +214,13 @@ const saveListing = () => {
 
                         {/* =================================================
                             MAIN PRODUCT
-                        ================================================== */}
+                        ================================================= */}
 
                         <div className="grid grid-cols-1 gap-6 lg:grid-cols-12">
 
                             {/* =================================================
                                 IMAGE GALLERY
-                            ================================================== */}
+                            ================================================= */}
 
                             <div className="lg:col-span-7">
 
@@ -208,95 +230,129 @@ const saveListing = () => {
                                     <div className="relative flex aspect-[4/3] items-center justify-center bg-slate-100">
 
                                         {currentImage ? (
+
                                             <img
                                                 src={currentImage}
                                                 alt={product.title}
                                                 className="h-full w-full object-contain"
                                             />
+
                                         ) : (
+
                                             <div className="flex flex-col items-center text-slate-400">
+
                                                 <Tag size={48} />
+
                                                 <span className="mt-2">
                                                     Picha haipo
                                                 </span>
+
                                             </div>
+
                                         )}
+
 
                                         {/* IMAGE COUNTER */}
+
                                         {images.length > 0 && (
+
                                             <div className="absolute left-4 top-4 rounded-full bg-black/70 px-3 py-1.5 text-sm font-medium text-white">
+
                                                 {activeImage + 1}/{images.length}
+
                                             </div>
+
                                         )}
 
-                                        {/* PREVIOUS */}
+
+                                        {/* IMAGE NAVIGATION */}
+
                                         {images.length > 1 && (
+
                                             <>
+
                                                 <button
                                                     type="button"
                                                     onClick={previousImage}
-                                                    className="absolute left-3 top-1/2 flex h-10 w-10 -translate-y-1/2 items-center justify-center rounded-full bg-white/90 shadow hover:bg-white"
+                                                    aria-label="Previous image"
+                                                    className="absolute left-3 top-1/2 flex h-10 w-10 -translate-y-1/2 items-center justify-center rounded-full bg-white/90 shadow transition hover:bg-white"
                                                 >
                                                     <ChevronLeft size={22} />
                                                 </button>
 
+
                                                 <button
                                                     type="button"
                                                     onClick={nextImage}
-                                                    className="absolute right-3 top-1/2 flex h-10 w-10 -translate-y-1/2 items-center justify-center rounded-full bg-white/90 shadow hover:bg-white"
+                                                    aria-label="Next image"
+                                                    className="absolute right-3 top-1/2 flex h-10 w-10 -translate-y-1/2 items-center justify-center rounded-full bg-white/90 shadow transition hover:bg-white"
                                                 >
                                                     <ChevronRight size={22} />
                                                 </button>
+
                                             </>
+
                                         )}
+
                                     </div>
 
 
                                     {/* THUMBNAILS */}
+
                                     {images.length > 1 && (
+
                                         <div className="flex gap-3 overflow-x-auto border-t border-slate-200 p-3">
 
                                             {images.map(
                                                 (image, index) => (
+
                                                     <button
                                                         key={`${image}-${index}`}
                                                         type="button"
                                                         onClick={() =>
-                                                            setActiveImage(
-                                                                index
-                                                            )
+                                                            setActiveImage(index)
                                                         }
-                                                        className={`h-20 w-20 shrink-0 overflow-hidden rounded-lg border-2 ${activeImage === index
+                                                        className={`h-20 w-20 shrink-0 overflow-hidden rounded-lg border-2 transition ${
+                                                            activeImage === index
                                                                 ? "border-green-600"
                                                                 : "border-transparent"
-                                                            }`}
+                                                        }`}
                                                     >
+
                                                         <img
                                                             src={image}
                                                             alt=""
                                                             className="h-full w-full object-cover"
                                                         />
+
                                                     </button>
+
                                                 )
                                             )}
 
                                         </div>
+
                                     )}
 
                                 </div>
 
 
-                                {/* SHARE / SAVE */}
-                                <div className="mt-3 flex gap-3">
+                                {/* =================================================
+                                    SHARE / SAVE
+                                ================================================== */}
+
+                                <div className="mt-3 flex flex-wrap gap-3">
 
                                     <button
                                         type="button"
                                         onClick={shareProduct}
-                                        className="inline-flex items-center gap-2 rounded-xl border border-slate-200 bg-white px-4 py-2.5 text-sm font-medium text-slate-700 hover:bg-slate-50"
+                                        className="inline-flex items-center gap-2 rounded-xl border border-slate-200 bg-white px-4 py-2.5 text-sm font-medium text-slate-700 transition hover:bg-slate-50"
                                     >
                                         <Share2 size={17} />
+
                                         Share
                                     </button>
+
 
                                     <button
                                         type="button"
@@ -308,9 +364,14 @@ const saveListing = () => {
                                                 : "border-slate-200 bg-white text-slate-700 hover:bg-slate-50"
                                         } disabled:cursor-not-allowed disabled:opacity-60`}
                                     >
+
                                         <Heart
                                             size={17}
-                                            className={saved ? "fill-current" : ""}
+                                            className={
+                                                saved
+                                                    ? "fill-current"
+                                                    : ""
+                                            }
                                         />
 
                                         {saving
@@ -318,6 +379,7 @@ const saveListing = () => {
                                             : saved
                                                 ? "Saved"
                                                 : "Save"}
+
                                     </button>
 
                                 </div>
@@ -334,7 +396,9 @@ const saveListing = () => {
                                 <div className="rounded-2xl border border-slate-200 bg-white p-5">
 
                                     {/* CATEGORY */}
-                                    {product.category?.name && (
+
+                                    {product?.category?.name && (
+
                                         <Link
                                             href={`/marketplace/category/${product.category.slug}`}
                                             className="mb-3 inline-flex items-center gap-2 text-sm font-medium text-green-600 hover:underline"
@@ -343,38 +407,50 @@ const saveListing = () => {
 
                                             {product.category.name}
                                         </Link>
+
                                     )}
 
 
                                     {/* TITLE */}
+
                                     <h1 className="text-2xl font-bold leading-tight text-slate-900">
                                         {product.title}
                                     </h1>
 
 
                                     {/* PRICE */}
+
                                     <div className="mt-4 text-3xl font-extrabold text-green-600">
                                         {product.formatted_price}
                                     </div>
 
 
                                     {/* META */}
+
                                     <div className="mt-4 space-y-2 text-sm text-slate-500">
 
                                         <div className="flex items-center gap-2">
+
                                             <MapPin size={17} />
+
                                             {product.location}
+
                                         </div>
 
+
                                         <div className="flex items-center gap-2">
+
                                             <Clock size={17} />
+
                                             {product.created_at ?? "Recently"}
+
                                         </div>
 
                                     </div>
 
 
                                     {/* CONDITION */}
+
                                     <div className="mt-5">
 
                                         <div className="text-xs font-semibold uppercase tracking-wide text-slate-400">
@@ -388,39 +464,63 @@ const saveListing = () => {
                                     </div>
 
 
-                                    {/* ACTIONS */}
+                                    {/* =================================================
+                                        ACTIONS
+                                    ================================================== */}
+
                                     <div className="mt-6 space-y-3">
 
+                                        {/* SHOW CONTACT */}
+
                                         <div className="space-y-2">
+
                                             <button
                                                 type="button"
-                                                onClick={() => setShowPhone(true)}
+                                                onClick={() =>
+                                                    setShowPhone(true)
+                                                }
                                                 className="flex w-full items-center justify-center gap-2 rounded-xl bg-green-600 px-5 py-3.5 font-bold text-white transition hover:bg-green-700"
                                             >
+
                                                 <Phone size={19} />
 
                                                 {showPhone && sellerPhone
                                                     ? sellerPhone
                                                     : "Show Contact"}
+
                                             </button>
 
-                                            {showPhone && sellerPhone && (
-                                                <a
-                                                    href={`tel:${sellerPhone}`}
-                                                    className="flex w-full items-center justify-center gap-2 rounded-xl border border-green-200 bg-green-50 px-5 py-3 text-sm font-semibold text-green-700 hover:bg-green-100"
-                                                >
-                                                    <Phone size={17} />
-                                                    Piga simu kwa Seller
-                                                </a>
-                                            )}
 
-                                            {showPhone && !sellerPhone && (
-                                                <div className="rounded-xl bg-red-50 px-4 py-3 text-center text-sm font-medium text-red-600">
-                                                    Seller hajaweka namba ya simu.
-                                                </div>
-                                            )}
+                                            {showPhone &&
+                                                sellerPhone && (
+
+                                                    <a
+                                                        href={`tel:${sellerPhone}`}
+                                                        className="flex w-full items-center justify-center gap-2 rounded-xl border border-green-200 bg-green-50 px-5 py-3 text-sm font-semibold text-green-700 transition hover:bg-green-100"
+                                                    >
+
+                                                        <Phone size={17} />
+
+                                                        Piga simu kwa Seller
+
+                                                    </a>
+
+                                                )}
+
+
+                                            {showPhone &&
+                                                !sellerPhone && (
+
+                                                    <div className="rounded-xl bg-red-50 px-4 py-3 text-center text-sm font-medium text-red-600">
+                                                        Seller hajaweka namba ya simu.
+                                                    </div>
+
+                                                )}
+
                                         </div>
 
+
+                                        {/* WHATSAPP */}
 
                                         <button
                                             type="button"
@@ -428,17 +528,23 @@ const saveListing = () => {
                                             disabled={!sellerPhone}
                                             className="flex w-full items-center justify-center gap-2 rounded-xl border-2 border-green-600 px-5 py-3.5 font-bold text-green-700 transition hover:bg-green-50 disabled:cursor-not-allowed disabled:opacity-50"
                                         >
+
                                             <MessageCircle size={19} />
 
                                             {sellerPhone
                                                 ? "Chat with Seller"
                                                 : "Seller hana WhatsApp"}
+
                                         </button>
 
 
+                                        {/* MAKE OFFER */}
+
                                         <button
                                             type="button"
-                                            onClick={() => setShowOfferModal(true)}
+                                            onClick={() =>
+                                                setShowOfferModal(true)
+                                            }
                                             className="flex w-full items-center justify-center gap-2 rounded-xl border border-slate-200 px-5 py-3.5 font-bold text-slate-700 transition hover:bg-slate-50"
                                         >
                                             Make an Offer
@@ -449,7 +555,10 @@ const saveListing = () => {
                                 </div>
 
 
-                                {/* SELLER */}
+                                {/* =================================================
+                                    SELLER
+                                ================================================== */}
+
                                 <div className="mt-5 rounded-2xl border border-slate-200 bg-white p-5">
 
                                     <div className="flex items-center gap-3">
@@ -458,7 +567,9 @@ const saveListing = () => {
                                             <User size={23} />
                                         </div>
 
+
                                         <div>
+
                                             <div className="text-xs text-slate-400">
                                                 Seller
                                             </div>
@@ -467,14 +578,18 @@ const saveListing = () => {
                                                 {product.seller?.name ??
                                                     "MauzoVibe Seller"}
                                             </div>
+
                                         </div>
 
                                     </div>
 
+
                                     <div className="mt-4 flex items-center gap-2 text-sm text-green-700">
+
                                         <ShieldCheck size={17} />
 
                                         MauzoVibe Seller
+
                                     </div>
 
                                 </div>
@@ -498,6 +613,7 @@ const saveListing = () => {
                                         Maelezo ya bidhaa
                                     </h2>
 
+
                                     <div className="mt-4 whitespace-pre-line text-sm leading-7 text-slate-600">
                                         {product.description ||
                                             "Hakuna maelezo yaliyowekwa na seller."}
@@ -506,16 +622,20 @@ const saveListing = () => {
                                 </div>
 
 
-                                {/* SAFETY */}
+                                {/* =================================================
+                                    SAFETY
+                                ================================================== */}
+
                                 <div className="mt-5 rounded-2xl border border-amber-200 bg-amber-50 p-6">
 
                                     <div className="flex items-center gap-2 font-bold text-amber-900">
-                                        <AlertTriangle
-                                            size={19}
-                                        />
+
+                                        <AlertTriangle size={19} />
 
                                         Safety Tips
+
                                     </div>
+
 
                                     <ul className="mt-4 space-y-2 text-sm text-amber-900">
 
@@ -546,19 +666,26 @@ const saveListing = () => {
                             </div>
 
 
-                            {/* REPORT */}
+                            {/* =================================================
+                                REPORT
+                            ================================================== */}
+
                             <div className="lg:col-span-4">
 
                                 <div className="rounded-2xl border border-slate-200 bg-white p-5">
 
                                     <button
                                         type="button"
-                                        onClick={() => setShowReportModal(true)}
-                                        className="flex w-full items-center justify-center gap-2 text-sm font-medium text-slate-500 hover:text-red-600"
+                                        onClick={() =>
+                                            setShowReportModal(true)
+                                        }
+                                        className="flex w-full items-center justify-center gap-2 text-sm font-medium text-slate-500 transition hover:text-red-600"
                                     >
+
                                         <Flag size={17} />
 
                                         Report this listing
+
                                     </button>
 
                                 </div>
@@ -573,20 +700,26 @@ const saveListing = () => {
                         ================================================== */}
 
                         {relatedProducts.length > 0 && (
+
                             <section className="mt-10">
 
-                                <div className="mb-5 flex items-center justify-between">
+                                <div className="mb-5 flex items-center justify-between gap-4">
 
                                     <h2 className="text-xl font-bold text-slate-900">
                                         Bidhaa zinazofanana
                                     </h2>
 
-                                    <Link
-                                        href={`/marketplace/category/${product.category?.slug}`}
-                                        className="text-sm font-semibold text-green-600 hover:underline"
-                                    >
-                                        Tazama zote →
-                                    </Link>
+
+                                    {product?.category?.slug && (
+
+                                        <Link
+                                            href={`/marketplace/category/${product.category.slug}`}
+                                            className="text-sm font-semibold text-green-600 hover:underline"
+                                        >
+                                            Tazama zote →
+                                        </Link>
+
+                                    )}
 
                                 </div>
 
@@ -595,35 +728,39 @@ const saveListing = () => {
 
                                     {relatedProducts.map(
                                         (item) => (
+
                                             <Link
                                                 key={item.id}
                                                 href={`/marketplace/listing/${item.slug}`}
                                                 className="overflow-hidden rounded-xl border border-slate-200 bg-white transition hover:-translate-y-1 hover:shadow-lg"
                                             >
 
+                                                {/* IMAGE */}
+
                                                 <div className="aspect-square bg-slate-100">
 
                                                     {item.image ? (
+
                                                         <img
-                                                            src={
-                                                                item.image
-                                                            }
-                                                            alt={
-                                                                item.title
-                                                            }
+                                                            src={item.image}
+                                                            alt={item.title}
                                                             className="h-full w-full object-cover"
                                                         />
+
                                                     ) : (
+
                                                         <div className="flex h-full items-center justify-center text-slate-400">
-                                                            <Tag
-                                                                size={
-                                                                    35
-                                                                }
-                                                            />
+
+                                                            <Tag size={35} />
+
                                                         </div>
+
                                                     )}
 
                                                 </div>
+
+
+                                                {/* DETAILS */}
 
                                                 <div className="p-3">
 
@@ -631,94 +768,129 @@ const saveListing = () => {
                                                         {item.title}
                                                     </h3>
 
+
                                                     <div className="mt-2 font-bold text-green-600">
-                                                        {
-                                                            item.formatted_price
-                                                        }
+                                                        {item.formatted_price}
                                                     </div>
 
-                                                    <div className="mt-1 flex items-center gap-1 text-xs text-slate-500">
-                                                        <MapPin
-                                                            size={13}
-                                                        />
 
-                                                        {
-                                                            item.location
-                                                        }
+                                                    <div className="mt-1 flex items-center gap-1 text-xs text-slate-500">
+
+                                                        <MapPin size={13} />
+
+                                                        {item.location}
+
                                                     </div>
 
                                                 </div>
 
                                             </Link>
+
                                         )
                                     )}
 
                                 </div>
 
                             </section>
+
                         )}
 
                     </div>
 
                 </div>
+
+
+                {/* =========================================================
+                    MAKE AN OFFER MODAL
+                ========================================================== */}
+
                 {showOfferModal && (
+
                     <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 px-4">
+
                         <div className="w-full max-w-md rounded-2xl bg-white p-6 shadow-2xl">
 
+                            {/* HEADER */}
+
                             <div className="flex items-center justify-between">
+
                                 <h2 className="text-xl font-bold text-slate-900">
                                     Make an Offer
                                 </h2>
 
+
                                 <button
                                     type="button"
-                                    onClick={() => setShowOfferModal(false)}
-                                    className="text-slate-400 hover:text-slate-700"
+                                    onClick={() =>
+                                        setShowOfferModal(false)
+                                    }
+                                    className="text-slate-400 transition hover:text-slate-700"
                                 >
                                     ✕
                                 </button>
+
                             </div>
+
 
                             <p className="mt-2 text-sm text-slate-500">
                                 Weka bei unayopendekeza kwa bidhaa hii.
                             </p>
 
+
+                            {/* OFFER AMOUNT */}
+
                             <div className="mt-5">
+
                                 <label className="text-sm font-semibold text-slate-700">
                                     Bei yako
                                 </label>
 
+
                                 <div className="mt-2 flex items-center overflow-hidden rounded-xl border border-slate-300 focus-within:border-green-600">
+
                                     <span className="bg-slate-50 px-3 py-3 text-sm font-semibold text-slate-500">
                                         TZS
                                     </span>
+
 
                                     <input
                                         type="number"
                                         min="0"
                                         value={offerAmount}
                                         onChange={(e) =>
-                                            setOfferAmount(e.target.value)
+                                            setOfferAmount(
+                                                e.target.value
+                                            )
                                         }
                                         placeholder="Mfano 150000"
                                         className="w-full border-0 px-3 py-3 outline-none focus:ring-0"
                                     />
+
                                 </div>
+
                             </div>
 
+
+                            {/* ACTIONS */}
+
                             <div className="mt-5 flex gap-3">
+
                                 <button
                                     type="button"
-                                    onClick={() => setShowOfferModal(false)}
-                                    className="flex-1 rounded-xl border border-slate-200 px-4 py-3 font-semibold text-slate-600 hover:bg-slate-50"
+                                    onClick={() =>
+                                        setShowOfferModal(false)
+                                    }
+                                    className="flex-1 rounded-xl border border-slate-200 px-4 py-3 font-semibold text-slate-600 transition hover:bg-slate-50"
                                 >
                                     Cancel
                                 </button>
+
 
                                 <button
                                     type="button"
                                     disabled={!offerAmount}
                                     onClick={() => {
+
                                         alert(
                                             `Offer yako ya TZS ${Number(
                                                 offerAmount
@@ -726,25 +898,39 @@ const saveListing = () => {
                                         );
 
                                         setShowOfferModal(false);
+                                        setOfferAmount("");
+
                                     }}
-                                    className="flex-1 rounded-xl bg-green-600 px-4 py-3 font-bold text-white hover:bg-green-700 disabled:cursor-not-allowed disabled:opacity-50"
+                                    className="flex-1 rounded-xl bg-green-600 px-4 py-3 font-bold text-white transition hover:bg-green-700 disabled:cursor-not-allowed disabled:opacity-50"
                                 >
                                     Send Offer
                                 </button>
+
                             </div>
 
                         </div>
+
                     </div>
+
                 )}
 
+
+                {/* =========================================================
+                    REPORT MODAL
+                ========================================================== */}
+
                 {showReportModal && (
+
                     <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 px-4">
+
                         <div className="w-full max-w-md rounded-2xl bg-white p-6 shadow-2xl">
 
                             {/* HEADER */}
+
                             <div className="flex items-center justify-between">
 
                                 <div className="flex items-center gap-2">
+
                                     <Flag
                                         size={20}
                                         className="text-red-600"
@@ -753,12 +939,16 @@ const saveListing = () => {
                                     <h2 className="text-xl font-bold text-slate-900">
                                         Report this listing
                                     </h2>
+
                                 </div>
+
 
                                 <button
                                     type="button"
-                                    onClick={() => setShowReportModal(false)}
-                                    className="text-slate-400 hover:text-slate-700"
+                                    onClick={() =>
+                                        setShowReportModal(false)
+                                    }
+                                    className="text-slate-400 transition hover:text-slate-700"
                                 >
                                     ✕
                                 </button>
@@ -767,24 +957,29 @@ const saveListing = () => {
 
 
                             {/* DESCRIPTION */}
+
                             <p className="mt-2 text-sm text-slate-500">
                                 Tusaidie kuelewa tatizo kwenye bidhaa hii.
                             </p>
 
 
                             {/* REASON */}
+
                             <div className="mt-5">
 
                                 <label className="text-sm font-semibold text-slate-700">
                                     Sababu ya kuripoti
                                 </label>
 
+
                                 <select
                                     value={reportReason}
                                     onChange={(e) =>
-                                        setReportReason(e.target.value)
+                                        setReportReason(
+                                            e.target.value
+                                        )
                                     }
-                                    className="mt-2 w-full rounded-xl border border-slate-300 px-4 py-3 text-sm outline-none focus:border-green-600 focus:ring-1 focus:ring-green-600"
+                                    className="mt-2 w-full rounded-xl border border-slate-300 px-4 py-3 text-sm outline-none transition focus:border-green-600 focus:ring-1 focus:ring-green-600"
                                 >
 
                                     <option value="">
@@ -824,26 +1019,34 @@ const saveListing = () => {
                             </div>
 
 
-                            {/* DESCRIPTION */}
+                            {/* REPORT DESCRIPTION */}
+
                             <div className="mt-4">
 
                                 <label className="text-sm font-semibold text-slate-700">
+
                                     Maelezo zaidi
+
                                     <span className="ml-1 font-normal text-slate-400">
                                         (optional)
                                     </span>
+
                                 </label>
+
 
                                 <textarea
                                     value={reportDescription}
                                     onChange={(e) =>
-                                        setReportDescription(e.target.value)
+                                        setReportDescription(
+                                            e.target.value
+                                        )
                                     }
                                     rows={4}
                                     maxLength={1000}
                                     placeholder="Eleza tatizo kwa ufupi..."
-                                    className="mt-2 w-full resize-none rounded-xl border border-slate-300 px-4 py-3 text-sm outline-none focus:border-green-600 focus:ring-1 focus:ring-green-600"
+                                    className="mt-2 w-full resize-none rounded-xl border border-slate-300 px-4 py-3 text-sm outline-none transition focus:border-green-600 focus:ring-1 focus:ring-green-600"
                                 />
+
 
                                 <div className="mt-1 text-right text-xs text-slate-400">
                                     {reportDescription.length}/1000
@@ -853,6 +1056,7 @@ const saveListing = () => {
 
 
                             {/* WARNING */}
+
                             <div className="mt-4 rounded-xl bg-amber-50 px-4 py-3 text-sm text-amber-800">
                                 Ripoti yako itakaguliwa na timu ya MauzoVibe.
                                 Tafadhali toa taarifa sahihi.
@@ -860,22 +1064,29 @@ const saveListing = () => {
 
 
                             {/* ACTIONS */}
+
                             <div className="mt-5 flex gap-3">
 
                                 <button
                                     type="button"
-                                    onClick={() => setShowReportModal(false)}
+                                    onClick={() =>
+                                        setShowReportModal(false)
+                                    }
                                     disabled={reporting}
-                                    className="flex-1 rounded-xl border border-slate-200 px-4 py-3 font-semibold text-slate-600 hover:bg-slate-50 disabled:opacity-50"
+                                    className="flex-1 rounded-xl border border-slate-200 px-4 py-3 font-semibold text-slate-600 transition hover:bg-slate-50 disabled:opacity-50"
                                 >
                                     Cancel
                                 </button>
 
+
                                 <button
                                     type="button"
                                     onClick={submitReport}
-                                    disabled={!reportReason || reporting}
-                                    className="flex-1 rounded-xl bg-red-600 px-4 py-3 font-bold text-white hover:bg-red-700 disabled:cursor-not-allowed disabled:opacity-50"
+                                    disabled={
+                                        !reportReason ||
+                                        reporting
+                                    }
+                                    className="flex-1 rounded-xl bg-red-600 px-4 py-3 font-bold text-white transition hover:bg-red-700 disabled:cursor-not-allowed disabled:opacity-50"
                                 >
                                     {reporting
                                         ? "Inatuma..."
@@ -885,9 +1096,13 @@ const saveListing = () => {
                             </div>
 
                         </div>
+
                     </div>
+
                 )}
-            </MarketplaceLayout>
+
+            </MarketplaceBrowseLayout>
         </>
     );
 }
+

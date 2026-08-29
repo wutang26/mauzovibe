@@ -1175,4 +1175,32 @@ Route::middleware(['auth'])
         )->name('daily-posts.toggle');
 
     });
+
+
+// ==========================================================
+// MARKETPLACE USER PAGES
+// ==========================================================
+
+Route::middleware('auth')->group(function () {
+
+    // Favourites
+    Route::get('/marketplace/favourites', function () {
+        return Inertia::render('Marketplace/Favourites');
+    })->name('marketplace.favourites');
+
+
+    // Messages
+    Route::get('/marketplace/messages', function () {
+        return Inertia::render('Marketplace/Messages');
+    })->name('marketplace.messages');
+
+
+    // Cart
+    Route::get('/marketplace/cart', function () {
+        return Inertia::render('Marketplace/Cart');
+    })->name('marketplace.cart');
+
+});
+
+
 require __DIR__.'/auth.php';

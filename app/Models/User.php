@@ -114,4 +114,28 @@ public function marketplaceReports(): HasMany
 {
     return $this->hasMany(MarketplaceReport::class);
 }
+
+public function sentMarketplaceMessages(): HasMany
+{
+    return $this->hasMany(
+        MarketplaceMessage::class,
+        'sender_id'
+    );
 }
+
+public function receivedMarketplaceMessages(): HasMany
+{
+    return $this->hasMany(
+        MarketplaceMessage::class,
+        'receiver_id'
+    );
+}
+
+public function marketplaceCart(): HasOne
+{
+    return $this->hasOne(
+        MarketplaceCart::class
+    );
+}
+}
+
