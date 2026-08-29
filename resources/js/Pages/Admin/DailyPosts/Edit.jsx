@@ -9,9 +9,10 @@ import {
 } from "@heroicons/react/24/outline";
 
 export default function Edit({ post }) {
+
     /*
     |--------------------------------------------------------------------------
-    | Format existing datetime for datetime-local
+    | FORMAT EXISTING DATETIME
     |--------------------------------------------------------------------------
     */
 
@@ -37,14 +38,20 @@ export default function Edit({ post }) {
 
     /*
     |--------------------------------------------------------------------------
-    | Form
+    | FORM
     |--------------------------------------------------------------------------
+    |
+    | IMPORTANT:
+    | useForm() also has a method called "post".
+    | We rename it to "submitForm" to avoid conflict with
+    | the component prop "post".
+    |
     */
 
     const {
         data,
         setData,
-        post,
+        post: submitForm,
         processing,
         errors,
     } = useForm({
@@ -53,18 +60,23 @@ export default function Edit({ post }) {
         title: post?.title ?? "",
         description: post?.description ?? "",
         image: null,
+
         button_text: post?.button_text ?? "",
         button_url: post?.button_url ?? "",
+
         type: post?.type ?? "welcome",
+
         starts_at: formatDateTimeLocal(post?.starts_at),
         ends_at: formatDateTimeLocal(post?.ends_at),
+
         is_active: Boolean(post?.is_active),
+
         sort_order: post?.sort_order ?? 0,
     });
 
     /*
     |--------------------------------------------------------------------------
-    | Existing image
+    | EXISTING IMAGE
     |--------------------------------------------------------------------------
     */
 
@@ -74,7 +86,7 @@ export default function Edit({ post }) {
 
     /*
     |--------------------------------------------------------------------------
-    | New image preview
+    | NEW IMAGE PREVIEW
     |--------------------------------------------------------------------------
     */
 
@@ -82,11 +94,12 @@ export default function Edit({ post }) {
 
     /*
     |--------------------------------------------------------------------------
-    | Create preview when new image selected
+    | IMAGE PREVIEW EFFECT
     |--------------------------------------------------------------------------
     */
 
     useEffect(() => {
+
         if (!data.image) {
             setImagePreview(null);
             return;
@@ -99,15 +112,17 @@ export default function Edit({ post }) {
         return () => {
             URL.revokeObjectURL(objectUrl);
         };
+
     }, [data.image]);
 
     /*
     |--------------------------------------------------------------------------
-    | Select image
+    | SELECT IMAGE
     |--------------------------------------------------------------------------
     */
 
     const handleImageChange = (e) => {
+
         const file = e.target.files?.[0];
 
         if (!file) {
@@ -119,52 +134,59 @@ export default function Edit({ post }) {
 
     /*
     |--------------------------------------------------------------------------
-    | Remove selected/new image
+    | REMOVE NEW IMAGE
     |--------------------------------------------------------------------------
     */
 
     const removeNewImage = () => {
+
         setData("image", null);
         setImagePreview(null);
     };
 
     /*
     |--------------------------------------------------------------------------
-    | Hide existing image from preview
+    | REMOVE EXISTING IMAGE FROM PREVIEW
     |--------------------------------------------------------------------------
     |
-    | IMPORTANT:
+    | NOTE:
     | This only removes it from the frontend preview.
-    | It does NOT delete it from database/storage.
+    | It does NOT delete the image from database/storage.
     |
     */
 
     const removeExistingImage = () => {
+
         setExistingImage(null);
     };
 
     /*
     |--------------------------------------------------------------------------
-    | Submit
+    | SUBMIT FORM
     |--------------------------------------------------------------------------
     */
 
     const submit = (e) => {
+
         e.preventDefault();
 
-        post(route("admin.daily-posts.update", post.id), {
-            forceFormData: true,
-            preserveScroll: true,
-        });
+        submitForm(
+            route("admin.daily-posts.update", post.id),
+            {
+                forceFormData: true,
+                preserveScroll: true,
+            }
+        );
     };
 
     /*
     |--------------------------------------------------------------------------
-    | File size
+    | FILE SIZE
     |--------------------------------------------------------------------------
     */
 
     const formatFileSize = (bytes) => {
+
         if (!bytes) {
             return "0 KB";
         }
@@ -180,16 +202,25 @@ export default function Edit({ post }) {
 
     /*
     |--------------------------------------------------------------------------
-    | Image to display
+    | IMAGE STATES
     |--------------------------------------------------------------------------
     */
 
     const hasNewImage = Boolean(imagePreview);
     const hasExistingImage = Boolean(existingImage);
 
+    /*
+    |--------------------------------------------------------------------------
+    | RENDER
+    |--------------------------------------------------------------------------
+    */
+
     return (
         <AdminLayout>
-            <Head title={`Edit Daily Post - ${post?.title ?? ""}`} />
+
+            <Head
+                title={`Edit Daily Post - ${post?.title ?? ""}`}
+            />
 
             <div className="p-4 sm:p-6 lg:p-8 max-w-5xl mx-auto">
 
@@ -221,6 +252,7 @@ export default function Edit({ post }) {
                     </Link>
 
                     <div>
+
                         <h1 className="text-2xl sm:text-3xl font-bold text-slate-900">
                             Edit Daily Post
                         </h1>
@@ -228,6 +260,7 @@ export default function Edit({ post }) {
                         <p className="text-sm text-slate-500 mt-1">
                             Update your Daily Welcome Page content.
                         </p>
+
                     </div>
 
                 </div>
@@ -237,6 +270,7 @@ export default function Edit({ post }) {
                 ========================================================== */}
 
                 {Object.keys(errors).length > 0 && (
+
                     <div
                         className="
                             mb-6
@@ -248,20 +282,27 @@ export default function Edit({ post }) {
                             sm:p-5
                         "
                     >
+
                         <p className="font-bold text-red-700 mb-2">
                             Please fix the following errors:
                         </p>
 
                         <ul className="list-disc list-inside space-y-1 text-sm text-red-600">
+
                             {Object.entries(errors).map(
                                 ([field, message]) => (
+
                                     <li key={field}>
                                         {message}
                                     </li>
+
                                 )
                             )}
+
                         </ul>
+
                     </div>
+
                 )}
 
                 {/* =========================================================
@@ -370,7 +411,7 @@ export default function Edit({ post }) {
                             </label>
 
                             {/* =================================================
-                                NEW IMAGE PREVIEW
+                                NEW IMAGE
                             ================================================== */}
 
                             {hasNewImage ? (
@@ -455,6 +496,7 @@ export default function Edit({ post }) {
                                                             handleImageChange
                                                         }
                                                     />
+
                                                 </label>
 
                                                 {/* REMOVE */}
@@ -508,7 +550,10 @@ export default function Edit({ post }) {
 
                                     <img
                                         src={existingImage}
-                                        alt={post?.title ?? "Daily post"}
+                                        alt={
+                                            post?.title ??
+                                            "Daily post"
+                                        }
                                         className="
                                             w-full
                                             h-[320px]
@@ -573,9 +618,10 @@ export default function Edit({ post }) {
                                                             handleImageChange
                                                         }
                                                     />
+
                                                 </label>
 
-                                                {/* HIDE */}
+                                                {/* REMOVE PREVIEW */}
 
                                                 <button
                                                     type="button"
@@ -610,7 +656,7 @@ export default function Edit({ post }) {
                             ) : (
 
                                 /* =================================================
-                                    UPLOAD NEW IMAGE
+                                    UPLOAD IMAGE
                                 ================================================== */
 
                                 <label
@@ -708,6 +754,7 @@ export default function Edit({ post }) {
                                     focus:ring-emerald-500
                                 "
                             >
+
                                 <option value="welcome">
                                     Welcome
                                 </option>
@@ -723,6 +770,7 @@ export default function Edit({ post }) {
                                 <option value="update">
                                     Update
                                 </option>
+
                             </select>
 
                             {errors.type && (
@@ -1040,6 +1088,7 @@ export default function Edit({ post }) {
                 </form>
 
             </div>
+
         </AdminLayout>
     );
 }
