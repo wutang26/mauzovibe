@@ -1160,10 +1160,14 @@ Route::middleware(['auth'])
     ->name('admin.')
     ->group(function () {
 
-        Route::resource(
+       Route::resource(
             'daily-posts',
             DailyPostController::class
-        )->except(['show']);
+        )
+        ->except(['show'])
+        ->parameters([
+            'daily-posts' => 'dailyPost',
+        ]);
 
         Route::patch(
             'daily-posts/{dailyPost}/toggle',

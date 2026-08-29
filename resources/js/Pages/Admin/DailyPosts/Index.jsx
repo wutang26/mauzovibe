@@ -283,22 +283,24 @@ export default function Index({ posts }) {
                                                 <div className="flex items-center justify-end gap-2">
 
                                                     <Link
-                                                        href={route(
-                                                            "admin.daily-posts.edit",
-                                                            post.id
-                                                        )}
-                                                        className="
-                                                            p-2
-                                                            rounded-lg
-                                                            text-slate-500
-                                                            hover:bg-emerald-50
-                                                            hover:text-emerald-600
-                                                            transition
-                                                        "
-                                                        title="Edit"
-                                                    >
-                                                        <PencilSquareIcon className="w-5 h-5" />
-                                                    </Link>
+                                                    href={route("admin.daily-posts.edit", {
+                                                        dailyPost: post.id,
+                                                    })}
+                                                    className="
+                                                        inline-flex
+                                                        items-center
+                                                        justify-center
+                                                        p-2
+                                                        rounded-lg
+                                                        text-slate-500
+                                                        hover:bg-emerald-50
+                                                        hover:text-emerald-600
+                                                        transition
+                                                    "
+                                                    title="Edit Daily Post"
+                                                >
+                                                    <PencilSquareIcon className="w-5 h-5" />
+                                                </Link>
 
                                                     <button
                                                         type="button"
