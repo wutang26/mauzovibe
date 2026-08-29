@@ -92,19 +92,39 @@ export default function Welcome({
         return () => clearInterval(interval);
     }, [trialEndsAt]);
 
+    //DAILY POSTS SLIDER
     useEffect(() => {
     if (!dailyPosts || dailyPosts.length <= 1) {
+        setCurrentPost(0);
         return;
     }
 
+    // Make sure current index is still valid
+    if (currentPost >= dailyPosts.length) {
+        setCurrentPost(0);
+    }
+
     const interval = setInterval(() => {
-        setCurrentPost((previous) =>
-            (previous + 1) % dailyPosts.length
-        );
+        setCurrentPost((previous) => {
+            return (previous + 1) % dailyPosts.length;
+        });
     }, 5000);
 
     return () => clearInterval(interval);
-}, [dailyPosts]);
+}, [dailyPosts, currentPost]);
+//     useEffect(() => {
+//     if (!dailyPosts || dailyPosts.length <= 1) {
+//         return;
+//     }
+
+//     const interval = setInterval(() => {
+//         setCurrentPost((previous) =>
+//             (previous + 1) % dailyPosts.length
+//         );
+//     }, 5000);
+
+//     return () => clearInterval(interval);
+// }, [dailyPosts]);
     /*
     |--------------------------------------------------------------------------
     | TRIAL BUTTON
@@ -1083,25 +1103,34 @@ export default function Welcome({
 
                                      
 {/* DAILY POSTS SLIDER */}
-<div className="mt-7 w-full max-w-2xl">
-    <div
-        className="
-            relative
-            overflow-hidden
-            rounded-2xl
-            border
-            border-slate-200
-            bg-white/90
-            shadow-xl
-            shadow-slate-900/10
-            backdrop-blur-sm
-            min-h-[230px]
-            sm:min-h-[260px]
-        "
-    >
-        {dailyPosts.length > 0 ? (
-            <>
+{/* =================================================
+    DAILY POSTS SLIDER
+================================================== */}
+
+{dailyPosts.length > 0 && (
+    <div className="mt-7 w-full max-w-2xl">
+
+        <div
+            className="
+                relative
+                overflow-hidden
+                rounded-2xl
+                border
+                border-slate-200
+                bg-white
+                shadow-xl
+                shadow-slate-900/10
+            "
+        >
+
+            {/* =================================================
+                SLIDES
+            ================================================== */}
+
+            <div className="relative min-h-[240px] sm:min-h-[280px]">
+
                 {dailyPosts.map((post, index) => (
+
                     <div
                         key={post.id ?? index}
                         className={`
@@ -1112,28 +1141,54 @@ export default function Welcome({
                             ease-in-out
                             ${
                                 index === currentPost
-                                    ? "opacity-100 translate-x-0"
-                                    : "opacity-0 translate-x-8 pointer-events-none"
+                                    ? "opacity-100 translate-x-0 z-10"
+                                    : "opacity-0 translate-x-8 pointer-events-none z-0"
                             }
                         `}
                     >
-                        <div className="grid grid-cols-1 sm:grid-cols-2 h-full">
-                            
-                            {/* IMAGE */}
-                            <div className="relative h-[230px] sm:h-[260px]">
-                                <img
-                                    src={
-                                        post.image_url ??
-                                        post.image ??
-                                        "/images/shop.jpg"
-                                    }
-                                    alt={post.title ?? "MauzoVibe Daily Post"}
-                                    className="
-                                        h-full
-                                        w-full
-                                        object-cover
-                                    "
-                                />
+
+                        <div className="grid grid-cols-1 sm:grid-cols-2 min-h-[240px] sm:min-h-[280px]">
+
+                            {/* =================================================
+                                IMAGE
+                            ================================================== */}
+
+                            <div className="relative h-[220px] sm:h-[280px] bg-slate-100">
+
+                                {post.image ? (
+                                    <img
+                                        src={post.image}
+                                        alt={
+                                            post.title ||
+                                            "MauzoVibe Daily Post"
+                                        }
+                                        className="
+                                            absolute
+                                            inset-0
+                                            h-full
+                                            w-full
+                                            object-cover
+                                        "
+                                        onError={(e) => {
+                                            e.currentTarget.src =
+                                                "/images/shop.jpg";
+                                        }}
+                                    />
+                                ) : (
+                                    <img
+                                        src="/images/shop.jpg"
+                                        alt="MauzoVibe"
+                                        className="
+                                            absolute
+                                            inset-0
+                                            h-full
+                                            w-full
+                                            object-cover
+                                        "
+                                    />
+                                )}
+
+                                {/* Image overlay */}
 
                                 <div
                                     className="
@@ -1141,55 +1196,93 @@ export default function Welcome({
                                         inset-0
                                         bg-gradient-to-t
                                         from-black/50
-                                        via-transparent
+                                        via-black/10
                                         to-transparent
                                     "
                                 />
+
+                                {/* Post type */}
+
+                                {post.type && (
+                                    <div
+                                        className="
+                                            absolute
+                                            top-4
+                                            left-4
+                                            rounded-full
+                                            bg-emerald-600
+                                            px-3
+                                            py-1
+                                            text-xs
+                                            font-bold
+                                            text-white
+                                            shadow-lg
+                                        "
+                                    >
+                                        {post.type}
+                                    </div>
+                                )}
+
                             </div>
 
-                            {/* POST CONTENT */}
+
+                            {/* =================================================
+                                CONTENT
+                            ================================================== */}
+
                             <div
                                 className="
                                     flex
                                     flex-col
                                     justify-center
+                                    bg-white
                                     p-5
                                     sm:p-6
-                                    bg-white
                                 "
                             >
-                                {post.post_type && (
+
+                                {/* Type */}
+
+                                {post.type && (
                                     <span
                                         className="
+                                            mb-2
                                             inline-flex
                                             w-fit
                                             rounded-full
                                             bg-emerald-50
                                             px-3
                                             py-1
-                                            text-xs
+                                            text-[11px]
                                             font-bold
+                                            uppercase
+                                            tracking-wide
                                             text-emerald-700
-                                            mb-3
                                         "
                                     >
-                                        {post.post_type}
+                                        {post.type}
                                     </span>
                                 )}
+
+
+                                {/* Title */}
 
                                 <h3
                                     className="
                                         text-lg
                                         sm:text-xl
                                         font-extrabold
-                                        text-slate-900
                                         leading-tight
+                                        text-slate-900
                                     "
                                 >
                                     {post.title}
                                 </h3>
 
-                                {post.message && (
+
+                                {/* Description */}
+
+                                {post.description && (
                                     <p
                                         className="
                                             mt-2
@@ -1199,103 +1292,190 @@ export default function Welcome({
                                             line-clamp-4
                                         "
                                     >
-                                        {post.message}
+                                        {post.description}
                                     </p>
                                 )}
+
+
+                                {/* Button */}
+
+                                {post.button_text && post.button_url && (
+                                    <div className="mt-4">
+
+                                        <Link
+                                            href={post.button_url}
+                                            className="
+                                                inline-flex
+                                                items-center
+                                                gap-2
+                                                rounded-xl
+                                                bg-emerald-600
+                                                px-4
+                                                py-2.5
+                                                text-sm
+                                                font-bold
+                                                text-white
+                                                shadow-md
+                                                shadow-emerald-600/20
+                                                transition
+                                                hover:bg-emerald-700
+                                                hover:-translate-y-0.5
+                                            "
+                                        >
+
+                                            {post.button_text}
+
+                                            <ChevronRightIcon
+                                                className="w-4 h-4"
+                                            />
+
+                                        </Link>
+
+                                    </div>
+                                )}
+
                             </div>
+
                         </div>
+
                     </div>
+
                 ))}
 
-                {/* ARROWS */}
-                {dailyPosts.length > 1 && (
-                    <>
-                        <button
-                            type="button"
-                            onClick={() =>
-                                setCurrentPost(
-                                    (currentPost - 1 + dailyPosts.length) %
-                                        dailyPosts.length
-                                )
-                            }
-                            className="
-                                absolute
-                                left-3
-                                top-1/2
-                                -translate-y-1/2
-                                z-20
-                                flex
-                                h-9
-                                w-9
-                                items-center
-                                justify-center
-                                rounded-full
-                                bg-white/90
-                                text-slate-700
-                                shadow-lg
-                                hover:bg-emerald-600
-                                hover:text-white
-                                transition
-                            "
-                            aria-label="Previous post"
-                        >
-                            ‹
-                        </button>
 
-                        <button
-                            type="button"
-                            onClick={() =>
-                                setCurrentPost(
-                                    (currentPost + 1) %
-                                        dailyPosts.length
-                                )
-                            }
-                            className="
-                                absolute
-                                right-3
-                                top-1/2
-                                -translate-y-1/2
-                                z-20
-                                flex
-                                h-9
-                                w-9
-                                items-center
-                                justify-center
-                                rounded-full
-                                bg-white/90
-                                text-slate-700
-                                shadow-lg
-                                hover:bg-emerald-600
-                                hover:text-white
-                                transition
-                            "
-                            aria-label="Next post"
+                {/* =================================================
+                    PREVIOUS BUTTON
+                ================================================== */}
+
+                {dailyPosts.length > 1 && (
+                    <button
+                        type="button"
+                        onClick={() =>
+                            setCurrentPost(
+                                (currentPost - 1 + dailyPosts.length) %
+                                    dailyPosts.length
+                            )
+                        }
+                        className="
+                            absolute
+                            left-3
+                            top-1/2
+                            z-30
+                            flex
+                            h-9
+                            w-9
+                            -translate-y-1/2
+                            items-center
+                            justify-center
+                            rounded-full
+                            bg-white/95
+                            text-slate-700
+                            shadow-lg
+                            transition
+                            hover:bg-emerald-600
+                            hover:text-white
+                        "
+                        aria-label="Previous post"
+                    >
+                        <svg
+                            className="h-5 w-5"
+                            fill="none"
+                            viewBox="0 0 24 24"
+                            stroke="currentColor"
+                            strokeWidth="2"
                         >
-                            ›
-                        </button>
-                    </>
+                            <path
+                                strokeLinecap="round"
+                                strokeLinejoin="round"
+                                d="M15 19l-7-7 7-7"
+                            />
+                        </svg>
+                    </button>
                 )}
 
-                {/* DOTS */}
+
+                {/* =================================================
+                    NEXT BUTTON
+                ================================================== */}
+
+                {dailyPosts.length > 1 && (
+                    <button
+                        type="button"
+                        onClick={() =>
+                            setCurrentPost(
+                                (currentPost + 1) %
+                                    dailyPosts.length
+                            )
+                        }
+                        className="
+                            absolute
+                            right-3
+                            top-1/2
+                            z-30
+                            flex
+                            h-9
+                            w-9
+                            -translate-y-1/2
+                            items-center
+                            justify-center
+                            rounded-full
+                            bg-white/95
+                            text-slate-700
+                            shadow-lg
+                            transition
+                            hover:bg-emerald-600
+                            hover:text-white
+                        "
+                        aria-label="Next post"
+                    >
+                        <svg
+                            className="h-5 w-5"
+                            fill="none"
+                            viewBox="0 0 24 24"
+                            stroke="currentColor"
+                            strokeWidth="2"
+                        >
+                            <path
+                                strokeLinecap="round"
+                                strokeLinejoin="round"
+                                d="M9 5l7 7-7 7"
+                            />
+                        </svg>
+                    </button>
+                )}
+
+
+                {/* =================================================
+                    DOTS
+                ================================================== */}
+
                 {dailyPosts.length > 1 && (
                     <div
                         className="
                             absolute
                             bottom-3
                             left-1/2
-                            -translate-x-1/2
-                            z-20
+                            z-30
                             flex
+                            -translate-x-1/2
                             items-center
                             gap-1.5
+                            rounded-full
+                            bg-black/20
+                            px-2.5
+                            py-1.5
+                            backdrop-blur-sm
                         "
                     >
-                        {dailyPosts.map((_, index) => (
+
+                        {dailyPosts.map((post, index) => (
                             <button
-                                key={index}
+                                key={post.id ?? index}
                                 type="button"
-                                onClick={() => setCurrentPost(index)}
-                                aria-label={`Go to post ${index + 1}`}
+                                onClick={() =>
+                                    setCurrentPost(index)
+                                }
+                                aria-label={`Show post ${index + 1}`}
                                 className={`
                                     h-2
                                     rounded-full
@@ -1303,60 +1483,22 @@ export default function Welcome({
                                     duration-300
                                     ${
                                         index === currentPost
-                                            ? "w-6 bg-emerald-600"
-                                            : "w-2 bg-slate-300 hover:bg-emerald-400"
+                                            ? "w-6 bg-emerald-500"
+                                            : "w-2 bg-white/70 hover:bg-white"
                                     }
                                 `}
                             />
                         ))}
+
                     </div>
                 )}
-            </>
-        ) : (
-            /* EMPTY STATE */
-            <div
-                className="
-                    flex
-                    h-full
-                    min-h-[230px]
-                    sm:min-h-[260px]
-                    items-center
-                    justify-center
-                    text-center
-                    px-6
-                "
-            >
-                <div>
-                    <div
-                        className="
-                            mx-auto
-                            mb-3
-                            flex
-                            h-12
-                            w-12
-                            items-center
-                            justify-center
-                            rounded-xl
-                            bg-emerald-50
-                            text-emerald-600
-                        "
-                    >
-                        +
-                    </div>
 
-                    <p className="text-sm font-semibold text-slate-600">
-                        MauzoVibe Daily Posts
-                    </p>
-
-                    <p className="mt-1 text-xs text-slate-400">
-                        New offers and announcements will appear here.
-                    </p>
-                </div>
             </div>
-        )}
-    </div>
-</div>
 
+        </div>
+
+    </div>
+)}
                                         {/* Features */}
 
                                         <div

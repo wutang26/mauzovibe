@@ -25,6 +25,7 @@ use App\Http\Controllers\Marketplace\MarketplaceProfileController;
 use App\Http\Controllers\MarketplaceListingActionController;
 use App\Http\Controllers\Marketplace\MarketplaceSellerController;
 use App\Http\Controllers\DailyPostController;
+use App\Models\DailyPost;
 use Inertia\Inertia;
 
 
@@ -34,12 +35,51 @@ use Inertia\Inertia;
 |--------------------------------------------------------------------------
 */
 
+// Route::get('/', function () {
+//     return Inertia::render('Welcome', [
+//         'canLogin'       => Route::has('login'),
+//         'canRegister'    => Route::has('register'),
+//         // 'laravelVersion' => Application::VERSION,
+//         'phpVersion'     => PHP_VERSION,
+//     ]);
+// })->name('welcome');
+
+
 Route::get('/', function () {
+    $dailyPosts = DailyPost::query()
+        ->where('is_active', true)
+        ->where(function ($query) {
+            $query
+                ->whereNull('starts_at')
+                ->orWhere('starts_at', '<=', now());
+        })
+        ->where(function ($query) {
+            $query
+                ->whereNull('ends_at')
+                ->orWhere('ends_at', '>=', now());
+        })
+        ->orderBy('sort_order')
+        ->latest()
+        ->get()
+        ->map(function ($post) {
+            return [
+                'id' => $post->id,
+                'title' => $post->title,
+                'description' => $post->description,
+                'image' => $post->image,
+                'button_text' => $post->button_text,
+                'button_url' => $post->button_url,
+                'type' => $post->type,
+                'starts_at' => $post->starts_at,
+                'ends_at' => $post->ends_at,
+            ];
+        });
+
     return Inertia::render('Welcome', [
-        'canLogin'       => Route::has('login'),
-        'canRegister'    => Route::has('register'),
-        // 'laravelVersion' => Application::VERSION,
-        'phpVersion'     => PHP_VERSION,
+        'canLogin' => Route::has('login'),
+        'canRegister' => Route::has('register'),
+        'dailyPosts' => $dailyPosts,
+        'phpVersion' => PHP_VERSION,
     ]);
 })->name('welcome');
 
