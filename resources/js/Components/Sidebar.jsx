@@ -17,6 +17,7 @@ import {
     ClipboardDocumentListIcon,
     ArrowPathRoundedSquareIcon,
     DocumentMagnifyingGlassIcon,
+    FlagIcon,
 } from "@heroicons/react/24/outline";
 
 export default function Sidebar({ open }) {
@@ -168,7 +169,14 @@ export default function Sidebar({ open }) {
                     icon: CubeIcon,
                     link: route("admin.reports.stock"),
                 },
-            ],
+                        // Marketplace Reports
+                {
+                    name: "Marketplace Reports",
+                    icon: FlagIcon,
+                    link:  route("admin.reports.marketplace"),
+                   
+                },
+                    ],
         },
 
         // MarketPlace

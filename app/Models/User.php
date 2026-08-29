@@ -8,6 +8,7 @@ use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Foundation\Auth\User as Authenticatable;
 use Illuminate\Database\Eloquent\Relations\BelongsToMany;
 use App\Models\Audit;
+use Illuminate\Database\Eloquent\Relations\HasMany;
 
 //Manage Spatie permissions
 use Illuminate\Notifications\Notifiable;
@@ -103,4 +104,14 @@ public function audits()
     {
         return $this->belongsTo(Business::class);
     }
+
+    public function savedListings(): HasMany
+{
+    return $this->hasMany(SavedListing::class);
+}
+
+public function marketplaceReports(): HasMany
+{
+    return $this->hasMany(MarketplaceReport::class);
+}
 }

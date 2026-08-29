@@ -1,4 +1,4 @@
-import { Head, Link } from "@inertiajs/react";
+import { Head, Link, router } from "@inertiajs/react";
 import { useState } from "react";
 import MarketplaceLayout from "@/Layouts/MarketplaceLayout";
 
@@ -34,6 +34,16 @@ export default function Show({
     const [showOfferModal, setShowOfferModal] = useState(false);
     const [offerAmount, setOfferAmount] = useState("");
 
+    const [showReportModal, setShowReportModal] = useState(false);
+    const [reportReason, setReportReason] = useState("");
+    const [reportDescription, setReportDescription] = useState("");
+    const [reporting, setReporting] = useState(false);
+    
+    const [saved, setSaved] = useState(
+    product?.is_saved ?? false
+);
+const [saving, setSaving] = useState(false);
+
     const currentImage =
         images[activeImage] ?? null;
 
@@ -50,7 +60,7 @@ export default function Show({
 
         setActiveImage(
             (activeImage - 1 + images.length) %
-                images.length
+            images.length
         );
     };
 
@@ -72,30 +82,85 @@ export default function Show({
     const sellerPhone =
         product?.seller?.phone ?? null;
 
-        //Show Contact Page
-        const openWhatsApp = () => {
-    if (!sellerPhone) {
-        alert("Seller hajaweka namba ya simu.");
-        return;
-    }
+    //Show Contact Page
+    const openWhatsApp = () => {
+        if (!sellerPhone) {
+            alert("Seller hajaweka namba ya simu.");
+            return;
+        }
 
-    let phone = sellerPhone.replace(/\D/g, "");
+        let phone = sellerPhone.replace(/\D/g, "");
 
-    // Tanzania numbers: 07XXXXXXXX / 06XXXXXXXX
-    if (phone.startsWith("0")) {
-        phone = "255" + phone.substring(1);
-    }
+        // Tanzania numbers: 07XXXXXXXX / 06XXXXXXXX
+        if (phone.startsWith("0")) {
+            phone = "255" + phone.substring(1);
+        }
 
-    const message = encodeURIComponent(
-        `Habari ${product?.seller?.name ?? ""}, nimeona bidhaa yako "${product.title}" kwenye MauzoVibe. Naomba maelezo zaidi.`
-    );
+        const message = encodeURIComponent(
+            `Habari ${product?.seller?.name ?? ""}, nimeona bidhaa yako "${product.title}" kwenye MauzoVibe. Naomba maelezo zaidi.`
+        );
 
-    window.open(
-        `https://wa.me/${phone}?text=${message}`,
-        "_blank"
+        window.open(
+            `https://wa.me/${phone}?text=${message}`,
+            "_blank"
+        );
+    };
+    //Mwisho wa Show contacts
+
+    //Submit Report
+    const submitReport = () => {
+        if (!reportReason) {
+            alert("Tafadhali chagua sababu ya kuripoti.");
+            return;
+        }
+
+        setReporting(true);
+
+        router.post(
+            `/marketplace/listing/${product.id}/report`,
+            {
+                reason: reportReason,
+                description: reportDescription,
+            },
+            {
+                preserveScroll: true,
+
+                onSuccess: () => {
+                    setShowReportModal(false);
+                    setReportReason("");
+                    setReportDescription("");
+                },
+
+                onFinish: () => {
+                    setReporting(false);
+                },
+            }
+        );
+    };
+
+    //Save Listing
+    // Save / Unsave Listing
+const saveListing = () => {
+    if (saving) return;
+
+    setSaving(true);
+
+    router.post(
+        `/marketplace/listing/${product.id}/save`,
+        {},
+        {
+            preserveScroll: true,
+
+            onSuccess: () => {
+                setSaved((current) => !current);
+            },
+
+            onFinish: () => {
+                setSaving(false);
+            },
+        }
     );
 };
-//Mwisho wa Show contacts
 
     return (
         <>
@@ -201,11 +266,10 @@ export default function Show({
                                                                 index
                                                             )
                                                         }
-                                                        className={`h-20 w-20 shrink-0 overflow-hidden rounded-lg border-2 ${
-                                                            activeImage === index
+                                                        className={`h-20 w-20 shrink-0 overflow-hidden rounded-lg border-2 ${activeImage === index
                                                                 ? "border-green-600"
                                                                 : "border-transparent"
-                                                        }`}
+                                                            }`}
                                                     >
                                                         <img
                                                             src={image}
@@ -236,10 +300,24 @@ export default function Show({
 
                                     <button
                                         type="button"
-                                        className="inline-flex items-center gap-2 rounded-xl border border-slate-200 bg-white px-4 py-2.5 text-sm font-medium text-slate-700 hover:bg-slate-50"
+                                        onClick={saveListing}
+                                        disabled={saving}
+                                        className={`inline-flex items-center gap-2 rounded-xl border px-4 py-2.5 text-sm font-medium transition ${
+                                            saved
+                                                ? "border-green-200 bg-green-50 text-green-700"
+                                                : "border-slate-200 bg-white text-slate-700 hover:bg-slate-50"
+                                        } disabled:cursor-not-allowed disabled:opacity-60`}
                                     >
-                                        <Heart size={17} />
-                                        Save
+                                        <Heart
+                                            size={17}
+                                            className={saved ? "fill-current" : ""}
+                                        />
+
+                                        {saving
+                                            ? "Saving..."
+                                            : saved
+                                                ? "Saved"
+                                                : "Save"}
                                     </button>
 
                                 </div>
@@ -313,58 +391,58 @@ export default function Show({
                                     {/* ACTIONS */}
                                     <div className="mt-6 space-y-3">
 
-                                       <div className="space-y-2">
-    <button
-        type="button"
-        onClick={() => setShowPhone(true)}
-        className="flex w-full items-center justify-center gap-2 rounded-xl bg-green-600 px-5 py-3.5 font-bold text-white transition hover:bg-green-700"
-    >
-        <Phone size={19} />
+                                        <div className="space-y-2">
+                                            <button
+                                                type="button"
+                                                onClick={() => setShowPhone(true)}
+                                                className="flex w-full items-center justify-center gap-2 rounded-xl bg-green-600 px-5 py-3.5 font-bold text-white transition hover:bg-green-700"
+                                            >
+                                                <Phone size={19} />
 
-        {showPhone && sellerPhone
-            ? sellerPhone
-            : "Show Contact"}
-    </button>
+                                                {showPhone && sellerPhone
+                                                    ? sellerPhone
+                                                    : "Show Contact"}
+                                            </button>
 
-    {showPhone && sellerPhone && (
-        <a
-            href={`tel:${sellerPhone}`}
-            className="flex w-full items-center justify-center gap-2 rounded-xl border border-green-200 bg-green-50 px-5 py-3 text-sm font-semibold text-green-700 hover:bg-green-100"
-        >
-            <Phone size={17} />
-            Piga simu kwa Seller
-        </a>
-    )}
+                                            {showPhone && sellerPhone && (
+                                                <a
+                                                    href={`tel:${sellerPhone}`}
+                                                    className="flex w-full items-center justify-center gap-2 rounded-xl border border-green-200 bg-green-50 px-5 py-3 text-sm font-semibold text-green-700 hover:bg-green-100"
+                                                >
+                                                    <Phone size={17} />
+                                                    Piga simu kwa Seller
+                                                </a>
+                                            )}
 
-    {showPhone && !sellerPhone && (
-        <div className="rounded-xl bg-red-50 px-4 py-3 text-center text-sm font-medium text-red-600">
-            Seller hajaweka namba ya simu.
-        </div>
-    )}
-</div>
-
-
-                                        <button
-                                        type="button"
-                                        onClick={openWhatsApp}
-                                        disabled={!sellerPhone}
-                                        className="flex w-full items-center justify-center gap-2 rounded-xl border-2 border-green-600 px-5 py-3.5 font-bold text-green-700 transition hover:bg-green-50 disabled:cursor-not-allowed disabled:opacity-50"
-                                    >
-                                        <MessageCircle size={19} />
-
-                                        {sellerPhone
-                                            ? "Chat with Seller"
-                                            : "Seller hana WhatsApp"}
-                                    </button>
+                                            {showPhone && !sellerPhone && (
+                                                <div className="rounded-xl bg-red-50 px-4 py-3 text-center text-sm font-medium text-red-600">
+                                                    Seller hajaweka namba ya simu.
+                                                </div>
+                                            )}
+                                        </div>
 
 
                                         <button
-                                        type="button"
-                                        onClick={() => setShowOfferModal(true)}
-                                        className="flex w-full items-center justify-center gap-2 rounded-xl border border-slate-200 px-5 py-3.5 font-bold text-slate-700 transition hover:bg-slate-50"
-                                    >
-                                        Make an Offer
-                                    </button>
+                                            type="button"
+                                            onClick={openWhatsApp}
+                                            disabled={!sellerPhone}
+                                            className="flex w-full items-center justify-center gap-2 rounded-xl border-2 border-green-600 px-5 py-3.5 font-bold text-green-700 transition hover:bg-green-50 disabled:cursor-not-allowed disabled:opacity-50"
+                                        >
+                                            <MessageCircle size={19} />
+
+                                            {sellerPhone
+                                                ? "Chat with Seller"
+                                                : "Seller hana WhatsApp"}
+                                        </button>
+
+
+                                        <button
+                                            type="button"
+                                            onClick={() => setShowOfferModal(true)}
+                                            className="flex w-full items-center justify-center gap-2 rounded-xl border border-slate-200 px-5 py-3.5 font-bold text-slate-700 transition hover:bg-slate-50"
+                                        >
+                                            Make an Offer
+                                        </button>
 
                                     </div>
 
@@ -475,6 +553,7 @@ export default function Show({
 
                                     <button
                                         type="button"
+                                        onClick={() => setShowReportModal(true)}
                                         className="flex w-full items-center justify-center gap-2 text-sm font-medium text-slate-500 hover:text-red-600"
                                     >
                                         <Flag size={17} />
@@ -583,80 +662,231 @@ export default function Show({
 
                 </div>
                 {showOfferModal && (
-    <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 px-4">
-        <div className="w-full max-w-md rounded-2xl bg-white p-6 shadow-2xl">
+                    <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 px-4">
+                        <div className="w-full max-w-md rounded-2xl bg-white p-6 shadow-2xl">
 
-            <div className="flex items-center justify-between">
-                <h2 className="text-xl font-bold text-slate-900">
-                    Make an Offer
-                </h2>
+                            <div className="flex items-center justify-between">
+                                <h2 className="text-xl font-bold text-slate-900">
+                                    Make an Offer
+                                </h2>
 
-                <button
-                    type="button"
-                    onClick={() => setShowOfferModal(false)}
-                    className="text-slate-400 hover:text-slate-700"
-                >
-                    ✕
-                </button>
-            </div>
+                                <button
+                                    type="button"
+                                    onClick={() => setShowOfferModal(false)}
+                                    className="text-slate-400 hover:text-slate-700"
+                                >
+                                    ✕
+                                </button>
+                            </div>
 
-            <p className="mt-2 text-sm text-slate-500">
-                Weka bei unayopendekeza kwa bidhaa hii.
-            </p>
+                            <p className="mt-2 text-sm text-slate-500">
+                                Weka bei unayopendekeza kwa bidhaa hii.
+                            </p>
 
-            <div className="mt-5">
-                <label className="text-sm font-semibold text-slate-700">
-                    Bei yako
-                </label>
+                            <div className="mt-5">
+                                <label className="text-sm font-semibold text-slate-700">
+                                    Bei yako
+                                </label>
 
-                <div className="mt-2 flex items-center overflow-hidden rounded-xl border border-slate-300 focus-within:border-green-600">
-                    <span className="bg-slate-50 px-3 py-3 text-sm font-semibold text-slate-500">
-                        TZS
-                    </span>
+                                <div className="mt-2 flex items-center overflow-hidden rounded-xl border border-slate-300 focus-within:border-green-600">
+                                    <span className="bg-slate-50 px-3 py-3 text-sm font-semibold text-slate-500">
+                                        TZS
+                                    </span>
 
-                    <input
-                        type="number"
-                        min="0"
-                        value={offerAmount}
-                        onChange={(e) =>
-                            setOfferAmount(e.target.value)
-                        }
-                        placeholder="Mfano 150000"
-                        className="w-full border-0 px-3 py-3 outline-none focus:ring-0"
-                    />
-                </div>
-            </div>
+                                    <input
+                                        type="number"
+                                        min="0"
+                                        value={offerAmount}
+                                        onChange={(e) =>
+                                            setOfferAmount(e.target.value)
+                                        }
+                                        placeholder="Mfano 150000"
+                                        className="w-full border-0 px-3 py-3 outline-none focus:ring-0"
+                                    />
+                                </div>
+                            </div>
 
-            <div className="mt-5 flex gap-3">
-                <button
-                    type="button"
-                    onClick={() => setShowOfferModal(false)}
-                    className="flex-1 rounded-xl border border-slate-200 px-4 py-3 font-semibold text-slate-600 hover:bg-slate-50"
-                >
-                    Cancel
-                </button>
+                            <div className="mt-5 flex gap-3">
+                                <button
+                                    type="button"
+                                    onClick={() => setShowOfferModal(false)}
+                                    className="flex-1 rounded-xl border border-slate-200 px-4 py-3 font-semibold text-slate-600 hover:bg-slate-50"
+                                >
+                                    Cancel
+                                </button>
 
-                <button
-                    type="button"
-                    disabled={!offerAmount}
-                    onClick={() => {
-                        alert(
-                            `Offer yako ya TZS ${Number(
-                                offerAmount
-                            ).toLocaleString()} imeandaliwa.`
-                        );
+                                <button
+                                    type="button"
+                                    disabled={!offerAmount}
+                                    onClick={() => {
+                                        alert(
+                                            `Offer yako ya TZS ${Number(
+                                                offerAmount
+                                            ).toLocaleString()} imeandaliwa.`
+                                        );
 
-                        setShowOfferModal(false);
-                    }}
-                    className="flex-1 rounded-xl bg-green-600 px-4 py-3 font-bold text-white hover:bg-green-700 disabled:cursor-not-allowed disabled:opacity-50"
-                >
-                    Send Offer
-                </button>
-            </div>
+                                        setShowOfferModal(false);
+                                    }}
+                                    className="flex-1 rounded-xl bg-green-600 px-4 py-3 font-bold text-white hover:bg-green-700 disabled:cursor-not-allowed disabled:opacity-50"
+                                >
+                                    Send Offer
+                                </button>
+                            </div>
 
-        </div>
-    </div>
-)}
+                        </div>
+                    </div>
+                )}
+
+                {showReportModal && (
+                    <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 px-4">
+                        <div className="w-full max-w-md rounded-2xl bg-white p-6 shadow-2xl">
+
+                            {/* HEADER */}
+                            <div className="flex items-center justify-between">
+
+                                <div className="flex items-center gap-2">
+                                    <Flag
+                                        size={20}
+                                        className="text-red-600"
+                                    />
+
+                                    <h2 className="text-xl font-bold text-slate-900">
+                                        Report this listing
+                                    </h2>
+                                </div>
+
+                                <button
+                                    type="button"
+                                    onClick={() => setShowReportModal(false)}
+                                    className="text-slate-400 hover:text-slate-700"
+                                >
+                                    ✕
+                                </button>
+
+                            </div>
+
+
+                            {/* DESCRIPTION */}
+                            <p className="mt-2 text-sm text-slate-500">
+                                Tusaidie kuelewa tatizo kwenye bidhaa hii.
+                            </p>
+
+
+                            {/* REASON */}
+                            <div className="mt-5">
+
+                                <label className="text-sm font-semibold text-slate-700">
+                                    Sababu ya kuripoti
+                                </label>
+
+                                <select
+                                    value={reportReason}
+                                    onChange={(e) =>
+                                        setReportReason(e.target.value)
+                                    }
+                                    className="mt-2 w-full rounded-xl border border-slate-300 px-4 py-3 text-sm outline-none focus:border-green-600 focus:ring-1 focus:ring-green-600"
+                                >
+
+                                    <option value="">
+                                        Chagua sababu
+                                    </option>
+
+                                    <option value="scam">
+                                        Scam / Utapeli
+                                    </option>
+
+                                    <option value="fake_product">
+                                        Bidhaa bandia
+                                    </option>
+
+                                    <option value="wrong_information">
+                                        Taarifa za bidhaa si sahihi
+                                    </option>
+
+                                    <option value="inappropriate">
+                                        Maudhui yasiyofaa
+                                    </option>
+
+                                    <option value="prohibited_item">
+                                        Bidhaa hairuhusiwi
+                                    </option>
+
+                                    <option value="seller_behavior">
+                                        Tabia mbaya ya seller
+                                    </option>
+
+                                    <option value="other">
+                                        Nyingine
+                                    </option>
+
+                                </select>
+
+                            </div>
+
+
+                            {/* DESCRIPTION */}
+                            <div className="mt-4">
+
+                                <label className="text-sm font-semibold text-slate-700">
+                                    Maelezo zaidi
+                                    <span className="ml-1 font-normal text-slate-400">
+                                        (optional)
+                                    </span>
+                                </label>
+
+                                <textarea
+                                    value={reportDescription}
+                                    onChange={(e) =>
+                                        setReportDescription(e.target.value)
+                                    }
+                                    rows={4}
+                                    maxLength={1000}
+                                    placeholder="Eleza tatizo kwa ufupi..."
+                                    className="mt-2 w-full resize-none rounded-xl border border-slate-300 px-4 py-3 text-sm outline-none focus:border-green-600 focus:ring-1 focus:ring-green-600"
+                                />
+
+                                <div className="mt-1 text-right text-xs text-slate-400">
+                                    {reportDescription.length}/1000
+                                </div>
+
+                            </div>
+
+
+                            {/* WARNING */}
+                            <div className="mt-4 rounded-xl bg-amber-50 px-4 py-3 text-sm text-amber-800">
+                                Ripoti yako itakaguliwa na timu ya MauzoVibe.
+                                Tafadhali toa taarifa sahihi.
+                            </div>
+
+
+                            {/* ACTIONS */}
+                            <div className="mt-5 flex gap-3">
+
+                                <button
+                                    type="button"
+                                    onClick={() => setShowReportModal(false)}
+                                    disabled={reporting}
+                                    className="flex-1 rounded-xl border border-slate-200 px-4 py-3 font-semibold text-slate-600 hover:bg-slate-50 disabled:opacity-50"
+                                >
+                                    Cancel
+                                </button>
+
+                                <button
+                                    type="button"
+                                    onClick={submitReport}
+                                    disabled={!reportReason || reporting}
+                                    className="flex-1 rounded-xl bg-red-600 px-4 py-3 font-bold text-white hover:bg-red-700 disabled:cursor-not-allowed disabled:opacity-50"
+                                >
+                                    {reporting
+                                        ? "Inatuma..."
+                                        : "Send Report"}
+                                </button>
+
+                            </div>
+
+                        </div>
+                    </div>
+                )}
             </MarketplaceLayout>
         </>
     );

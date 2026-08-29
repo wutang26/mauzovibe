@@ -10,6 +10,7 @@ use Illuminate\Support\Str;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\Storage;
+use App\Models\SavedListing;
 class MarketplaceController extends Controller
 {
     /**
@@ -2554,5 +2555,25 @@ public function updateProfile(Request $request)
             'success',
             'Namba yako ya simu imehifadhiwa. Sasa unaweza kuweka bidhaa.'
         );
+}
+
+public function save($listing)
+{
+    $saved = SavedListing::where('user_id', auth()->id())
+        ->where('listing_id', $listing)
+        ->first();
+
+    if ($saved) {
+        $saved->delete();
+
+        return back();
+    }
+
+    SavedListing::create([
+        'user_id' => auth()->id(),
+        'listing_id' => $listing,
+    ]);
+
+    return back();
 }
 }

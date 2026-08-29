@@ -22,6 +22,7 @@ use App\Http\Controllers\Admin\ReportController;
 use App\Http\Controllers\Admin\AuditController;
 use App\Http\Controllers\MarketplaceController;
 use App\Http\Controllers\Marketplace\MarketplaceProfileController;
+use App\Http\Controllers\MarketplaceListingActionController;
 
 use Inertia\Inertia;
 
@@ -750,6 +751,74 @@ Route::prefix('admin/reports')
     [ReportController::class, 'stock'])->name('stock');
 });
 
+/*
+|--------------------------------------------------------------------------
+| MARKETPLACE REPORTS
+|--------------------------------------------------------------------------
+| Only Admin and Super Admin can view marketplace listing reports.
+|--------------------------------------------------------------------------
+*/
+/*
+|--------------------------------------------------------------------------
+| MARKETPLACE REPORTS
+|--------------------------------------------------------------------------
+| Only Admin and Super Admin can manage marketplace reports.
+|--------------------------------------------------------------------------
+*/
+
+Route::prefix('admin/reports')
+    ->name('admin.reports.')
+    ->middleware(['auth', 'role:Super Admin|Admin'])
+    ->group(function () {
+
+        /*
+        |--------------------------------------------------------------------------
+        | Marketplace Reports List
+        |--------------------------------------------------------------------------
+        */
+
+        Route::get(
+            '/marketplace',
+            [MarketplaceListingActionController::class, 'index']
+        )->name('marketplace');
+
+
+        /*
+        |--------------------------------------------------------------------------
+        | View Single Marketplace Report
+        |--------------------------------------------------------------------------
+        */
+
+        Route::get(
+            '/marketplace/{report}',
+            [MarketplaceListingActionController::class, 'adminShowReport']
+        )->name('marketplace.show');
+
+
+        /*
+        |--------------------------------------------------------------------------
+        | Update Report Status
+        |--------------------------------------------------------------------------
+        */
+
+        Route::patch(
+            '/marketplace/{report}/status',
+            [MarketplaceListingActionController::class, 'updateReportStatus']
+        )->name('marketplace.status');
+
+
+        /*
+        |--------------------------------------------------------------------------
+        | Disable Reported Listing
+        |--------------------------------------------------------------------------
+        */
+
+        Route::patch(
+            '/marketplace/{report}/disable-listing',
+            [MarketplaceListingActionController::class, 'disableReportedListing']
+        )->name('marketplace.disable-listing');
+
+    });
 // Route::prefix('admin')->name('admin.')->middleware(['auth'])->group(function () {
 
 //     // Audit Checking
@@ -988,5 +1057,19 @@ Route::middleware(['auth'])
         )->name('profile.update');
 
     });
+
+    Route::middleware('auth')->group(function () {
+
+    Route::post(
+        '/marketplace/listing/{listing}/save',
+        [MarketplaceListingActionController::class, 'toggleSave']
+    )->name('marketplace.listing.save');
+
+    Route::post(
+        '/marketplace/listing/{listing}/report',
+        [MarketplaceListingActionController::class, 'report']
+    )->name('marketplace.listing.report');
+
+});
 
 require __DIR__.'/auth.php';

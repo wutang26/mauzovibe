@@ -2661,4 +2661,22 @@ public function stock(Request $request)
     );
 }
 
+//marketplace
+public function marketplace()
+{
+    $reports = \App\Models\MarketplaceReport::with([
+        'user',
+        'listing',
+    ])
+        ->latest()
+        ->paginate(15);
+
+    return \Inertia\Inertia::render(
+        'Admin/Reports/Marketplace',
+        [
+            'reports' => $reports,
+        ]
+    );
+}
+
 }
