@@ -1,20 +1,244 @@
 <?php
 
 namespace App\Http\Controllers;
+
 use App\Models\MarketplaceCategory;
 use App\Models\MarketplaceListing;
+use App\Models\SavedListing;
+use App\Models\User;
 use Illuminate\Http\Request;
-use Inertia\Inertia;
-use Inertia\Response;
-use Illuminate\Support\Str;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\Storage;
-use App\Models\SavedListing;
+use Illuminate\Support\Str;
+use Inertia\Inertia;
+use Inertia\Response;
+
 class MarketplaceController extends Controller
 {
     /**
-     * Marketplace Home
+     * --------------------------------------------------------------------------
+     * CATEGORY ICON MAP
+     * --------------------------------------------------------------------------
+     */
+    private function categoryIconMap(): array
+    {
+        return [
+            'Electronics' => 'fa-tv',
+            'Vehicles' => 'fa-car-side',
+            'Property' => 'fa-house',
+            'Fashion' => 'fa-shirt',
+            'Jobs' => 'fa-briefcase',
+            'Services' => 'fa-screwdriver-wrench',
+            'Furniture' => 'fa-couch',
+            'Phones' => 'fa-mobile-screen-button',
+            'Computers' => 'fa-laptop',
+            'Beauty' => 'fa-wand-magic-sparkles',
+            'Sports' => 'fa-dumbbell',
+            'Agriculture' => 'fa-wheat-awn',
+            'Animals' => 'fa-paw',
+            'Baby Products' => 'fa-baby',
+            'Books' => 'fa-book-open',
+            'Gaming' => 'fa-gamepad',
+            'Music' => 'fa-music',
+            'Health' => 'fa-heart-pulse',
+            'Industrial Equipment' => 'fa-industry',
+            'Other' => 'fa-layer-group',
+        ];
+    }
+
+    /**
+     * --------------------------------------------------------------------------
+     * MARKETPLACE CATEGORIES
+     * --------------------------------------------------------------------------
+     *
+     * Centralized category loader used by multiple marketplace pages.
+     *
+     * @param bool $withCounts
+     */
+    private function getMarketplaceCategories(
+        bool $withCounts = true
+    ) {
+        $cacheKey = $withCounts
+            ? 'marketplace.categories.with_counts.v2'
+            : 'marketplace.categories.v2';
+
+        return Cache::remember(
+            $cacheKey,
+            now()->addMinutes(30),
+            function () use ($withCounts) {
+
+                $query = MarketplaceCategory::query()
+                    ->where('is_active', true)
+                    ->orderBy('sort_order')
+                    ->select([
+                        'id',
+                        'name',
+                        'slug',
+                        'icon',
+                    ]);
+
+                if ($withCounts) {
+                    $query->withCount([
+                        'listings as listings_count' => function ($query) {
+                            $query->where('status', 'active');
+                        },
+                    ]);
+                }
+
+                return $query
+                    ->get()
+                    ->map(function ($category) {
+
+                        $iconMap = $this->categoryIconMap();
+
+                        return [
+                            'id' => $category->id,
+
+                            'name' => $category->name,
+
+                            'slug' => $category->slug,
+
+                            'icon' =>
+                                $iconMap[$category->name]
+                                ?? $category->icon
+                                ?? 'fa-tag',
+
+                            'listings_count' =>
+                                (int) (
+                                    $category->listings_count ?? 0
+                                ),
+                        ];
+                    })
+                    ->values();
+            }
+        );
+    }
+
+    /**
+     * --------------------------------------------------------------------------
+     * USER LOCATION
+     * --------------------------------------------------------------------------
+     */
+    private function getUserLocation(Request $request): string
+    {
+        return $request->user()?->city
+            ?? $request->user()?->location
+            ?? 'Tabora, Tanzania';
+    }
+
+    /**
+     * --------------------------------------------------------------------------
+     * FORMAT IMAGES
+     * --------------------------------------------------------------------------
+     */
+    private function getListingImages($listing): array
+    {
+        if (is_array($listing->images)) {
+            return array_values(
+                array_filter($listing->images)
+            );
+        }
+
+        return [];
+    }
+
+    /**
+     * --------------------------------------------------------------------------
+     * FORMAT PRODUCT
+     * --------------------------------------------------------------------------
+     */
+    private function formatListing(
+        MarketplaceListing $listing,
+        bool $includeImages = true
+    ): array {
+        $images = $this->getListingImages($listing);
+
+        return [
+            'id' => $listing->id,
+
+            'title' => $listing->title,
+
+            'slug' => $listing->slug,
+
+            'price' => $listing->price,
+
+            'formatted_price' =>
+                'TZS ' . number_format($listing->price),
+
+            'condition' => $listing->condition,
+
+            'location' =>
+                $listing->location
+                ?? $listing->city
+                ?? 'Tanzania',
+
+            'city' => $listing->city,
+
+            'image' =>
+                $images[0] ?? null,
+
+            'images' =>
+                $includeImages
+                    ? $images
+                    : null,
+
+            'category' =>
+                $listing->category
+                    ? [
+                        'id' => $listing->category->id,
+                        'name' => $listing->category->name,
+                        'slug' => $listing->category->slug,
+                        'icon' => $listing->category->icon,
+                    ]
+                    : null,
+
+            'created_at' =>
+                $listing->created_at?->diffForHumans(),
+        ];
+    }
+
+    /**
+     * --------------------------------------------------------------------------
+     * CLEAR MARKETPLACE CACHES
+     * --------------------------------------------------------------------------
+     */
+    private function clearMarketplaceCaches(): void
+    {
+        Cache::forget(
+            'marketplace.categories.with_counts.v2'
+        );
+
+        Cache::forget(
+            'marketplace.categories.v2'
+        );
+
+        Cache::forget(
+            'marketplace.featured.v3'
+        );
+
+        // Old cache keys used by previous versions.
+        Cache::forget(
+            'marketplace.categories.dashboard.v1'
+        );
+
+        Cache::forget(
+            'marketplace.categories.public.v1'
+        );
+
+        Cache::forget(
+            'marketplace.public.categories.v1'
+        );
+
+        Cache::forget(
+            'marketplace.categories.v2'
+        );
+    }
+
+    /**
+     * --------------------------------------------------------------------------
+     * MARKETPLACE HOME
+     * --------------------------------------------------------------------------
      */
     public function index(Request $request): Response
     {
@@ -22,164 +246,104 @@ class MarketplaceController extends Controller
         |--------------------------------------------------------------------------
         | CATEGORIES
         |--------------------------------------------------------------------------
-        | Load all active categories.
-        |
-        | We keep all categories available to the frontend so that:
-        | - First 7 can be shown as Quick Categories
-        | - Remaining categories can be revealed with "View More"
-        | - Desktop sidebar can show all categories
-        |--------------------------------------------------------------------------
         */
 
-            //     $categories = MarketplaceCategory::where('is_active', true)
-            // ->orderBy('sort_order')
-            // ->select([
-            //     'id',
-            //     'name',
-            //     'slug',
-            //     'icon',
-            //     'listings_count',
-            // ])
-            $categories = MarketplaceCategory::where('is_active', true)
-                ->withCount([
-                    'listings as listings_count' => function ($query) {
-                        $query->where('status', 'active');
-                    }
-                ])
-                ->orderBy('sort_order')
-                ->select([
-                    'id',
-                    'name',
-                    'slug',
-                    'icon',
-                ])
-            ->get()
-            ->map(function ($category) {
-
-                $iconMap = [
-                    'Electronics' => 'fa-tv',
-                    'Vehicles' => 'fa-car-side',
-                    'Property' => 'fa-house',
-                    'Fashion' => 'fa-shirt',
-                    'Jobs' => 'fa-briefcase',
-                    'Services' => 'fa-screwdriver-wrench',
-                    'Furniture' => 'fa-couch',
-                    'Phones' => 'fa-mobile-screen-button',
-                    'Computers' => 'fa-laptop',
-                    'Beauty' => 'fa-wand-magic-sparkles',
-                    'Sports' => 'fa-dumbbell',
-                    'Agriculture' => 'fa-wheat-awn',
-                    'Animals' => 'fa-paw',
-                    'Baby Products' => 'fa-baby',
-                    'Books' => 'fa-book-open',
-                    'Gaming' => 'fa-gamepad',
-                    'Music' => 'fa-music',
-                    'Health' => 'fa-heart-pulse',
-                    'Industrial Equipment' => 'fa-industry',
-                    'Other' => 'fa-layer-group',
-                ];
-
-                return [
-                    'id' => $category->id,
-                    'name' => $category->name,
-                    'slug' => $category->slug,
-                    'icon' => $iconMap[$category->name]
-                        ?? $category->icon
-                        ?? 'fa-tag',
-                    'listings_count' => (int) ($category->listings_count ?? 0),
-                ];
-            });
+        $categories = $this->getMarketplaceCategories(true);
 
         /*
         |--------------------------------------------------------------------------
         | QUICK CATEGORIES
         |--------------------------------------------------------------------------
-        | Only first 7 categories are shown initially.
-        |
-        | The remaining categories are still sent through "categories"
-        | and React will reveal them using View More.
-        |--------------------------------------------------------------------------
         */
 
-        $quickCategories = $categories->take(10)->values();
-
+        $quickCategories = $categories
+            ->take(10)
+            ->values();
 
         /*
         |--------------------------------------------------------------------------
-        | FEATURED PRODUCTS
+        | FEATURED / LATEST PRODUCTS
         |--------------------------------------------------------------------------
         */
 
-        /*
-|--------------------------------------------------------------------------
-| FEATURED / LATEST PRODUCTS
-|--------------------------------------------------------------------------
-| Every active product added by a seller appears here.
-| Newest products are shown first.
-|--------------------------------------------------------------------------
-*/
+        $featuredProducts = Cache::remember(
+            'marketplace.featured.v3',
+            now()->addMinutes(5),
+            function () {
 
-$featuredProducts = Cache::remember(
-    'marketplace.featured.v3',
-    now()->addMinutes(5),
-    function () {
+                return MarketplaceListing::query()
 
-        return MarketplaceListing::where('status', 'active')
+                    ->where('status', 'active')
 
-            ->with('category:id,name,slug')
+                    ->with([
+                        'category:id,name,slug,icon',
+                    ])
 
-            ->select([
-                'id',
-                'marketplace_category_id',
-                'title',
-                'slug',
-                'price',
-                'condition',
-                'location',
-                'city',
-                'images',
-                'created_at',
-            ])
+                    ->select([
+                        'id',
+                        'marketplace_category_id',
+                        'title',
+                        'slug',
+                        'price',
+                        'condition',
+                        'location',
+                        'city',
+                        'images',
+                        'created_at',
+                    ])
 
-            ->latest('created_at')
+                    ->latest('created_at')
 
-            ->take(12)
+                    ->take(12)
 
-            ->get()
+                    ->get()
 
-            ->map(function ($listing) {
+                    ->map(function ($listing) {
 
-                return [
-                    'id' => $listing->id,
+                        $images =
+                            $this->getListingImages(
+                                $listing
+                            );
 
-                    'title' => $listing->title,
+                        return [
+                            'id' => $listing->id,
 
-                    'slug' => $listing->slug,
+                            'title' => $listing->title,
 
-                    'price' => $listing->price,
+                            'slug' => $listing->slug,
 
-                    'formatted_price' =>
-                        'TZS ' . number_format($listing->price),
+                            'price' => $listing->price,
 
-                    'condition' => $listing->condition,
+                            'formatted_price' =>
+                                'TZS ' .
+                                number_format(
+                                    $listing->price
+                                ),
 
-                    'location' =>
-                        $listing->location
-                        ?? $listing->city
-                        ?? 'Tanzania',
+                            'condition' =>
+                                $listing->condition,
 
-                    'image' =>
-                        is_array($listing->images)
-                        && count($listing->images) > 0
-                            ? $listing->images[0]
-                            : null,
+                            'location' =>
+                                $listing->location
+                                ?? $listing->city
+                                ?? 'Tanzania',
 
-                    'category' =>
-                        $listing->category?->name,
-                ];
-            });
-    }
-);
+                            'city' =>
+                                $listing->city,
+
+                            'image' =>
+                                $images[0] ?? null,
+
+                            'category' =>
+                                $listing->category?->name,
+
+                            'created_at' =>
+                                $listing->created_at
+                                    ?->diffForHumans(),
+                        ];
+                    });
+            }
+        );
 
         /*
         |--------------------------------------------------------------------------
@@ -188,316 +352,187 @@ $featuredProducts = Cache::remember(
         */
 
         $userLocation =
-            $request->user()?->city
-            ?? $request->user()?->location
-            ?? 'Tabora, Tanzania';
-
+            $this->getUserLocation($request);
 
         /*
         |--------------------------------------------------------------------------
-        | INERTIA RESPONSE
+        | RESPONSE
         |--------------------------------------------------------------------------
         */
 
-        return Inertia::render('Marketplace/Home', [
+        return Inertia::render(
+            'Marketplace/Home',
+            [
+                'categories' =>
+                    $categories,
 
-            // ALL categories
-            'categories' => $categories,
+                'quickCategories' =>
+                    $quickCategories,
 
-            // First 7 categories
-            'quickCategories' => $quickCategories,
+                'featuredProducts' =>
+                    $featuredProducts,
 
-            // Featured products
-            'featuredProducts' => $featuredProducts,
-
-            // Location
-            'userLocation' => $userLocation,
-        ]);
+                'userLocation' =>
+                    $userLocation,
+            ]
+        );
     }
 
     /**
- * Marketplace Dashboard
- */
-public function dashboard(): Response
-{
-    $categories = Cache::remember(
-        'marketplace.categories.dashboard.v1',
-        now()->addMinutes(30),
-        function () {
+     * --------------------------------------------------------------------------
+     * MARKETPLACE DASHBOARD
+     * --------------------------------------------------------------------------
+     */
+    public function dashboard(): Response
+    {
+        $categories =
+            $this->getMarketplaceCategories(false);
 
-            return MarketplaceCategory::where('is_active', true)
-                ->orderBy('sort_order')
+        return Inertia::render(
+            'Marketplace/Dashboard',
+            [
+                'categories' =>
+                    $categories,
+            ]
+        );
+    }
+
+    /**
+     * --------------------------------------------------------------------------
+     * CREATE LISTING
+     * --------------------------------------------------------------------------
+     */
+    public function create(Request $request): Response
+    {
+        /*
+        |--------------------------------------------------------------------------
+        | CHECK SELLER PHONE
+        |--------------------------------------------------------------------------
+        */
+
+        if (
+            empty(
+                $request->user()?->phone
+            )
+        ) {
+            return redirect()
+                ->route(
+                    'marketplace.complete-profile'
+                );
+        }
+
+        /*
+        |--------------------------------------------------------------------------
+        | CATEGORIES
+        |--------------------------------------------------------------------------
+        */
+
+        $categories =
+            $this->getMarketplaceCategories(false);
+
+        return Inertia::render(
+            'Marketplace/Create',
+            [
+                'categories' =>
+                    $categories,
+            ]
+        );
+    }
+
+    /**
+     * --------------------------------------------------------------------------
+     * MARKETPLACE CATEGORY PAGE
+     * --------------------------------------------------------------------------
+     */
+    public function category(
+        string $slug
+    ): Response {
+        $category =
+            MarketplaceCategory::query()
+                ->where('slug', $slug)
+                ->where('is_active', true)
+                ->firstOrFail();
+
+        $listings =
+            MarketplaceListing::query()
+
+                ->where(
+                    'marketplace_category_id',
+                    $category->id
+                )
+
+                ->where(
+                    'status',
+                    'active'
+                )
+
+                ->with([
+                    'category:id,name,slug,icon',
+                ])
+
                 ->select([
                     'id',
-                    'name',
+                    'marketplace_category_id',
+                    'title',
                     'slug',
-                    'icon',
+                    'price',
+                    'condition',
+                    'location',
+                    'city',
+                    'images',
+                    'created_at',
                 ])
-                ->get()
-                ->map(function ($category) {
 
-                    $iconMap = [
+                ->latest('created_at')
 
-                        'Electronics' => 'fa-tv',
-                        'Vehicles' => 'fa-car-side',
-                        'Property' => 'fa-house',
-                        'Fashion' => 'fa-shirt',
-                        'Jobs' => 'fa-briefcase',
-                        'Services' => 'fa-screwdriver-wrench',
-                        'Furniture' => 'fa-couch',
+                ->paginate(24)
 
-                        'Phones' => 'fa-mobile-screen-button',
-                        'Computers' => 'fa-laptop',
-                        'Beauty' => 'fa-wand-magic-sparkles',
-                        'Sports' => 'fa-dumbbell',
-                        'Agriculture' => 'fa-wheat-awn',
-                        'Animals' => 'fa-paw',
-                        'Baby Products' => 'fa-baby',
-                        'Books' => 'fa-book-open',
-                        'Gaming' => 'fa-gamepad',
-                        'Music' => 'fa-music',
-                        'Health' => 'fa-heart-pulse',
-                        'Industrial Equipment' => 'fa-industry',
-                        'Other' => 'fa-layer-group',
-                    ];
+                ->through(
+                    function ($listing) {
+                        return $this->formatListing(
+                            $listing,
+                            false
+                        );
+                    }
+                );
 
-                    return [
-                        'id' => $category->id,
-                        'name' => $category->name,
-                        'slug' => $category->slug,
+        return Inertia::render(
+            'Marketplace/Category',
+            [
+                'category' => [
+                    'id' =>
+                        $category->id,
 
-                        'icon' => $iconMap[$category->name]
-                            ?? $category->icon
-                            ?? 'fa-tag',
-                    ];
-                });
-        }
-    );
+                    'name' =>
+                        $category->name,
 
-    return Inertia::render('Marketplace/Dashboard', [
-        'categories' => $categories,
-    ]);
-}
+                    'slug' =>
+                        $category->slug,
 
-    /**
-     * Show the form to create a new listing
-     */
-    // public function create(): Response
-    // {
-        
-    //     $categories = MarketplaceCategory::where('is_active', true)
-    //         ->orderBy('sort_order')
-    //         ->select([
-    //             'id',
-    //             'name',
-    //             'slug',
-    //             'icon',
-    //         ])
-    //         ->get()
-    //         ->map(function ($category) {
+                    'icon' =>
+                        $category->icon,
+                ],
 
-    //             $iconMap = [
-
-    //                 'Electronics' => 'fa-tv',
-    //                 'Vehicles' => 'fa-car-side',
-    //                 'Property' => 'fa-house',
-    //                 'Fashion' => 'fa-shirt',
-    //                 'Jobs' => 'fa-briefcase',
-    //                 'Services' => 'fa-screwdriver-wrench',
-    //                 'Furniture' => 'fa-couch',
-    //                 'Phones' => 'fa-mobile-screen-button',
-    //                 'Computers' => 'fa-laptop',
-    //                 'Beauty' => 'fa-wand-magic-sparkles',
-    //                 'Sports' => 'fa-dumbbell',
-    //                 'Agriculture' => 'fa-wheat-awn',
-    //                 'Animals' => 'fa-paw',
-    //                 'Baby Products' => 'fa-baby',
-    //                 'Books' => 'fa-book-open',
-    //                 'Gaming' => 'fa-gamepad',
-    //                 'Music' => 'fa-music',
-    //                 'Health' => 'fa-heart-pulse',
-    //                 'Industrial Equipment' => 'fa-industry',
-    //                 'Other' => 'fa-layer-group',
-    //             ];
-
-    //             return [
-    //                 'id' => $category->id,
-    //                 'name' => $category->name,
-    //                 'slug' => $category->slug,
-
-    //                 'icon' => $iconMap[$category->name]
-    //                     ?? $category->icon
-    //                     ?? 'fa-tag',
-    //             ];
-    //         });
-
-    //     return Inertia::render('Marketplace/Create', [
-    //         'categories' => $categories,
-    //     ]);
-    // }
-
-    /**
- * Show the form to create a new listing
- */
-public function create(Request $request): Response
-{
-    /*
-    |--------------------------------------------------------------------------
-    | CHECK SELLER PHONE
-    |--------------------------------------------------------------------------
-    | User lazima awe na phone kabla ya kuweka bidhaa.
-    |--------------------------------------------------------------------------
-    */
-
-    if (empty($request->user()?->phone)) {
-        return redirect()
-            ->route('marketplace.complete-profile');
+                'listings' =>
+                    $listings,
+            ]
+        );
     }
 
-
-    /*
-    |--------------------------------------------------------------------------
-    | CATEGORIES
-    |--------------------------------------------------------------------------
-    */
-
-    $categories = MarketplaceCategory::where('is_active', true)
-        ->orderBy('sort_order')
-        ->select([
-            'id',
-            'name',
-            'slug',
-            'icon',
-        ])
-        ->get()
-        ->map(function ($category) {
-
-            $iconMap = [
-
-                'Electronics' => 'fa-tv',
-                'Vehicles' => 'fa-car-side',
-                'Property' => 'fa-house',
-                'Fashion' => 'fa-shirt',
-                'Jobs' => 'fa-briefcase',
-                'Services' => 'fa-screwdriver-wrench',
-                'Furniture' => 'fa-couch',
-                'Phones' => 'fa-mobile-screen-button',
-                'Computers' => 'fa-laptop',
-                'Beauty' => 'fa-wand-magic-sparkles',
-                'Sports' => 'fa-dumbbell',
-                'Agriculture' => 'fa-wheat-awn',
-                'Animals' => 'fa-paw',
-                'Baby Products' => 'fa-baby',
-                'Books' => 'fa-book-open',
-                'Gaming' => 'fa-gamepad',
-                'Music' => 'fa-music',
-                'Health' => 'fa-heart-pulse',
-                'Industrial Equipment' => 'fa-industry',
-                'Other' => 'fa-layer-group',
-            ];
-
-            return [
-                'id' => $category->id,
-                'name' => $category->name,
-                'slug' => $category->slug,
-
-                'icon' =>
-                    $iconMap[$category->name]
-                    ?? $category->icon
-                    ?? 'fa-tag',
-            ];
-        });
-
-    return Inertia::render('Marketplace/Create', [
-        'categories' => $categories,
-    ]);
-}
-
     /**
- * Marketplace Category Page
- */
-public function category(string $slug): Response
-{
-    $category = MarketplaceCategory::where('slug', $slug)
-        ->where('is_active', true)
-        ->firstOrFail();
-
-    $listings = MarketplaceListing::where(
-            'marketplace_category_id',
-            $category->id
-        )
-        ->where('status', 'active')
-        ->latest()
-        ->with([
-            'category:id,name,slug'
-        ])
-        ->select([
-            'id',
-            'marketplace_category_id',
-            'title',
-            'slug',
-            'price',
-            'condition',
-            'location',
-            'city',
-            'images',
-            'created_at',
-        ])
-        ->paginate(24)
-        ->through(function ($listing) {
-
-            return [
-                'id' => $listing->id,
-
-                'title' => $listing->title,
-
-                'slug' => $listing->slug,
-
-                'price' => $listing->price,
-
-                'formatted_price' =>
-                    'TZS ' . number_format($listing->price),
-
-                'condition' => $listing->condition,
-
-                'location' =>
-                    $listing->location
-                    ?? $listing->city
-                    ?? 'Tanzania',
-
-                'image' =>
-                    is_array($listing->images)
-                    && count($listing->images) > 0
-                        ? $listing->images[0]
-                        : null,
-
-                'category' =>
-                    $listing->category?->name,
-
-                'created_at' =>
-                    $listing->created_at?->diffForHumans(),
-            ];
-        });
-
-
-    return Inertia::render('Marketplace/Category', [
-        'category' => [
-            'id' => $category->id,
-            'name' => $category->name,
-            'slug' => $category->slug,
-            'icon' => $category->icon,
-        ],
-
-        'listings' => $listings,
-    ]);
-}
-    /**
-     * Store a new listing
+     * --------------------------------------------------------------------------
+     * STORE NEW LISTING
+     * --------------------------------------------------------------------------
      */
     public function store(Request $request)
     {
-        $validated = $request->validate([
+        /*
+        |--------------------------------------------------------------------------
+        | VALIDATION
+        |--------------------------------------------------------------------------
+        */
 
+        $validated = $request->validate([
             'title' =>
                 'required|string|max:150',
 
@@ -526,7 +561,6 @@ public function category(string $slug): Response
                 'image|mimes:jpg,jpeg,png,webp|max:2048',
         ]);
 
-
         /*
         |--------------------------------------------------------------------------
         | IMAGE UPLOAD
@@ -534,42 +568,35 @@ public function category(string $slug): Response
         */
 
         $imagePaths = [];
+
         if ($request->hasFile('images')) {
 
-    foreach ($request->file('images') as $image) {
+            foreach (
+                $request->file('images')
+                as $image
+            ) {
 
-    //     $path = $image->store(
-    //         'marketplace',
-    //         'public'
-    //     );
+                /*
+                |--------------------------------------------------------------------------
+                | PUBLIC DISK
+                |--------------------------------------------------------------------------
+                |
+                | This keeps the same public disk approach used by your
+                | marketplace image URLs.
+                |
+                */
 
-    //     $imagePaths[] = Storage::disk('public')->url($path);
-    // }
-    //Comment Kwa Muda Nisije nika overight cloud S3
-        // $disk = config('filesystems.default');
+                $path = $image->store(
+                    'marketplace',
+                    'public'
+                );
 
-        //     $path = $image->store(
-        //         'marketplace',
-        //         $disk
-        //     );
-
-        //     $imagePaths[] = Storage::disk($disk)->url($path);
-        //     }
-         //MWISHO Comment Kwa Muda Nisije nika overight cloud S3
-         
-        // if ($request->hasFile('images')) {
-
-        //     foreach ($request->file('images') as $image) {
-
-        //         $path = $image->store(
-        //             'marketplace',
-        //             'public'
-        //         );
-
-        //         $imagePaths[] = '/storage/' . $path;
-        //     }
-        // }
-
+                $imagePaths[] =
+                    Storage::disk(
+                        'public'
+                    )->url($path);
+            }
+        }
 
         /*
         |--------------------------------------------------------------------------
@@ -577,58 +604,66 @@ public function category(string $slug): Response
         |--------------------------------------------------------------------------
         */
 
-        $listing = MarketplaceListing::create([
+        $listing =
+            MarketplaceListing::create([
+                'user_id' =>
+                    Auth::id(),
 
-            'user_id' =>
-                Auth::id(),
+                'marketplace_category_id' =>
+                    $validated['category_id'],
 
-            'marketplace_category_id' =>
-                $validated['category_id'],
+                'title' =>
+                    $validated['title'],
 
-            'title' =>
-                $validated['title'],
+                'slug' =>
+                    Str::slug(
+                        $validated['title']
+                    )
+                    . '-'
+                    . Str::random(5),
 
-            'slug' =>
-                Str::slug($validated['title'])
-                . '-'
-                . Str::random(5),
+                'description' =>
+                    $validated['description']
+                    ?? null,
 
-            'description' =>
-                $validated['description'] ?? null,
+                'price' =>
+                    $validated['price'],
 
-            'price' =>
-                $validated['price'],
+                'condition' =>
+                    $validated['condition'],
 
-            'condition' =>
-                $validated['condition'],
+                'location' =>
+                    $validated['location']
+                    ?? null,
 
-            'location' =>
-                $validated['location'] ?? null,
+                'city' =>
+                    $validated['city']
+                    ?? null,
 
-            'city' =>
-                $validated['city'] ?? null,
+                'images' =>
+                    $imagePaths,
 
-            'images' =>
-                $imagePaths,
+                /*
+                |--------------------------------------------------------------------------
+                | ACTIVE
+                |--------------------------------------------------------------------------
+                |
+                | Keeping your current behavior:
+                | the product becomes visible immediately.
+                |
+                */
 
-            // 'status' =>
-            //     'pending',
-            'status' =>
-             'active',
-        ]);
-
+                'status' =>
+                    'active',
+            ]);
 
         /*
         |--------------------------------------------------------------------------
-        | CLEAR CACHES
-        |--------------------------------------------------------------------------
-        | Important because listing/category counts can change.
+        | CLEAR CACHE
         |--------------------------------------------------------------------------
         */
 
-        Cache::forget('marketplace.categories.v2');
-        Cache::forget('marketplace.featured.v3');
-
+        $this->clearMarketplaceCaches();
 
         /*
         |--------------------------------------------------------------------------
@@ -636,1944 +671,1200 @@ public function category(string $slug): Response
         |--------------------------------------------------------------------------
         */
 
-        // return redirect()
-        //     ->route('marketplace.index')
-        //     ->with(
-        //         'success',
-        //         'Bidhaa yako imetumwa! Inasubiri idhini.'
-        //     );
-
         return redirect()
-    ->route('marketplace.index')
-    ->with(
-        'success',
-        'Bidhaa yako imewekwa sokoni kikamilifu!'
-    );
+            ->route(
+                'marketplace.index'
+            )
+            ->with(
+                'success',
+                'Bidhaa yako imewekwa sokoni kikamilifu!'
+            );
     }
-        }}
+
     /**
- * Show a single marketplace listing
- */
-public function show(MarketplaceListing $listing): Response
-{
-    // Only approved/active listings are publicly visible
-    abort_unless($listing->status === 'active', 404);
-
-    $listing->load([
-        'category:id,name,slug,icon',
-        'user:id,name,email,phone',
-    ]);
-
-    /*
-    |--------------------------------------------------------------------------
-    | IMAGES
-    |--------------------------------------------------------------------------
-    */
-
-    $images = is_array($listing->images)
-        ? array_values(array_filter($listing->images))
-        : [];
-
-    /*
-    |--------------------------------------------------------------------------
-    | SELLER
-    |--------------------------------------------------------------------------
-    */
-
-    $seller = [
-        'id' => $listing->user?->id,
-        'name' => $listing->user?->name ?? 'MauzoVibe Seller',
-        'phone' => $listing->user?->phone,
-    ];
-
-    /*
-    |--------------------------------------------------------------------------
-    | RELATED PRODUCTS
-    |--------------------------------------------------------------------------
-    */
-
-    $relatedProducts = MarketplaceListing::where('status', 'active')
-        ->where('id', '!=', $listing->id)
-        ->where(
-            'marketplace_category_id',
-            $listing->marketplace_category_id
-        )
-        ->with('category:id,name,slug')
-        ->latest('created_at')
-        ->take(8)
-        ->get()
-        ->map(function ($item) {
-
-            $images = is_array($item->images)
-                ? array_values(array_filter($item->images))
-                : [];
-
-            return [
-                'id' => $item->id,
-                'title' => $item->title,
-                'slug' => $item->slug,
-                'price' => $item->price,
-
-                'formatted_price' =>
-                    'TZS ' . number_format($item->price),
-
-                'condition' => $item->condition,
-
-                'location' =>
-                    $item->location
-                    ?? $item->city
-                    ?? 'Tanzania',
-
-                'image' =>
-                    $images[0] ?? null,
-
-                'category' =>
-                    $item->category?->name,
-            ];
-        });
-
-    /*
-    |--------------------------------------------------------------------------
-    | LISTING DATA
-    |--------------------------------------------------------------------------
-    */
-
-    $product = [
-        'id' => $listing->id,
-
-        'title' => $listing->title,
-
-        'slug' => $listing->slug,
-
-        'description' => $listing->description,
-
-        'price' => $listing->price,
-
-        'formatted_price' =>
-            'TZS ' . number_format($listing->price),
-
-        'condition' => $listing->condition,
-
-        'location' =>
-            $listing->location
-            ?? $listing->city
-            ?? 'Tanzania',
-
-        'city' => $listing->city,
-
-        'images' => $images,
-
-        'category' => [
-            'id' => $listing->category?->id,
-            'name' => $listing->category?->name,
-            'slug' => $listing->category?->slug,
-            'icon' => $listing->category?->icon,
-        ],
-
-        'seller' => $seller,
-
-        'created_at' =>
-            $listing->created_at?->diffForHumans(),
-    ];
-
-    return Inertia::render(
-        'Marketplace/Listing/Show',
-        [
-            'product' => $product,
-            'relatedProducts' => $relatedProducts,
-        ]
-    );
-}
-
-
-/**
- * New products
- */
-public function newProducts(Request $request): Response
-{
-    /*
-    |--------------------------------------------------------------------------
-    | CATEGORIES
-    |--------------------------------------------------------------------------
-    | Hizi zitatumika na MarketplacePublicLayout
-    | kwenye left sidebar.
-    |--------------------------------------------------------------------------
-    */
-
-    $categories = Cache::remember(
-        'marketplace.categories.public.v1',
-        now()->addMinutes(30),
-        function () {
-
-            return MarketplaceCategory::where('is_active', true)
-                ->orderBy('sort_order')
-                ->select([
-                    'id',
-                    'name',
-                    'slug',
-                    'icon',
-                    'listings_count',
-                ])
-                ->get()
-                ->map(function ($category) {
-
-                    $iconMap = [
-                        'Electronics' => 'fa-tv',
-                        'Vehicles' => 'fa-car-side',
-                        'Property' => 'fa-house',
-                        'Fashion' => 'fa-shirt',
-                        'Jobs' => 'fa-briefcase',
-                        'Services' => 'fa-screwdriver-wrench',
-                        'Furniture' => 'fa-couch',
-                        'Phones' => 'fa-mobile-screen-button',
-                        'Computers' => 'fa-laptop',
-                        'Beauty' => 'fa-wand-magic-sparkles',
-                        'Sports' => 'fa-dumbbell',
-                        'Agriculture' => 'fa-wheat-awn',
-                        'Animals' => 'fa-paw',
-                        'Baby Products' => 'fa-baby',
-                        'Books' => 'fa-book-open',
-                        'Gaming' => 'fa-gamepad',
-                        'Music' => 'fa-music',
-                        'Health' => 'fa-heart-pulse',
-                        'Industrial Equipment' => 'fa-industry',
-                        'Other' => 'fa-layer-group',
-                    ];
-
-                    return [
-                        'id' => $category->id,
-                        'name' => $category->name,
-                        'slug' => $category->slug,
-
-                        'icon' =>
-                            $iconMap[$category->name]
-                            ?? $category->icon
-                            ?? 'fa-tag',
-
-                        'listings_count' =>
-                            (int) ($category->listings_count ?? 0),
-                    ];
-                })
-                ->values();
-        }
-    );
-
-
-    /*
-    |--------------------------------------------------------------------------
-    | NEW PRODUCTS
-    |--------------------------------------------------------------------------
-    */
-
-    $products = MarketplaceListing::where('status', 'active')
-        ->where('condition', 'new')
-
-        ->with('category:id,name,slug,icon')
-
-        ->select([
-            'id',
-            'marketplace_category_id',
-            'title',
-            'slug',
-            'price',
-            'condition',
-            'location',
-            'city',
-            'images',
-            'created_at',
-        ])
-
-        ->latest('created_at')
-
-        ->paginate(24)
-
-        ->through(function ($listing) {
-
-            $images = is_array($listing->images)
-                ? array_values(
-                    array_filter($listing->images)
-                )
-                : [];
-
-            return [
-
-                'id' => $listing->id,
-
-                'title' => $listing->title,
-
-                'slug' => $listing->slug,
-
-                'price' => $listing->price,
-
-                'formatted_price' =>
-                    'TZS ' . number_format(
-                        $listing->price
-                    ),
-
-                'condition' => $listing->condition,
-
-                'location' =>
-                    $listing->location
-                    ?? $listing->city
-                    ?? 'Tanzania',
-
-                'city' => $listing->city,
-
-                /*
-                |--------------------------------------------------------------------------
-                | MAIN IMAGE
-                |--------------------------------------------------------------------------
-                */
-
-                'image' =>
-                    $images[0] ?? null,
-
-                /*
-                |--------------------------------------------------------------------------
-                | ALL IMAGES
-                |--------------------------------------------------------------------------
-                */
-
-                'images' => $images,
-
-                /*
-                |--------------------------------------------------------------------------
-                | CATEGORY
-                |--------------------------------------------------------------------------
-                */
-
-                'category' => $listing->category
-                    ? [
-                        'id' =>
-                            $listing->category->id,
-
-                        'name' =>
-                            $listing->category->name,
-
-                        'slug' =>
-                            $listing->category->slug,
-
-                        'icon' =>
-                            $listing->category->icon,
-                    ]
-                    : null,
-
-                /*
-                |--------------------------------------------------------------------------
-                | CREATED
-                |--------------------------------------------------------------------------
-                */
-
-                'created_at' =>
-                    $listing->created_at
-                        ?->diffForHumans(),
-            ];
-        });
-
-
-    /*
-    |--------------------------------------------------------------------------
-    | USER LOCATION
-    |--------------------------------------------------------------------------
-    */
-
-    $userLocation =
-        $request->user()?->city
-        ?? $request->user()?->location
-        ?? 'Tabora, Tanzania';
-
-
-    /*
-    |--------------------------------------------------------------------------
-    | RETURN PAGE
-    |--------------------------------------------------------------------------
-    */
-
-    return Inertia::render('Marketplace/New', [
+     * --------------------------------------------------------------------------
+     * SHOW SINGLE MARKETPLACE LISTING
+     * --------------------------------------------------------------------------
+     */
+    public function show(
+        MarketplaceListing $listing
+    ): Response {
+        /*
+        |--------------------------------------------------------------------------
+        | ONLY ACTIVE LISTINGS
+        |--------------------------------------------------------------------------
+        */
+
+        abort_unless(
+            $listing->status === 'active',
+            404
+        );
 
         /*
-        | Public layout
+        |--------------------------------------------------------------------------
+        | LOAD RELATIONSHIPS
+        |--------------------------------------------------------------------------
         */
-        'categories' =>
-            $categories,
 
-        /*
-        | Products
-        */
-        'products' =>
-            $products,
-
-        /*
-        | Header location
-        */
-        'userLocation' =>
-            $userLocation,
-    ]);
-}
-/**
- * Used products
- */
-
-/**
- * Stores / sellers
- */
-// public function stores(): Response
-// {
-//     $stores = MarketplaceListing::where('status', 'active')
-//         ->with('user:id,name')
-//         ->get()
-//         ->groupBy('user_id')
-//         ->map(function ($listings) {
-//             $seller = $listings->first()->user;
-
-//             return [
-//                 'id' => $seller?->id,
-//                 'name' => $seller?->name ?? 'MauzoVibe Seller',
-//                 'products_count' => $listings->count(),
-//             ];
-//         })
-//         ->values();
-
-//     return Inertia::render('Marketplace/Stores', [
-//         'stores' => $stores,
-//     ]);
-// }
-
-/**
- * --------------------------------------------------------------------------
- * Marketplace Stores / Sellers
- * --------------------------------------------------------------------------
- */
-public function stores(Request $request): Response
-{
-    /*
-    |--------------------------------------------------------------------------
-    | CATEGORIES
-    |--------------------------------------------------------------------------
-    | Categories are required by MarketplacePublicLayout.
-    |--------------------------------------------------------------------------
-    */
-
-    $categories = Cache::remember(
-        'marketplace.public.categories.v1',
-        now()->addMinutes(30),
-        function () {
-
-            return MarketplaceCategory::where('is_active', true)
-                ->orderBy('sort_order')
-                ->select([
-                    'id',
-                    'name',
-                    'slug',
-                    'icon',
-                    'listings_count',
-                ])
-                ->get()
-                ->map(function ($category) {
-
-                    $iconMap = [
-
-                        'Electronics' =>
-                            'fa-tv',
-
-                        'Vehicles' =>
-                            'fa-car-side',
-
-                        'Property' =>
-                            'fa-house',
-
-                        'Fashion' =>
-                            'fa-shirt',
-
-                        'Jobs' =>
-                            'fa-briefcase',
-
-                        'Services' =>
-                            'fa-screwdriver-wrench',
-
-                        'Furniture' =>
-                            'fa-couch',
-
-                        'Phones' =>
-                            'fa-mobile-screen-button',
-
-                        'Computers' =>
-                            'fa-laptop',
-
-                        'Beauty' =>
-                            'fa-wand-magic-sparkles',
-
-                        'Sports' =>
-                            'fa-dumbbell',
-
-                        'Agriculture' =>
-                            'fa-wheat-awn',
-
-                        'Animals' =>
-                            'fa-paw',
-
-                        'Baby Products' =>
-                            'fa-baby',
-
-                        'Books' =>
-                            'fa-book-open',
-
-                        'Gaming' =>
-                            'fa-gamepad',
-
-                        'Music' =>
-                            'fa-music',
-
-                        'Health' =>
-                            'fa-heart-pulse',
-
-                        'Industrial Equipment' =>
-                            'fa-industry',
-
-                        'Other' =>
-                            'fa-layer-group',
-                    ];
-
-                    return [
-
-                        'id' =>
-                            $category->id,
-
-                        'name' =>
-                            $category->name,
-
-                        'slug' =>
-                            $category->slug,
-
-                        'icon' =>
-                            $iconMap[$category->name]
-                            ?? $category->icon
-                            ?? 'fa-tag',
-
-                        'listings_count' =>
-                            (int) (
-                                $category->listings_count
-                                ?? 0
-                            ),
-                    ];
-                })
-                ->values();
-        }
-    );
-
-
-    /*
-    |--------------------------------------------------------------------------
-    | QUICK CATEGORIES
-    |--------------------------------------------------------------------------
-    */
-
-    $quickCategories = $categories
-        ->take(10)
-        ->values();
-
-
-    /*
-    |--------------------------------------------------------------------------
-    | STORES
-    |--------------------------------------------------------------------------
-    |
-    | Each seller becomes one store.
-    | We only count active listings.
-    |--------------------------------------------------------------------------
-    */
-
-    $stores = MarketplaceListing::query()
-
-        ->where('status', 'active')
-
-        ->whereNotNull('user_id')
-
-        ->with([
-            'user:id,name,email,phone,city,location'
-        ])
-
-        ->select([
-            'id',
-            'user_id',
-            'title',
-            'price',
-            'condition',
-            'location',
-            'city',
-            'images',
-            'created_at',
-        ])
-
-        ->latest('created_at')
-
-        ->get()
-
-        ->groupBy('user_id')
-
-        ->map(function ($listings) {
-
-            $seller = $listings->first()?->user;
-
-            /*
-            |--------------------------------------------------------------------------
-            | Seller images
-            |--------------------------------------------------------------------------
-            |
-            | For now we use the first product image as the store cover.
-            | Later we can add a dedicated store_logo/store_banner column.
-            |--------------------------------------------------------------------------
-            */
-
-            $firstListing = $listings->first();
-
-            $images = is_array($firstListing?->images)
-                ? array_values(
-                    array_filter(
-                        $firstListing->images
-                    )
-                )
-                : [];
-
-
-            /*
-            |--------------------------------------------------------------------------
-            | LOCATION
-            |--------------------------------------------------------------------------
-            */
-
-            $location =
-                $seller?->city
-                ?? $seller?->location
-                ?? $firstListing?->location
-                ?? $firstListing?->city
-                ?? 'Tanzania';
-
-
-            /*
-            |--------------------------------------------------------------------------
-            | STORE DATA
-            |--------------------------------------------------------------------------
-            */
-
-            return [
-
-                'id' =>
-                    $seller?->id,
-
-                'name' =>
-                    $seller?->name
-                    ?? 'MauzoVibe Seller',
-
-                'email' =>
-                    $seller?->email,
-
-                'phone' =>
-                    $seller?->phone,
-
-                'location' =>
-                    $location,
-
-                'products_count' =>
-                    $listings->count(),
-
-                'new_products_count' =>
-                    $listings
-                        ->where('condition', 'new')
-                        ->count(),
-
-                'used_products_count' =>
-                    $listings
-                        ->where('condition', 'used')
-                        ->count(),
-
-                'image' =>
-                    $images[0] ?? null,
-
-                'latest_product' =>
-                    $firstListing?->title,
-
-                'latest_product_price' =>
-                    $firstListing?->price,
-
-                'created_at' =>
-                    $firstListing?->created_at
-                    ?->diffForHumans(),
-            ];
-        })
-
-        ->filter(function ($store) {
-
-            return !empty($store['id']);
-        })
-
-        ->values();
-
-
-    /*
-    |--------------------------------------------------------------------------
-    | USER LOCATION
-    |--------------------------------------------------------------------------
-    */
-
-    $userLocation =
-        $request->user()?->city
-        ?? $request->user()?->location
-        ?? 'Tabora, Tanzania';
-
-
-    /*
-    |--------------------------------------------------------------------------
-    | RESPONSE
-    |--------------------------------------------------------------------------
-    */
-
-    return Inertia::render(
-        'Marketplace/Stores',
-        [
-
-            'categories' =>
-                $categories,
-
-            'quickCategories' =>
-                $quickCategories,
-
-            'stores' =>
-                $stores,
-
-            'userLocation' =>
-                $userLocation,
-        ]
-    );
-}
-
-/**
- * --------------------------------------------------------------------------
- * Show Single Marketplace Store
- * --------------------------------------------------------------------------
- */
-public function storeShow(Request $request, $userId): Response
-{
-    /*
-    |--------------------------------------------------------------------------
-    | SELLER
-    |--------------------------------------------------------------------------
-    */
-
-    $seller = \App\Models\User::query()
-        ->select([
-            'id',
-            'name',
-            'email',
-            'phone',
-            'city',
-            'location',
-        ])
-        ->findOrFail($userId);
-
-
-    /*
-    |--------------------------------------------------------------------------
-    | STORE PRODUCTS
-    |--------------------------------------------------------------------------
-    */
-
-    $products = MarketplaceListing::query()
-
-        ->where('user_id', $seller->id)
-
-        ->where('status', 'active')
-
-        ->with([
+        $listing->load([
             'category:id,name,slug,icon',
-        ])
 
-        ->select([
-            'id',
-            'user_id',
-            'marketplace_category_id',
-            'title',
-            'slug',
-            'price',
-            'condition',
-            'location',
-            'city',
-            'images',
-            'created_at',
-        ])
+            'user:id,name,email,phone',
+        ]);
 
-        ->latest('created_at')
+        /*
+        |--------------------------------------------------------------------------
+        | IMAGES
+        |--------------------------------------------------------------------------
+        */
 
-        ->paginate(24)
+        $images =
+            $this->getListingImages(
+                $listing
+            );
 
-        ->through(function ($listing) {
+        /*
+        |--------------------------------------------------------------------------
+        | SELLER
+        |--------------------------------------------------------------------------
+        */
 
-            $images = is_array($listing->images)
-                ? array_values(
-                    array_filter($listing->images)
-                )
-                : [];
+        $seller = [
+            'id' =>
+                $listing->user?->id,
 
-            return [
+            'name' =>
+                $listing->user?->name
+                ?? 'MauzoVibe Seller',
 
-                'id' =>
-                    $listing->id,
+            'phone' =>
+                $listing->user?->phone,
+        ];
 
-                'title' =>
-                    $listing->title,
+        /*
+        |--------------------------------------------------------------------------
+        | RELATED PRODUCTS
+        |--------------------------------------------------------------------------
+        */
 
-                'slug' =>
-                    $listing->slug,
+        $relatedProducts =
+            MarketplaceListing::query()
 
-                'price' =>
-                    $listing->price,
-
-                'formatted_price' =>
-                    'TZS ' .
-                    number_format($listing->price),
-
-                'condition' =>
-                    $listing->condition,
-
-                'location' =>
-                    $listing->location
-                    ?? $listing->city
-                    ?? 'Tanzania',
-
-                'city' =>
-                    $listing->city,
-
-                'image' =>
-                    $images[0] ?? null,
-
-                'images' =>
-                    $images,
-
-                'category' =>
-                    $listing->category
-                        ? [
-                            'id' =>
-                                $listing->category->id,
-
-                            'name' =>
-                                $listing->category->name,
-
-                            'slug' =>
-                                $listing->category->slug,
-
-                            'icon' =>
-                                $listing->category->icon,
-                        ]
-                        : null,
-
-                'created_at' =>
-                    $listing->created_at
-                        ?->diffForHumans(),
-            ];
-        });
-
-
-    /*
-    |--------------------------------------------------------------------------
-    | STORE STATISTICS
-    |--------------------------------------------------------------------------
-    */
-
-    $activeProducts = MarketplaceListing::query()
-        ->where('user_id', $seller->id)
-        ->where('status', 'active');
-
-
-    $productsCount = (clone $activeProducts)->count();
-
-    $newProductsCount = (clone $activeProducts)
-        ->where('condition', 'new')
-        ->count();
-
-    $usedProductsCount = (clone $activeProducts)
-        ->where('condition', 'used')
-        ->count();
-
-
-    /*
-    |--------------------------------------------------------------------------
-    | STORE LOCATION
-    |--------------------------------------------------------------------------
-    */
-
-    $location =
-        $seller->city
-        ?? $seller->location
-        ?? 'Tanzania';
-
-
-    /*
-    |--------------------------------------------------------------------------
-    | STORE DATA
-    |--------------------------------------------------------------------------
-    */
-
-    $store = [
-
-        'id' =>
-            $seller->id,
-
-        'name' =>
-            $seller->name
-            ?? 'MauzoVibe Seller',
-
-        'email' =>
-            $seller->email,
-
-        'phone' =>
-            $seller->phone,
-
-        'city' =>
-            $seller->city,
-
-        'location' =>
-            $location,
-
-        'products_count' =>
-            $productsCount,
-
-        'new_products_count' =>
-            $newProductsCount,
-
-        'used_products_count' =>
-            $usedProductsCount,
-    ];
-
-
-    /*
-    |--------------------------------------------------------------------------
-    | USER LOCATION
-    |--------------------------------------------------------------------------
-    */
-
-    $userLocation =
-        $request->user()?->city
-        ?? $request->user()?->location
-        ?? 'Tabora, Tanzania';
-
-
-    /*
-    |--------------------------------------------------------------------------
-    | CATEGORIES
-    |--------------------------------------------------------------------------
-    */
-
-    $categories = Cache::remember(
-        'marketplace.public.categories.v1',
-        now()->addMinutes(30),
-        function () {
-
-            return MarketplaceCategory::where(
-                    'is_active',
-                    true
+                ->where(
+                    'status',
+                    'active'
                 )
 
-                ->orderBy('sort_order')
-
-                ->select([
+                ->where(
                     'id',
-                    'name',
-                    'slug',
-                    'icon',
-                    'listings_count',
-                ])
-
-                ->get()
-
-                ->map(function ($category) {
-
-                    $iconMap = [
-
-                        'Electronics' => 'fa-tv',
-                        'Vehicles' => 'fa-car-side',
-                        'Property' => 'fa-house',
-                        'Fashion' => 'fa-shirt',
-                        'Jobs' => 'fa-briefcase',
-                        'Services' => 'fa-screwdriver-wrench',
-                        'Furniture' => 'fa-couch',
-                        'Phones' => 'fa-mobile-screen-button',
-                        'Computers' => 'fa-laptop',
-                        'Beauty' => 'fa-wand-magic-sparkles',
-                        'Sports' => 'fa-dumbbell',
-                        'Agriculture' => 'fa-wheat-awn',
-                        'Animals' => 'fa-paw',
-                        'Baby Products' => 'fa-baby',
-                        'Books' => 'fa-book-open',
-                        'Gaming' => 'fa-gamepad',
-                        'Music' => 'fa-music',
-                        'Health' => 'fa-heart-pulse',
-                        'Industrial Equipment' => 'fa-industry',
-                        'Other' => 'fa-layer-group',
-                    ];
-
-                    return [
-
-                        'id' =>
-                            $category->id,
-
-                        'name' =>
-                            $category->name,
-
-                        'slug' =>
-                            $category->slug,
-
-                        'icon' =>
-                            $iconMap[$category->name]
-                            ?? $category->icon
-                            ?? 'fa-tag',
-
-                        'listings_count' =>
-                            (int) (
-                                $category->listings_count
-                                ?? 0
-                            ),
-                    ];
-                })
-
-                ->values();
-        }
-    );
-
-
-    /*
-    |--------------------------------------------------------------------------
-    | RESPONSE
-    |--------------------------------------------------------------------------
-    */
-
-    return Inertia::render(
-        'Marketplace/Store',
-        [
-
-            'store' =>
-                $store,
-
-            'products' =>
-                $products,
-
-            'categories' =>
-                $categories,
-
-            'userLocation' =>
-                $userLocation,
-        ]
-    );
-}
-
-/**
- * Special offers / featured products
- */
-/**
- * Special Offers
- */
-public function offers(Request $request): Response
-{
-    /*
-    |--------------------------------------------------------------------------
-    | CATEGORIES
-    |--------------------------------------------------------------------------
-    */
-
-    $categories = Cache::remember(
-        'marketplace.categories.public.v1',
-        now()->addMinutes(30),
-        function () {
-
-            return MarketplaceCategory::where('is_active', true)
-                ->orderBy('sort_order')
-                ->select([
-                    'id',
-                    'name',
-                    'slug',
-                    'icon',
-                    'listings_count',
-                ])
-                ->get()
-                ->map(function ($category) {
-
-                    $iconMap = [
-                        'Electronics' => 'fa-tv',
-                        'Vehicles' => 'fa-car-side',
-                        'Property' => 'fa-house',
-                        'Fashion' => 'fa-shirt',
-                        'Jobs' => 'fa-briefcase',
-                        'Services' => 'fa-screwdriver-wrench',
-                        'Furniture' => 'fa-couch',
-                        'Phones' => 'fa-mobile-screen-button',
-                        'Computers' => 'fa-laptop',
-                        'Beauty' => 'fa-wand-magic-sparkles',
-                        'Sports' => 'fa-dumbbell',
-                        'Agriculture' => 'fa-wheat-awn',
-                        'Animals' => 'fa-paw',
-                        'Baby Products' => 'fa-baby',
-                        'Books' => 'fa-book-open',
-                        'Gaming' => 'fa-gamepad',
-                        'Music' => 'fa-music',
-                        'Health' => 'fa-heart-pulse',
-                        'Industrial Equipment' => 'fa-industry',
-                        'Other' => 'fa-layer-group',
-                    ];
-
-                    return [
-                        'id' => $category->id,
-                        'name' => $category->name,
-                        'slug' => $category->slug,
-
-                        'icon' =>
-                            $iconMap[$category->name]
-                            ?? $category->icon
-                            ?? 'fa-tag',
-
-                        'listings_count' =>
-                            (int) ($category->listings_count ?? 0),
-                    ];
-                })
-                ->values();
-        }
-    );
-
-
-    /*
-    |--------------------------------------------------------------------------
-    | QUICK CATEGORIES
-    |--------------------------------------------------------------------------
-    */
-
-    $quickCategories = $categories
-        ->take(10)
-        ->values();
-
-
-    /*
-    |--------------------------------------------------------------------------
-    | SPECIAL OFFERS
-    |--------------------------------------------------------------------------
-    */
-
-    $products = MarketplaceListing::where('status', 'active')
-
-        ->where('is_featured', true)
-
-        ->with('category:id,name,slug,icon')
-
-        ->select([
-            'id',
-            'marketplace_category_id',
-            'title',
-            'slug',
-            'price',
-            'condition',
-            'location',
-            'city',
-            'images',
-            'created_at',
-            'is_featured',
-        ])
-
-        ->latest('created_at')
-
-        ->paginate(24)
-
-        ->through(function ($listing) {
-
-            $images = is_array($listing->images)
-                ? array_values(
-                    array_filter($listing->images)
+                    '!=',
+                    $listing->id
                 )
-                : [];
 
-            return [
-
-                'id' =>
-                    $listing->id,
-
-                'title' =>
-                    $listing->title,
-
-                'slug' =>
-                    $listing->slug,
-
-                'price' =>
-                    $listing->price,
-
-                'formatted_price' =>
-                    'TZS ' .
-                    number_format(
-                        $listing->price
-                    ),
-
-                'condition' =>
-                    $listing->condition,
-
-                'location' =>
-                    $listing->location
-                    ?? $listing->city
-                    ?? 'Tanzania',
-
-                'city' =>
-                    $listing->city,
-
-                'image' =>
-                    $images[0] ?? null,
-
-                'images' =>
-                    $images,
-
-                'category' =>
-                    $listing->category
-                        ? [
-                            'id' =>
-                                $listing->category->id,
-
-                            'name' =>
-                                $listing->category->name,
-
-                            'slug' =>
-                                $listing->category->slug,
-
-                            'icon' =>
-                                $listing->category->icon,
-                        ]
-                        : null,
-
-                'is_featured' =>
-                    (bool) $listing->is_featured,
-
-                'created_at' =>
-                    $listing->created_at
-                        ?->diffForHumans(),
-            ];
-        });
-
-
-    /*
-    |--------------------------------------------------------------------------
-    | USER LOCATION
-    |--------------------------------------------------------------------------
-    */
-
-    $userLocation =
-        $request->user()?->city
-        ?? $request->user()?->location
-        ?? 'Tabora, Tanzania';
-
-
-    /*
-    |--------------------------------------------------------------------------
-    | RESPONSE
-    |--------------------------------------------------------------------------
-    */
-
-    return Inertia::render(
-        'Marketplace/Offers',
-        [
-
-            'categories' =>
-                $categories,
-
-            'quickCategories' =>
-                $quickCategories,
-
-            'products' =>
-                $products,
-
-            'userLocation' =>
-                $userLocation,
-        ]
-    );
-}
-
-/**
- * Marketplace help
- */
-/**
- * Marketplace Help
- */
-public function help(Request $request): Response
-{
-    $categories = Cache::remember(
-        'marketplace.categories.public.v1',
-        now()->addMinutes(30),
-        function () {
-
-            return MarketplaceCategory::where('is_active', true)
-                ->orderBy('sort_order')
-                ->select([
-                    'id',
-                    'name',
-                    'slug',
-                    'icon',
-                    'listings_count',
-                ])
-                ->get()
-                ->map(function ($category) {
-
-                    $iconMap = [
-                        'Electronics' => 'fa-tv',
-                        'Vehicles' => 'fa-car-side',
-                        'Property' => 'fa-house',
-                        'Fashion' => 'fa-shirt',
-                        'Jobs' => 'fa-briefcase',
-                        'Services' => 'fa-screwdriver-wrench',
-                        'Furniture' => 'fa-couch',
-                        'Phones' => 'fa-mobile-screen-button',
-                        'Computers' => 'fa-laptop',
-                        'Beauty' => 'fa-wand-magic-sparkles',
-                        'Sports' => 'fa-dumbbell',
-                        'Agriculture' => 'fa-wheat-awn',
-                        'Animals' => 'fa-paw',
-                        'Baby Products' => 'fa-baby',
-                        'Books' => 'fa-book-open',
-                        'Gaming' => 'fa-gamepad',
-                        'Music' => 'fa-music',
-                        'Health' => 'fa-heart-pulse',
-                        'Industrial Equipment' => 'fa-industry',
-                        'Other' => 'fa-layer-group',
-                    ];
-
-                    return [
-                        'id' => $category->id,
-                        'name' => $category->name,
-                        'slug' => $category->slug,
-                        'icon' =>
-                            $iconMap[$category->name]
-                            ?? $category->icon
-                            ?? 'fa-tag',
-                        'listings_count' =>
-                            (int) ($category->listings_count ?? 0),
-                    ];
-                })
-                ->values();
-        }
-    );
-
-    $userLocation =
-        $request->user()?->city
-        ?? $request->user()?->location
-        ?? 'Tabora, Tanzania';
-
-    return Inertia::render('Marketplace/Help', [
-        'categories' => $categories,
-        'userLocation' => $userLocation,
-    ]);
-}
-
-/**
- * Used products
- */
-public function usedProducts(Request $request): Response
-{
-    /*
-    |--------------------------------------------------------------------------
-    | CATEGORIES
-    |--------------------------------------------------------------------------
-    */
-
-    $categories = Cache::remember(
-        'marketplace.public.categories.v1',
-        now()->addMinutes(30),
-        function () {
-
-            return MarketplaceCategory::where('is_active', true)
-                ->orderBy('sort_order')
-                ->select([
-                    'id',
-                    'name',
-                    'slug',
-                    'icon',
-                    'listings_count',
-                ])
-                ->get()
-                ->map(function ($category) {
-
-                    $iconMap = [
-
-                        'Electronics' =>
-                            'fa-tv',
-
-                        'Vehicles' =>
-                            'fa-car-side',
-
-                        'Property' =>
-                            'fa-house',
-
-                        'Fashion' =>
-                            'fa-shirt',
-
-                        'Jobs' =>
-                            'fa-briefcase',
-
-                        'Services' =>
-                            'fa-screwdriver-wrench',
-
-                        'Furniture' =>
-                            'fa-couch',
-
-                        'Phones' =>
-                            'fa-mobile-screen-button',
-
-                        'Computers' =>
-                            'fa-laptop',
-
-                        'Beauty' =>
-                            'fa-wand-magic-sparkles',
-
-                        'Sports' =>
-                            'fa-dumbbell',
-
-                        'Agriculture' =>
-                            'fa-wheat-awn',
-
-                        'Animals' =>
-                            'fa-paw',
-
-                        'Baby Products' =>
-                            'fa-baby',
-
-                        'Books' =>
-                            'fa-book-open',
-
-                        'Gaming' =>
-                            'fa-gamepad',
-
-                        'Music' =>
-                            'fa-music',
-
-                        'Health' =>
-                            'fa-heart-pulse',
-
-                        'Industrial Equipment' =>
-                            'fa-industry',
-
-                        'Other' =>
-                            'fa-layer-group',
-                    ];
-
-                    return [
-                        'id' =>
-                            $category->id,
-
-                        'name' =>
-                            $category->name,
-
-                        'slug' =>
-                            $category->slug,
-
-                        'icon' =>
-                            $iconMap[$category->name]
-                            ?? $category->icon
-                            ?? 'fa-tag',
-
-                        'listings_count' =>
-                            (int) (
-                                $category->listings_count
-                                ?? 0
-                            ),
-                    ];
-                });
-        }
-    );
-
-
-    /*
-    |--------------------------------------------------------------------------
-    | QUICK CATEGORIES
-    |--------------------------------------------------------------------------
-    */
-
-    $quickCategories = $categories
-        ->take(10)
-        ->values();
-
-
-    /*
-    |--------------------------------------------------------------------------
-    | USED PRODUCTS
-    |--------------------------------------------------------------------------
-    */
-
-    $products = MarketplaceListing::where(
-            'status',
-            'active'
-        )
-
-        ->where(
-            'condition',
-            'used'
-        )
-
-        ->with(
-            'category:id,name,slug,icon'
-        )
-
-        ->latest('created_at')
-
-        ->select([
-            'id',
-            'marketplace_category_id',
-            'title',
-            'slug',
-            'price',
-            'condition',
-            'location',
-            'city',
-            'images',
-            'created_at',
-        ])
-
-        ->paginate(24)
-
-        ->through(function ($listing) {
-
-            $images = is_array($listing->images)
-                ? array_values(
-                    array_filter(
-                        $listing->images
-                    )
+                ->where(
+                    'marketplace_category_id',
+                    $listing->marketplace_category_id
                 )
-                : [];
 
-            return [
+                ->with(
+                    'category:id,name,slug,icon'
+                )
 
-                'id' =>
-                    $listing->id,
+                ->latest('created_at')
 
-                'title' =>
-                    $listing->title,
+                ->take(8)
 
-                'slug' =>
-                    $listing->slug,
-
-                'price' =>
-                    $listing->price,
-
-                'formatted_price' =>
-                    'TZS ' .
-                    number_format(
-                        $listing->price
-                    ),
-
-                'condition' =>
-                    $listing->condition,
-
-                'location' =>
-                    $listing->location
-                    ?? $listing->city
-                    ?? 'Tanzania',
-
-                'city' =>
-                    $listing->city,
-
-                'image' =>
-                    $images[0] ?? null,
-
-                'images' =>
-                    $images,
-
-                'category' =>
-                    $listing->category
-                        ? [
-                            'id' =>
-                                $listing->category->id,
-
-                            'name' =>
-                                $listing->category->name,
-
-                            'slug' =>
-                                $listing->category->slug,
-
-                            'icon' =>
-                                $listing->category->icon,
-                        ]
-                        : null,
-
-                'created_at' =>
-                    $listing->created_at
-                        ? $listing->created_at
-                            ->diffForHumans()
-                        : null,
-            ];
-        });
-
-
-    /*
-    |--------------------------------------------------------------------------
-    | USER LOCATION
-    |--------------------------------------------------------------------------
-    */
-
-    $userLocation =
-        $request->user()?->city
-        ?? $request->user()?->location
-        ?? 'Tabora, Tanzania';
-
-
-    /*
-    |--------------------------------------------------------------------------
-    | RESPONSE
-    |--------------------------------------------------------------------------
-    */
-
-    return Inertia::render(
-        'Marketplace/Used',
-        [
-
-            'categories' =>
-                $categories,
-
-            'quickCategories' =>
-                $quickCategories,
-
-            'products' =>
-                $products,
-
-            'userLocation' =>
-                $userLocation,
-        ]
-    );
-}
-
-/**
- * Marketplace Search
- */
-public function search(Request $request): Response
-{
-    $query = trim($request->input('q', ''));
-
-    /*
-    |--------------------------------------------------------------------------
-    | CATEGORIES
-    |--------------------------------------------------------------------------
-    */
-
-    $categories = Cache::remember(
-        'marketplace.public.categories.v1',
-        now()->addMinutes(30),
-        function () {
-
-            return MarketplaceCategory::where('is_active', true)
-                ->withCount([
-                    'listings as listings_count' => function ($query) {
-                        $query->where('status', 'active');
-                    }
-                ])
-                ->orderBy('sort_order')
-                ->select([
-                    'id',
-                    'name',
-                    'slug',
-                    'icon',
-                ])
                 ->get()
-                ->map(function ($category) {
 
-                    $iconMap = [
-                        'Electronics' => 'fa-tv',
-                        'Vehicles' => 'fa-car-side',
-                        'Property' => 'fa-house',
-                        'Fashion' => 'fa-shirt',
-                        'Jobs' => 'fa-briefcase',
-                        'Services' => 'fa-screwdriver-wrench',
-                        'Furniture' => 'fa-couch',
-                        'Phones' => 'fa-mobile-screen-button',
-                        'Computers' => 'fa-laptop',
-                        'Beauty' => 'fa-wand-magic-sparkles',
-                        'Sports' => 'fa-dumbbell',
-                        'Agriculture' => 'fa-wheat-awn',
-                        'Animals' => 'fa-paw',
-                        'Baby Products' => 'fa-baby',
-                        'Books' => 'fa-book-open',
-                        'Gaming' => 'fa-gamepad',
-                        'Music' => 'fa-music',
-                        'Health' => 'fa-heart-pulse',
-                        'Industrial Equipment' => 'fa-industry',
-                        'Other' => 'fa-layer-group',
-                    ];
+                ->map(function ($item) {
 
-                    return [
-                        'id' => $category->id,
-                        'name' => $category->name,
-                        'slug' => $category->slug,
-                        'icon' => $iconMap[$category->name]
-                            ?? $category->icon
-                            ?? 'fa-tag',
-                        'listings_count' =>
-                            (int) $category->listings_count,
-                    ];
+                    return $this->formatListing(
+                        $item,
+                        false
+                    );
                 })
                 ->values();
-        }
-    );
 
-    /*
-    |--------------------------------------------------------------------------
-    | SEARCH PRODUCTS
-    |--------------------------------------------------------------------------
-    */
+        /*
+        |--------------------------------------------------------------------------
+        | PRODUCT
+        |--------------------------------------------------------------------------
+        */
 
-    $products = MarketplaceListing::query()
-    ->where('status', 'active')
+        $product = [
+            'id' =>
+                $listing->id,
 
-    ->when($query !== '', function ($q) use ($query) {
+            'title' =>
+                $listing->title,
 
-        $q->where(function ($search) use ($query) {
+            'slug' =>
+                $listing->slug,
 
-            $search
-                ->where('title', 'like', "%{$query}%")
-                ->orWhere('description', 'like', "%{$query}%")
-                ->orWhere('location', 'like', "%{$query}%")
-                ->orWhere('city', 'like', "%{$query}%")
+            'description' =>
+                $listing->description,
 
-                // Search category
-                ->orWhereHas('category', function ($category) use ($query) {
-                    $category->where('name', 'like', "%{$query}%");
-                })
-
-                // Search seller
-                ->orWhereHas('user', function ($user) use ($query) {
-                    $user->where('name', 'like', "%{$query}%");
-                });
-
-        }); // Close $q->where(function ($search)
-
-    }) // Close ->when(function ($q)
-
-    ->with('category:id,name,slug,icon')
-
-    ->select([
-        'id',
-        'marketplace_category_id',
-        'title',
-        'slug',
-        'description',
-        'price',
-        'condition',
-        'location',
-        'city',
-        'images',
-        'created_at',
-    ])
-
-    ->latest('created_at')
-
-    ->paginate(24)
-
-    ->withQueryString()
-
-    ->through(function ($listing) {
-
-        $images = is_array($listing->images)
-            ? array_values(array_filter($listing->images))
-            : [];
-
-        return [
-            'id' => $listing->id,
-
-            'title' => $listing->title,
-
-            'slug' => $listing->slug,
-
-            'price' => $listing->price,
+            'price' =>
+                $listing->price,
 
             'formatted_price' =>
-                'TZS ' . number_format($listing->price),
+                'TZS ' .
+                number_format(
+                    $listing->price
+                ),
 
-            'condition' => $listing->condition,
+            'condition' =>
+                $listing->condition,
 
             'location' =>
                 $listing->location
                 ?? $listing->city
                 ?? 'Tanzania',
 
-            'city' => $listing->city,
+            'city' =>
+                $listing->city,
 
-            'image' =>
-                $images[0] ?? null,
+            'images' =>
+                $images,
 
-            'images' => $images,
+            'category' => [
+                'id' =>
+                    $listing->category?->id,
 
-            'category' => $listing->category
-                ? [
-                    'id' => $listing->category->id,
-                    'name' => $listing->category->name,
-                    'slug' => $listing->category->slug,
-                    'icon' => $listing->category->icon,
-                ]
-                : null,
+                'name' =>
+                    $listing->category?->name,
+
+                'slug' =>
+                    $listing->category?->slug,
+
+                'icon' =>
+                    $listing->category?->icon,
+            ],
+
+            'seller' =>
+                $seller,
 
             'created_at' =>
-                $listing->created_at?->diffForHumans(),
+                $listing->created_at
+                    ?->diffForHumans(),
         ];
-    });
-    /*
-    |--------------------------------------------------------------------------
-    | USER LOCATION
-    |--------------------------------------------------------------------------
-    */
 
-    $userLocation =
-        $request->user()?->city
-        ?? $request->user()?->location
-        ?? 'Tabora, Tanzania';
+        return Inertia::render(
+            'Marketplace/Listing/Show',
+            [
+                'product' =>
+                    $product,
 
-    /*
-    |--------------------------------------------------------------------------
-    | RESPONSE
-    |--------------------------------------------------------------------------
-    */
-
-    return Inertia::render('Marketplace/Search', [
-        'query' => $query,
-
-        'products' => $products,
-
-        'categories' => $categories,
-
-        'userLocation' => $userLocation,
-    ]);
-}
-
-//Complete Profile
-/**
- * Complete Marketplace Seller Profile
- */
-public function completeProfile(Request $request): Response
-{
-    return Inertia::render('Marketplace/CompleteProfile', [
-        'phone' => $request->user()?->phone,
-    ]);
-}
-
-
-/**
- * Update Marketplace Seller Profile
- */
-// public function updateProfile(Request $request)
-// {
-//     $validated = $request->validate([
-//         'phone' => [
-//             'required',
-//             'string',
-//             'regex:/^(?:\+255|255|0)(6|7)\d{8}$/',
-//         ],
-//     ], [
-//         'phone.required' =>
-//             'Tafadhali weka namba yako ya simu.',
-
-//         'phone.regex' =>
-//             'Weka namba sahihi ya Tanzania, mfano 0712345678.',
-//     ]);
-
-//     $phone = $validated['phone'];
-
-//     /*
-//     |--------------------------------------------------------------------------
-//     | Normalize phone number
-//     |--------------------------------------------------------------------------
-//     | 0712345678 -> +255712345678
-//     | 255712345678 -> +255712345678
-//     | +255712345678 -> +255712345678
-//     |--------------------------------------------------------------------------
-//     */
-
-//     if (str_starts_with($phone, '0')) {
-//         $phone = '+255' . substr($phone, 1);
-//     } elseif (str_starts_with($phone, '255')) {
-//         $phone = '+' . $phone;
-//     }
-
-//     $request->user()->update([
-//         'phone' => $phone,
-//     ]);
-
-//     return redirect()
-//         ->route('marketplace.create')
-//         ->with(
-//             'success',
-//             'Namba yako ya simu imehifadhiwa. Sasa unaweza kuweka bidhaa.'
-//         );
-// }
-
-/**
- * Update Marketplace Seller Profile
- */
-public function updateProfile(Request $request)
-{
-    $validated = $request->validate([
-        'phone' => [
-            'required',
-            'string',
-            'regex:/^(?:\+255|255|0)(6|7)\d{8}$/',
-        ],
-    ], [
-        'phone.required' =>
-            'Tafadhali weka namba yako ya simu.',
-
-        'phone.regex' =>
-            'Weka namba sahihi ya Tanzania, mfano 0712345678.',
-    ]);
-
-    $phone = $validated['phone'];
-
-    /*
-    |--------------------------------------------------------------------------
-    | NORMALIZE PHONE NUMBER
-    |--------------------------------------------------------------------------
-    */
-
-    if (str_starts_with($phone, '0')) {
-        $phone = '+255' . substr($phone, 1);
-    } elseif (str_starts_with($phone, '255')) {
-        $phone = '+' . $phone;
+                'relatedProducts' =>
+                    $relatedProducts,
+            ]
+        );
     }
 
-    /*
-    |--------------------------------------------------------------------------
-    | SAVE PHONE
-    |--------------------------------------------------------------------------
-    */
+    /**
+     * --------------------------------------------------------------------------
+     * NEW PRODUCTS
+     * --------------------------------------------------------------------------
+     */
+    public function newProducts(
+        Request $request
+    ): Response {
+        $categories =
+            $this->getMarketplaceCategories(true);
 
-    $user = $request->user();
+        $quickCategories =
+            $categories
+                ->take(10)
+                ->values();
 
-    $user->phone = $phone;
-    $user->save();
+        $products =
+            MarketplaceListing::query()
 
-    /*
-    |--------------------------------------------------------------------------
-    | CONTINUE TO CREATE LISTING
-    |--------------------------------------------------------------------------
-    */
+                ->where(
+                    'status',
+                    'active'
+                )
 
-    return redirect()
-        ->route('marketplace.create')
-        ->with(
-            'success',
-            'Namba yako ya simu imehifadhiwa. Sasa unaweza kuweka bidhaa.'
+                ->where(
+                    'condition',
+                    'new'
+                )
+
+                ->with(
+                    'category:id,name,slug,icon'
+                )
+
+                ->select([
+                    'id',
+                    'marketplace_category_id',
+                    'title',
+                    'slug',
+                    'price',
+                    'condition',
+                    'location',
+                    'city',
+                    'images',
+                    'created_at',
+                ])
+
+                ->latest('created_at')
+
+                ->paginate(24)
+
+                ->through(function ($listing) {
+
+                    return $this->formatListing(
+                        $listing,
+                        true
+                    );
+                });
+
+        $userLocation =
+            $this->getUserLocation(
+                $request
+            );
+
+        return Inertia::render(
+            'Marketplace/New',
+            [
+                'categories' =>
+                    $categories,
+
+                'quickCategories' =>
+                    $quickCategories,
+
+                'products' =>
+                    $products,
+
+                'userLocation' =>
+                    $userLocation,
+            ]
         );
-}
+    }
 
-public function save($listing)
-{
-    $saved = SavedListing::where('user_id', auth()->id())
-        ->where('listing_id', $listing)
-        ->first();
+    /**
+     * --------------------------------------------------------------------------
+     * USED PRODUCTS
+     * --------------------------------------------------------------------------
+     */
+    public function usedProducts(
+        Request $request
+    ): Response {
+        $categories =
+            $this->getMarketplaceCategories(true);
 
-    if ($saved) {
-        $saved->delete();
+        $quickCategories =
+            $categories
+                ->take(10)
+                ->values();
+
+        $products =
+            MarketplaceListing::query()
+
+                ->where(
+                    'status',
+                    'active'
+                )
+
+                ->where(
+                    'condition',
+                    'used'
+                )
+
+                ->with(
+                    'category:id,name,slug,icon'
+                )
+
+                ->select([
+                    'id',
+                    'marketplace_category_id',
+                    'title',
+                    'slug',
+                    'price',
+                    'condition',
+                    'location',
+                    'city',
+                    'images',
+                    'created_at',
+                ])
+
+                ->latest('created_at')
+
+                ->paginate(24)
+
+                ->through(function ($listing) {
+
+                    return $this->formatListing(
+                        $listing,
+                        true
+                    );
+                });
+
+        $userLocation =
+            $this->getUserLocation(
+                $request
+            );
+
+        return Inertia::render(
+            'Marketplace/Used',
+            [
+                'categories' =>
+                    $categories,
+
+                'quickCategories' =>
+                    $quickCategories,
+
+                'products' =>
+                    $products,
+
+                'userLocation' =>
+                    $userLocation,
+            ]
+        );
+    }
+
+    /**
+     * --------------------------------------------------------------------------
+     * MARKETPLACE STORES / SELLERS
+     * --------------------------------------------------------------------------
+     */
+    public function stores(
+        Request $request
+    ): Response {
+        /*
+        |--------------------------------------------------------------------------
+        | CATEGORIES
+        |--------------------------------------------------------------------------
+        */
+
+        $categories =
+            $this->getMarketplaceCategories(true);
+
+        $quickCategories =
+            $categories
+                ->take(10)
+                ->values();
+
+        /*
+        |--------------------------------------------------------------------------
+        | STORES
+        |--------------------------------------------------------------------------
+        */
+
+        $stores =
+            MarketplaceListing::query()
+
+                ->where(
+                    'status',
+                    'active'
+                )
+
+                ->whereNotNull(
+                    'user_id'
+                )
+
+                ->with([
+                    'user:id,name,email,phone,city,location',
+                ])
+
+                ->select([
+                    'id',
+                    'user_id',
+                    'title',
+                    'price',
+                    'condition',
+                    'location',
+                    'city',
+                    'images',
+                    'created_at',
+                ])
+
+                ->latest('created_at')
+
+                ->get()
+
+                ->groupBy('user_id')
+
+                ->map(function ($listings) {
+
+                    $seller =
+                        $listings
+                            ->first()
+                            ?->user;
+
+                    $firstListing =
+                        $listings
+                            ->first();
+
+                    $images =
+                        $this->getListingImages(
+                            $firstListing
+                        );
+
+                    $location =
+                        $seller?->city
+                        ?? $seller?->location
+                        ?? $firstListing?->location
+                        ?? $firstListing?->city
+                        ?? 'Tanzania';
+
+                    return [
+                        'id' =>
+                            $seller?->id,
+
+                        'name' =>
+                            $seller?->name
+                            ?? 'MauzoVibe Seller',
+
+                        'email' =>
+                            $seller?->email,
+
+                        'phone' =>
+                            $seller?->phone,
+
+                        'location' =>
+                            $location,
+
+                        'products_count' =>
+                            $listings->count(),
+
+                        'new_products_count' =>
+                            $listings
+                                ->where(
+                                    'condition',
+                                    'new'
+                                )
+                                ->count(),
+
+                        'used_products_count' =>
+                            $listings
+                                ->where(
+                                    'condition',
+                                    'used'
+                                )
+                                ->count(),
+
+                        'image' =>
+                            $images[0] ?? null,
+
+                        'latest_product' =>
+                            $firstListing?->title,
+
+                        'latest_product_price' =>
+                            $firstListing?->price,
+
+                        'created_at' =>
+                            $firstListing?->created_at
+                                ?->diffForHumans(),
+                    ];
+                })
+
+                ->filter(function ($store) {
+                    return !empty(
+                        $store['id']
+                    );
+                })
+
+                ->values();
+
+        /*
+        |--------------------------------------------------------------------------
+        | USER LOCATION
+        |--------------------------------------------------------------------------
+        */
+
+        $userLocation =
+            $this->getUserLocation(
+                $request
+            );
+
+        return Inertia::render(
+            'Marketplace/Stores',
+            [
+                'categories' =>
+                    $categories,
+
+                'quickCategories' =>
+                    $quickCategories,
+
+                'stores' =>
+                    $stores,
+
+                'userLocation' =>
+                    $userLocation,
+            ]
+        );
+    }
+
+    /**
+     * --------------------------------------------------------------------------
+     * SHOW SINGLE MARKETPLACE STORE
+     * --------------------------------------------------------------------------
+     */
+    public function storeShow(
+        Request $request,
+        $userId
+    ): Response {
+        /*
+        |--------------------------------------------------------------------------
+        | SELLER
+        |--------------------------------------------------------------------------
+        */
+
+        $seller =
+            User::query()
+
+                ->select([
+                    'id',
+                    'name',
+                    'email',
+                    'phone',
+                    'city',
+                    'location',
+                ])
+
+                ->findOrFail(
+                    $userId
+                );
+
+        /*
+        |--------------------------------------------------------------------------
+        | STORE PRODUCTS
+        |--------------------------------------------------------------------------
+        */
+
+        $products =
+            MarketplaceListing::query()
+
+                ->where(
+                    'user_id',
+                    $seller->id
+                )
+
+                ->where(
+                    'status',
+                    'active'
+                )
+
+                ->with([
+                    'category:id,name,slug,icon',
+                ])
+
+                ->select([
+                    'id',
+                    'user_id',
+                    'marketplace_category_id',
+                    'title',
+                    'slug',
+                    'price',
+                    'condition',
+                    'location',
+                    'city',
+                    'images',
+                    'created_at',
+                ])
+
+                ->latest('created_at')
+
+                ->paginate(24)
+
+                ->through(function ($listing) {
+
+                    return $this->formatListing(
+                        $listing,
+                        true
+                    );
+                });
+
+        /*
+        |--------------------------------------------------------------------------
+        | STORE STATISTICS
+        |--------------------------------------------------------------------------
+        */
+
+        $activeProducts =
+            MarketplaceListing::query()
+                ->where(
+                    'user_id',
+                    $seller->id
+                )
+                ->where(
+                    'status',
+                    'active'
+                );
+
+        $productsCount =
+            (clone $activeProducts)
+                ->count();
+
+        $newProductsCount =
+            (clone $activeProducts)
+                ->where(
+                    'condition',
+                    'new'
+                )
+                ->count();
+
+        $usedProductsCount =
+            (clone $activeProducts)
+                ->where(
+                    'condition',
+                    'used'
+                )
+                ->count();
+
+        /*
+        |--------------------------------------------------------------------------
+        | LOCATION
+        |--------------------------------------------------------------------------
+        */
+
+        $location =
+            $seller->city
+            ?? $seller->location
+            ?? 'Tanzania';
+
+        /*
+        |--------------------------------------------------------------------------
+        | STORE DATA
+        |--------------------------------------------------------------------------
+        */
+
+        $store = [
+            'id' =>
+                $seller->id,
+
+            'name' =>
+                $seller->name
+                ?? 'MauzoVibe Seller',
+
+            'email' =>
+                $seller->email,
+
+            'phone' =>
+                $seller->phone,
+
+            'city' =>
+                $seller->city,
+
+            'location' =>
+                $location,
+
+            'products_count' =>
+                $productsCount,
+
+            'new_products_count' =>
+                $newProductsCount,
+
+            'used_products_count' =>
+                $usedProductsCount,
+        ];
+
+        /*
+        |--------------------------------------------------------------------------
+        | USER LOCATION
+        |--------------------------------------------------------------------------
+        */
+
+        $userLocation =
+            $this->getUserLocation(
+                $request
+            );
+
+        /*
+        |--------------------------------------------------------------------------
+        | CATEGORIES
+        |--------------------------------------------------------------------------
+        */
+
+        $categories =
+            $this->getMarketplaceCategories(true);
+
+        return Inertia::render(
+            'Marketplace/Store',
+            [
+                'store' =>
+                    $store,
+
+                'products' =>
+                    $products,
+
+                'categories' =>
+                    $categories,
+
+                'userLocation' =>
+                    $userLocation,
+            ]
+        );
+    }
+
+    /**
+     * --------------------------------------------------------------------------
+     * SPECIAL OFFERS
+     * --------------------------------------------------------------------------
+     */
+    public function offers(
+        Request $request
+    ): Response {
+        $categories =
+            $this->getMarketplaceCategories(true);
+
+        $quickCategories =
+            $categories
+                ->take(10)
+                ->values();
+
+        /*
+        |--------------------------------------------------------------------------
+        | FEATURED PRODUCTS
+        |--------------------------------------------------------------------------
+        */
+
+        $products =
+            MarketplaceListing::query()
+
+                ->where(
+                    'status',
+                    'active'
+                )
+
+                ->where(
+                    'is_featured',
+                    true
+                )
+
+                ->with(
+                    'category:id,name,slug,icon'
+                )
+
+                ->select([
+                    'id',
+                    'marketplace_category_id',
+                    'title',
+                    'slug',
+                    'price',
+                    'condition',
+                    'location',
+                    'city',
+                    'images',
+                    'created_at',
+                    'is_featured',
+                ])
+
+                ->latest('created_at')
+
+                ->paginate(24)
+
+                ->through(function ($listing) {
+
+                    $data =
+                        $this->formatListing(
+                            $listing,
+                            true
+                        );
+
+                    $data['is_featured'] =
+                        (bool) $listing->is_featured;
+
+                    return $data;
+                });
+
+        $userLocation =
+            $this->getUserLocation(
+                $request
+            );
+
+        return Inertia::render(
+            'Marketplace/Offers',
+            [
+                'categories' =>
+                    $categories,
+
+                'quickCategories' =>
+                    $quickCategories,
+
+                'products' =>
+                    $products,
+
+                'userLocation' =>
+                    $userLocation,
+            ]
+        );
+    }
+
+    /**
+     * --------------------------------------------------------------------------
+     * MARKETPLACE HELP
+     * --------------------------------------------------------------------------
+     */
+    public function help(
+        Request $request
+    ): Response {
+        $categories =
+            $this->getMarketplaceCategories(true);
+
+        $userLocation =
+            $this->getUserLocation(
+                $request
+            );
+
+        return Inertia::render(
+            'Marketplace/Help',
+            [
+                'categories' =>
+                    $categories,
+
+                'userLocation' =>
+                    $userLocation,
+            ]
+        );
+    }
+
+    /**
+     * --------------------------------------------------------------------------
+     * MARKETPLACE SEARCH
+     * --------------------------------------------------------------------------
+     */
+    public function search(
+        Request $request
+    ): Response {
+        $query =
+            trim(
+                $request->input(
+                    'q',
+                    ''
+                )
+            );
+
+        /*
+        |--------------------------------------------------------------------------
+        | CATEGORIES
+        |--------------------------------------------------------------------------
+        */
+
+        $categories =
+            $this->getMarketplaceCategories(true);
+
+        /*
+        |--------------------------------------------------------------------------
+        | SEARCH PRODUCTS
+        |--------------------------------------------------------------------------
+        */
+
+        $products =
+            MarketplaceListing::query()
+
+                ->where(
+                    'status',
+                    'active'
+                )
+
+                ->when(
+                    $query !== '',
+                    function ($q) use ($query) {
+
+                        $q->where(
+                            function ($search) use ($query) {
+
+                                $search
+
+                                    ->where(
+                                        'title',
+                                        'like',
+                                        "%{$query}%"
+                                    )
+
+                                    ->orWhere(
+                                        'description',
+                                        'like',
+                                        "%{$query}%"
+                                    )
+
+                                    ->orWhere(
+                                        'location',
+                                        'like',
+                                        "%{$query}%"
+                                    )
+
+                                    ->orWhere(
+                                        'city',
+                                        'like',
+                                        "%{$query}%"
+                                    )
+
+                                    /*
+                                    |--------------------------------------------------------------------------
+                                    | CATEGORY SEARCH
+                                    |--------------------------------------------------------------------------
+                                    */
+
+                                    ->orWhereHas(
+                                        'category',
+                                        function (
+                                            $category
+                                        ) use ($query) {
+
+                                            $category->where(
+                                                'name',
+                                                'like',
+                                                "%{$query}%"
+                                            );
+                                        }
+                                    )
+
+                                    /*
+                                    |--------------------------------------------------------------------------
+                                    | SELLER SEARCH
+                                    |--------------------------------------------------------------------------
+                                    */
+
+                                    ->orWhereHas(
+                                        'user',
+                                        function (
+                                            $user
+                                        ) use ($query) {
+
+                                            $user->where(
+                                                'name',
+                                                'like',
+                                                "%{$query}%"
+                                            );
+                                        }
+                                    );
+                            }
+                        );
+                    }
+                )
+
+                ->with(
+                    'category:id,name,slug,icon'
+                )
+
+                ->select([
+                    'id',
+                    'marketplace_category_id',
+                    'title',
+                    'slug',
+                    'description',
+                    'price',
+                    'condition',
+                    'location',
+                    'city',
+                    'images',
+                    'created_at',
+                ])
+
+                ->latest('created_at')
+
+                ->paginate(24)
+
+                ->withQueryString()
+
+                ->through(function ($listing) {
+
+                    return $this->formatListing(
+                        $listing,
+                        true
+                    );
+                });
+
+        /*
+        |--------------------------------------------------------------------------
+        | USER LOCATION
+        |--------------------------------------------------------------------------
+        */
+
+        $userLocation =
+            $this->getUserLocation(
+                $request
+            );
+
+        return Inertia::render(
+            'Marketplace/Search',
+            [
+                'query' =>
+                    $query,
+
+                'products' =>
+                    $products,
+
+                'categories' =>
+                    $categories,
+
+                'userLocation' =>
+                    $userLocation,
+            ]
+        );
+    }
+
+    /**
+     * --------------------------------------------------------------------------
+     * COMPLETE MARKETPLACE PROFILE
+     * --------------------------------------------------------------------------
+     */
+    public function completeProfile(
+        Request $request
+    ): Response {
+        return Inertia::render(
+            'Marketplace/CompleteProfile',
+            [
+                'phone' =>
+                    $request->user()?->phone,
+            ]
+        );
+    }
+
+    /**
+     * --------------------------------------------------------------------------
+     * UPDATE MARKETPLACE SELLER PROFILE
+     * --------------------------------------------------------------------------
+     */
+    public function updateProfile(
+        Request $request
+    ) {
+        $validated =
+            $request->validate(
+                [
+                    'phone' => [
+                        'required',
+                        'string',
+                        'regex:/^(?:\+255|255|0)(6|7)\d{8}$/',
+                    ],
+                ],
+                [
+                    'phone.required' =>
+                        'Tafadhali weka namba yako ya simu.',
+
+                    'phone.regex' =>
+                        'Weka namba sahihi ya Tanzania, mfano 0712345678.',
+                ]
+            );
+
+        $phone =
+            $validated['phone'];
+
+        /*
+        |--------------------------------------------------------------------------
+        | NORMALIZE PHONE
+        |--------------------------------------------------------------------------
+        |
+        | 0712345678
+        | -> +255712345678
+        |
+        | 255712345678
+        | -> +255712345678
+        |
+        | +255712345678
+        | -> +255712345678
+        |--------------------------------------------------------------------------
+        */
+
+        if (
+            str_starts_with(
+                $phone,
+                '0'
+            )
+        ) {
+
+            $phone =
+                '+255'
+                . substr(
+                    $phone,
+                    1
+                );
+
+        } elseif (
+            str_starts_with(
+                $phone,
+                '255'
+            )
+        ) {
+
+            $phone =
+                '+'
+                . $phone;
+        }
+
+        /*
+        |--------------------------------------------------------------------------
+        | SAVE
+        |--------------------------------------------------------------------------
+        */
+
+        $user =
+            $request->user();
+
+        $user->phone =
+            $phone;
+
+        $user->save();
+
+        /*
+        |--------------------------------------------------------------------------
+        | CONTINUE
+        |--------------------------------------------------------------------------
+        */
+
+        return redirect()
+            ->route(
+                'marketplace.create'
+            )
+            ->with(
+                'success',
+                'Namba yako ya simu imehifadhiwa. Sasa unaweza kuweka bidhaa.'
+            );
+    }
+
+    /**
+     * --------------------------------------------------------------------------
+     * SAVE / UNSAVE LISTING
+     * --------------------------------------------------------------------------
+     */
+    public function save(
+        $listing
+    ) {
+        $saved =
+            SavedListing::query()
+
+                ->where(
+                    'user_id',
+                    auth()->id()
+                )
+
+                ->where(
+                    'listing_id',
+                    $listing
+                )
+
+                ->first();
+
+        /*
+        |--------------------------------------------------------------------------
+        | UNSAVE
+        |--------------------------------------------------------------------------
+        */
+
+        if ($saved) {
+
+            $saved->delete();
+
+            return back();
+        }
+
+        /*
+        |--------------------------------------------------------------------------
+        | SAVE
+        |--------------------------------------------------------------------------
+        */
+
+        SavedListing::create([
+            'user_id' =>
+                auth()->id(),
+
+            'listing_id' =>
+                $listing,
+        ]);
 
         return back();
     }
-
-    SavedListing::create([
-        'user_id' => auth()->id(),
-        'listing_id' => $listing,
-    ]);
-
-    return back();
-}
 }
