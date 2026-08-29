@@ -29,26 +29,26 @@ export default function Sidebar() {
             href: route("marketplace.create"),
             icon: "+",
         },
+         {
+        label: "Mauzo",
+        href: route("marketplace.sales"),
+        icon: "♙",
+    },
+    {
+        label: "Ujumbe",
+        href: route("marketplace.messages"),
+        icon: "⌖",
+    },
+    {
+        label: "Hesabu",
+        href: route("marketplace.earnings"),
+        icon: "▢",
+    },
         {
-            label: "Mauzo",
-            href: "#",
-            icon: "♙",
-        },
-        {
-            label: "Ujumbe",
-            href: "#",
-            icon: "⌖",
-        },
-        {
-            label: "Hesabu",
-            href: "#",
-            icon: "▢",
-        },
-        {
-            label: "Mipangilio",
-            href: "#",
-            icon: "⊞",
-        },
+        label: "Mipangilio",
+        href: route("marketplace.settings.profile"),
+        icon: "⊞",
+    },
     ];
 
 

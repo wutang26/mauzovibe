@@ -23,7 +23,7 @@ use App\Http\Controllers\Admin\AuditController;
 use App\Http\Controllers\MarketplaceController;
 use App\Http\Controllers\Marketplace\MarketplaceProfileController;
 use App\Http\Controllers\MarketplaceListingActionController;
-
+use App\Http\Controllers\Marketplace\MarketplaceSellerController;
 use Inertia\Inertia;
 
 
@@ -1072,4 +1072,39 @@ Route::middleware(['auth'])
 
 });
 
+/*
+|--------------------------------------------------------------------------
+| MARKETPLACE SELLER PAGES
+|--------------------------------------------------------------------------
+*/
+
+/*
+|--------------------------------------------------------------------------
+| MARKETPLACE SELLER
+|--------------------------------------------------------------------------
+*/
+
+Route::middleware(['auth'])->group(function () {
+
+    // Mauzo
+    Route::get(
+        '/marketplace/sales',
+        [MarketplaceSellerController::class, 'sales']
+    )->name('marketplace.sales');
+
+
+    // Ujumbe
+    Route::get(
+        '/marketplace/messages',
+        [MarketplaceSellerController::class, 'messages']
+    )->name('marketplace.messages');
+
+
+    // Hesabu / Mapato
+    Route::get(
+        '/marketplace/earnings',
+        [MarketplaceSellerController::class, 'earnings']
+    )->name('marketplace.earnings');
+
+});
 require __DIR__.'/auth.php';
