@@ -93,38 +93,22 @@ export default function Welcome({
     }, [trialEndsAt]);
 
     //DAILY POSTS SLIDER
-    useEffect(() => {
+// DAILY POSTS SLIDER
+useEffect(() => {
     if (!dailyPosts || dailyPosts.length <= 1) {
         setCurrentPost(0);
         return;
-    }
-
-    // Make sure current index is still valid
-    if (currentPost >= dailyPosts.length) {
-        setCurrentPost(0);
     }
 
     const interval = setInterval(() => {
         setCurrentPost((previous) => {
             return (previous + 1) % dailyPosts.length;
         });
-    }, 5000);
+    }, 3000); // changes every 3 seconds
 
     return () => clearInterval(interval);
-}, [dailyPosts, currentPost]);
-//     useEffect(() => {
-//     if (!dailyPosts || dailyPosts.length <= 1) {
-//         return;
-//     }
+}, [dailyPosts]);
 
-//     const interval = setInterval(() => {
-//         setCurrentPost((previous) =>
-//             (previous + 1) % dailyPosts.length
-//         );
-//     }, 5000);
-
-//     return () => clearInterval(interval);
-// }, [dailyPosts]);
     /*
     |--------------------------------------------------------------------------
     | TRIAL BUTTON
