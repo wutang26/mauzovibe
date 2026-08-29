@@ -21,6 +21,7 @@ use App\Http\Controllers\Admin\PaymentHistoryController;
 use App\Http\Controllers\Admin\ReportController;
 use App\Http\Controllers\Admin\AuditController;
 use App\Http\Controllers\MarketplaceController;
+use App\Http\Controllers\Marketplace\MarketplaceProfileController;
 
 use Inertia\Inertia;
 
@@ -956,5 +957,36 @@ Route::middleware('auth')->group(function () {
     )->name('marketplace.complete-profile.update');
 
 });
+
+/*
+|--------------------------------------------------------------------------
+| MARKETPLACE SETTINGS - PROFILE
+|--------------------------------------------------------------------------
+*/
+
+Route::middleware(['auth'])
+    ->prefix('marketplace/settings')
+    ->name('marketplace.settings.')
+    ->group(function () {
+
+        // View Marketplace Profile
+        Route::get(
+            '/profile',
+            [MarketplaceProfileController::class, 'profile']
+        )->name('profile');
+
+        // Edit Marketplace Profile
+        Route::get(
+            '/profile/edit',
+            [MarketplaceProfileController::class, 'edit']
+        )->name('profile.edit');
+
+        // Update Marketplace Profile
+        Route::put(
+            '/profile',
+            [MarketplaceProfileController::class, 'update']
+        )->name('profile.update');
+
+    });
 
 require __DIR__.'/auth.php';

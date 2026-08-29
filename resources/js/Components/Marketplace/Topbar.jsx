@@ -490,73 +490,70 @@ export default function Topbar({
                                         {/* PROFILE */}
 
                                         <button
-                                            type="button"
-                                            onClick={() =>
-                                                setProfileOpen(
-                                                    false
-                                                )
-                                            }
-                                            className="
-                                                w-full
-                                                flex
-                                                items-center
-                                                gap-3
-                                                px-3
-                                                py-2.5
-                                                rounded-xl
-                                                text-sm
-                                                text-slate-700
-                                                hover:bg-slate-50
-                                                transition
-                                                text-left
-                                            "
-                                        >
+                                        type="button"
+                                        onClick={() => {
+                                            setProfileOpen(false);
+                                            router.visit(
+                                                route("marketplace.settings.profile")
+                                            );
+                                        }}
+                                        className="
+                                            w-full
+                                            flex
+                                            items-center
+                                            gap-3
+                                            px-3
+                                            py-2.5
+                                            rounded-xl
+                                            text-sm
+                                            text-slate-700
+                                            hover:bg-slate-50
+                                            transition
+                                            text-left
+                                        "
+                                    >
+                                        <span className="text-lg">
+                                            👤
+                                        </span>
 
-                                            <span className="text-lg">
-                                                👤
-                                            </span>
-
-                                            <span>
-                                                Wasifu Wangu
-                                            </span>
-
-                                        </button>
-
+                                        <span>
+                                            Wasifu Wangu
+                                        </span>
+                                    </button>
 
                                         {/* SETTINGS */}
 
-                                        <button
-                                            type="button"
-                                            onClick={() =>
-                                                setProfileOpen(
-                                                    false
-                                                )
-                                            }
-                                            className="
-                                                w-full
-                                                flex
-                                                items-center
-                                                gap-3
-                                                px-3
-                                                py-2.5
-                                                rounded-xl
-                                                text-sm
-                                                text-slate-700
-                                                hover:bg-slate-50
-                                                transition
-                                                text-left
-                                            "
-                                        >
+                                       <button
+                                    type="button"
+                                    onClick={() => {
+                                        setProfileOpen(false);
+                                        router.visit(
+                                            route("marketplace.settings.profile.edit")
+                                        );
+                                    }}
+                                    className="
+                                        w-full
+                                        flex
+                                        items-center
+                                        gap-3
+                                        px-3
+                                        py-2.5
+                                        rounded-xl
+                                        text-sm
+                                        text-slate-700
+                                        hover:bg-slate-50
+                                        transition
+                                        text-left
+                                    "
+                                >
+                                    <span className="text-lg">
+                                        ⚙️
+                                    </span>
 
-                                            <span className="text-lg">
-                                                ⚙️
-                                            </span>
-
-                                            <span>
-                                                Mipangilio
-                                            </span>
-
-                                        </button>
+                                    <span>
+                                        Mipangilio
+                                    </span>
+                                </button>
 
 
                                         {/* MARKETPLACE */}
