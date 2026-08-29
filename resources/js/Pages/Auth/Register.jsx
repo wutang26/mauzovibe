@@ -19,6 +19,7 @@ export default function Register({ marketplace = false }) {
     } = useForm({
         name: "",
         email: "",
+        phone: "",
         business_name: "",
         location: "",
         password: "",
@@ -232,6 +233,65 @@ const submit = (e) => {
                                     </p>
                                 )}
                             </div>
+                                {/* PHONE */}
+
+                        <div>
+                            <label
+                                htmlFor="phone"
+                                className="block text-sm font-semibold text-slate-700 mb-2"
+                            >
+                                Namba ya Simu
+                                <span className="ml-1 text-slate-400 font-normal">
+                                    (Hiari)
+                                </span>
+                            </label>
+
+
+                        <div className="relative">
+
+                            <div className="absolute inset-y-0 left-0 flex items-center pl-4 pointer-events-none">
+                                <svg
+                                    className="w-5 h-5 text-slate-400"
+                                    fill="none"
+                                    viewBox="0 0 24 24"
+                                    stroke="currentColor"
+                                >
+                                    <path
+                                        strokeLinecap="round"
+                                        strokeLinejoin="round"
+                                        strokeWidth="1.8"
+                                        d="M3 5a2 2 0 012-2h3.28a2 2 0 011.94 1.515l.72 2.88a2 2 0 01-.53 1.92L9.1 9.63a16.01 16.01 0 005.27 5.27l1.315-1.315a2 2 0 011.92-.53l2.88.72A2 2 0 0122 15.72V19a2 2 0 01-2 2h-1C9.611 21 3 14.389 3 6V5z"
+                                    />
+                                </svg>
+                            </div>
+
+                            <input
+                                id="phone"
+                                name="phone"
+                                type="tel"
+                                value={data.phone}
+                                autoComplete="tel"
+                                placeholder="Mfano: 0746856656"
+                                onChange={(e) =>
+                                    setData("phone", e.target.value)
+                                }
+                                className={`w-full h-12 pl-12 pr-4 rounded-xl border ${
+                                    errors.phone
+                                        ? "border-red-400"
+                                        : "border-slate-200 focus:border-emerald-500 focus:ring-4 focus:ring-emerald-500/10"
+                                } bg-slate-50 text-slate-900 placeholder-slate-400 outline-none transition-all`}
+                            />
+
+                        </div>
+
+                        {errors.phone && (
+                            <p className="mt-2 text-sm text-red-600">
+                                {errors.phone}
+                            </p>
+                        )}
+
+
+                        </div>
 
 
                             {/* BUSINESS NAME */}

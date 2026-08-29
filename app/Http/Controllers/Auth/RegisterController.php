@@ -20,6 +20,8 @@ class RegisterController extends Controller
 
             'email' => 'required|email|unique:users',
 
+            'phone' => 'nullable|string|max:20',
+
             'password' => 'required|min:8',
 
             'business_name' => 'required|string|max:255',
@@ -39,6 +41,8 @@ class RegisterController extends Controller
                 'name' => $request->name,
 
                 'email' => $request->email,
+
+                'phone' => $request->phone,
 
                 'password' => Hash::make(
                     $request->password

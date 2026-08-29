@@ -1,8 +1,21 @@
+import { usePage } from "@inertiajs/react";
+
 export default function ProductPreview({
     data = {},
     previewImages = [],
     user = null,
 }) {
+    // =========================================================
+    // AUTH USER
+    // =========================================================
+
+    const { auth } = usePage().props;
+
+    // Priority:
+    // 1. user passed as prop
+    // 2. authenticated user from Inertia
+    const seller = user || auth?.user || null;
+
     // =========================================================
     // SAFE DATA
     // =========================================================
@@ -68,11 +81,94 @@ export default function ProductPreview({
     // SELLER INFORMATION
     // =========================================================
 
-    const sellerName = user?.name || "Jina la Muuzaji";
+    const sellerName =
+        seller?.name ||
+        seller?.full_name ||
+        "Jina la Muuzaji";
 
-    const sellerInitial = sellerName
-        .charAt(0)
-        .toUpperCase();
+    const sellerAvatar =
+        seller?.avatar ||
+        seller?.profile_photo_url ||
+        null;
+
+    const sellerInitial =
+        sellerName?.charAt(0)?.toUpperCase() || "M";
+
+    const sellerEmail =
+        seller?.email || "";
+
+    const sellerPhone =
+        seller?.phone || "";
+
+    // =========================================================
+    // WHATSAPP PHONE NUMBER
+    // =========================================================
+
+    const normalizeTanzaniaPhone = (phone) => {
+        if (!phone) {
+            return "";
+        }
+
+        // Remove spaces, +, -, brackets, etc.
+        let normalized = String(phone).replace(/\D/g, "");
+
+        // 0746856656 -> 255746856656
+        if (normalized.startsWith("0")) {
+            normalized = `255${normalized.substring(1)}`;
+        }
+
+        // 746856656 -> 255746856656
+        if (
+            normalized.length === 9 &&
+            normalized.startsWith("7")
+        ) {
+            normalized = `255${normalized}`;
+        }
+
+        // Already 255746856656
+        return normalized;
+    };
+
+    const whatsappPhone =
+        normalizeTanzaniaPhone(sellerPhone);
+
+    // =========================================================
+    // WHATSAPP CONTACT
+    // =========================================================
+
+    const handleContactSeller = () => {
+        // Seller hana namba
+        if (!whatsappPhone) {
+            alert(
+                "Muuzaji hajaweka namba ya simu kwa sasa."
+            );
+
+            return;
+        }
+
+        const formattedPrice =
+            price !== ""
+                ? `TZS ${formatPrice(price)}`
+                : "Bei haijawekwa";
+
+        const productName =
+            title || "bidhaa hii";
+
+        const message =
+            `Habari ${sellerName}, nimevutiwa na bidhaa yako "${productName}". ` +
+            `Bei ni ${formattedPrice}. ` +
+            `Naomba kupata maelezo zaidi.`;
+
+        const whatsappUrl =
+            `https://wa.me/${whatsappPhone}` +
+            `?text=${encodeURIComponent(message)}`;
+
+        window.open(
+            whatsappUrl,
+            "_blank",
+            "noopener,noreferrer"
+        );
+    };
 
     // =========================================================
     // LOCATION
@@ -237,13 +333,13 @@ export default function ProductPreview({
 
                 {/* =================================================
                     PRODUCT CONTENT
-                ================================================== */}
+                ================================================= */}
 
                 <div className="p-5">
 
                     {/* =================================================
                         TITLE
-                    ================================================== */}
+                    ================================================= */}
 
                     <h3
                         className="
@@ -259,7 +355,7 @@ export default function ProductPreview({
 
                     {/* =================================================
                         PRICE
-                    ================================================== */}
+                    ================================================= */}
 
                     <div className="mt-1">
 
@@ -278,7 +374,7 @@ export default function ProductPreview({
 
                     {/* =================================================
                         LOCATION
-                    ================================================== */}
+                    ================================================= */}
 
                     <div
                         className="
@@ -303,7 +399,7 @@ export default function ProductPreview({
 
                     {/* =================================================
                         PRODUCT META
-                    ================================================== */}
+                    ================================================= */}
 
                     {(condition || year) && (
 
@@ -401,7 +497,7 @@ export default function ProductPreview({
                                     w-10
                                     h-10
                                     rounded-full
-                                    bg-slate-200
+                                    bg-emerald-100
                                     overflow-hidden
                                     flex
                                     items-center
@@ -410,10 +506,10 @@ export default function ProductPreview({
                                 "
                             >
 
-                                {user?.avatar ? (
+                                {sellerAvatar ? (
 
                                     <img
-                                        src={user.avatar}
+                                        src={sellerAvatar}
                                         alt={sellerName}
                                         className="
                                             w-full
@@ -427,7 +523,7 @@ export default function ProductPreview({
                                     <span
                                         className="
                                             font-bold
-                                            text-slate-500
+                                            text-emerald-700
                                         "
                                     >
                                         {sellerInitial}
@@ -440,7 +536,7 @@ export default function ProductPreview({
 
                             {/* SELLER DETAILS */}
 
-                            <div className="min-w-0">
+                            <div className="min-w-0 flex-1">
 
                                 <p
                                     className="
@@ -463,6 +559,19 @@ export default function ProductPreview({
                                     Muuzaji Aliyethibitishwa
                                 </p>
 
+                                {sellerEmail && (
+                                    <p
+                                        className="
+                                            text-[11px]
+                                            text-slate-400
+                                            truncate
+                                            mt-0.5
+                                        "
+                                    >
+                                        {sellerEmail}
+                                    </p>
+                                )}
+
                             </div>
 
                         </div>
@@ -474,23 +583,44 @@ export default function ProductPreview({
 
                         <button
                             type="button"
-                            className="
+                            onClick={handleContactSeller}
+                            disabled={!whatsappPhone}
+                            className={`
                                 w-full
                                 mt-4
                                 py-2.5
-                                border
-                                border-slate-300
                                 rounded-xl
                                 text-sm
                                 font-semibold
-                                text-slate-700
-                                hover:bg-slate-50
-                                hover:border-slate-400
                                 transition
-                            "
+                                flex
+                                items-center
+                                justify-center
+                                gap-2
+                                ${
+                                    whatsappPhone
+                                        ? `
+                                            border
+                                            border-green-500
+                                            text-green-700
+                                            hover:bg-green-50
+                                            hover:border-green-600
+                                        `
+                                        : `
+                                            border
+                                            border-slate-200
+                                            text-slate-400
+                                            bg-slate-50
+                                            cursor-not-allowed
+                                        `
+                                }
+                            `}
                         >
-                            <i className="fa-regular fa-comment-dots mr-2"></i>
-                            Wasiliana na Muuzaji
+                            <i className="fa-brands fa-whatsapp text-lg"></i>
+
+                            {whatsappPhone
+                                ? "Wasiliana na Muuzaji"
+                                : "Namba ya Muuzaji Haijawekwa"}
                         </button>
 
                     </div>
@@ -502,3 +632,4 @@ export default function ProductPreview({
         </div>
     );
 }
+
