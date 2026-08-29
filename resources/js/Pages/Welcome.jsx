@@ -1555,7 +1555,12 @@ useEffect(() => {
                                                 </span>
                                                 Reports
                                             </span>
-
+                                             <span className="flex items-center gap-2">
+                                                <span className="text-emerald-600">
+                                                    ●
+                                                </span>
+                                                MarketPlace
+                                            </span>
                                         </div>
 
 
