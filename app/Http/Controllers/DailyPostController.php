@@ -107,10 +107,12 @@ class DailyPostController extends Controller
             */
 
             if ($request->hasFile('image')) {
+
                 $path = $request->file('image')
                     ->store('daily-posts', 'public');
 
-                $validated['image'] = Storage::disk('public')->url($path);
+                $validated['image'] =
+                    Storage::disk('public')->url($path);
             }
 
             /*
@@ -121,7 +123,8 @@ class DailyPostController extends Controller
 
             $validated['created_by'] = auth()->id();
 
-            $validated['is_active'] = $request->boolean('is_active');
+            $validated['is_active'] =
+                $request->boolean('is_active');
 
             $validated['sort_order'] = (int) (
                 $validated['sort_order'] ?? 0
@@ -129,7 +132,7 @@ class DailyPostController extends Controller
 
             /*
             |--------------------------------------------------------------------------
-            | Create Post
+            | Create
             |--------------------------------------------------------------------------
             */
 
@@ -236,7 +239,12 @@ class DailyPostController extends Controller
 
             if ($request->hasFile('image')) {
 
-                // Delete old image
+                /*
+                |----------------------------------------------------------------------
+                | Delete Old Image
+                |----------------------------------------------------------------------
+                */
+
                 if ($dailyPost->image) {
 
                     $oldPath = parse_url(
@@ -260,7 +268,12 @@ class DailyPostController extends Controller
                     }
                 }
 
-                // Store new image
+                /*
+                |----------------------------------------------------------------------
+                | Store New Image
+                |----------------------------------------------------------------------
+                */
+
                 $path = $request->file('image')
                     ->store('daily-posts', 'public');
 
@@ -366,6 +379,80 @@ class DailyPostController extends Controller
                 ? 'Daily post imewashwa.'
                 : 'Daily post imezimwa.'
         );
+    }
+
+    /**
+     * Get currently active daily posts.
+     *
+     * A post is considered active when:
+     *
+     * - is_active = true
+     * - starts_at is null OR starts_at <= now
+     * - ends_at is null OR ends_at >= now
+     */
+    public function getActivePosts()
+    {
+        $posts = DailyPost::query()
+            ->where('is_active', true)
+
+            /*
+            |--------------------------------------------------------------------------
+            | Start Date
+            |--------------------------------------------------------------------------
+            */
+
+            ->where(function ($query) {
+                $query
+                    ->whereNull('starts_at')
+                    ->orWhere('starts_at', '<=', now());
+            })
+
+            /*
+            |--------------------------------------------------------------------------
+            | End Date
+            |--------------------------------------------------------------------------
+            */
+
+            ->where(function ($query) {
+                $query
+                    ->whereNull('ends_at')
+                    ->orWhere('ends_at', '>=', now());
+            })
+
+            /*
+            |--------------------------------------------------------------------------
+            | Order
+            |--------------------------------------------------------------------------
+            */
+
+            ->orderBy('sort_order', 'asc')
+            ->orderBy('created_at', 'desc')
+
+            ->get()
+
+            /*
+            |--------------------------------------------------------------------------
+            | Return Only Required Fields
+            |--------------------------------------------------------------------------
+            */
+
+            ->map(function ($post) {
+                return [
+                    'id' => $post->id,
+                    'title' => $post->title,
+                    'description' => $post->description,
+                    'image' => $post->image,
+                    'button_text' => $post->button_text,
+                    'button_url' => $post->button_url,
+                    'type' => $post->type,
+                    'starts_at' => $post->starts_at,
+                    'ends_at' => $post->ends_at,
+                ];
+            });
+
+        return response()->json([
+            'posts' => $posts,
+        ]);
     }
 }
 

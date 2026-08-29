@@ -1,5 +1,5 @@
 import { useEffect, useMemo, useState } from "react";
-import { Head, Link, useForm, usePage } from "@inertiajs/react";
+import { Head, Link, useForm,  router, usePage } from "@inertiajs/react";
 
 import {
     Bars3Icon,
@@ -92,22 +92,51 @@ export default function Welcome({
         return () => clearInterval(interval);
     }, [trialEndsAt]);
 
-    //DAILY POSTS SLIDER
-// DAILY POSTS SLIDER
-useEffect(() => {
-    if (!dailyPosts || dailyPosts.length <= 1) {
-        setCurrentPost(0);
-        return;
-    }
+// =================================================
+// DAILY POSTS SLIDER + DAILY REFRESH
+// =================================================
 
-    const interval = setInterval(() => {
-        setCurrentPost((previous) => {
-            return (previous + 1) % dailyPosts.length;
+useEffect(() => {
+    const refreshDailyPosts = () => {
+        router.reload({
+            only: ["dailyPosts"],
+            preserveScroll: true,
+            preserveState: true,
         });
-    }, 3000); // changes every 3 seconds
+    };
+
+    const interval = setInterval(
+        refreshDailyPosts,
+        5 * 60 * 1000
+    );
 
     return () => clearInterval(interval);
-}, [dailyPosts]);
+}, []);
+
+
+// =================================================
+// REFRESH DAILY POSTS FROM LARAVEL
+// =================================================
+
+useEffect(() => {
+    const refreshDailyPosts = () => {
+        router.reload({
+            only: ["dailyPosts"],
+            preserveScroll: true,
+            preserveState: true,
+        });
+    };
+
+    // Check every 1 hour
+    const refreshInterval = setInterval(
+        refreshDailyPosts,
+        60 * 60 * 1000
+    );
+
+    return () => clearInterval(refreshInterval);
+}, []);
+
+
 
     /*
     |--------------------------------------------------------------------------
