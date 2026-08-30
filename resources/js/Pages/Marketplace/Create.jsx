@@ -3,7 +3,30 @@ import Sidebar from "@/Components/Marketplace/Sidebar";
 import Topbar from "@/Components/Marketplace/Topbar";
 import ProductForm from "@/Components/Marketplace/ProductForm";
 import ProductPreview from "@/Components/Marketplace/ProductPreview";
+import { useState } from "react";
 
+//Image preview state 
+const [previewImages, setPreviewImages] = useState([]);
+
+const handleImageChange = (files) => {
+    setData("images", files);
+
+    const previews = files.map(file => URL.createObjectURL(file));
+    setPreviewImages(previews);
+};
+
+const handleRemoveImage = (index) => {
+    const newFiles = [...data.images];
+    newFiles.splice(index, 1);
+    setData("images", newFiles);
+
+    const newPreviews = [...previewImages];
+    URL.revokeObjectURL(newPreviews[index]);
+    newPreviews.splice(index, 1);
+    setPreviewImages(newPreviews);
+};
+
+// Cleanup object URLs on component unmount
 export default function Create({ categories = [], seller = null }) {
     const {
         data,
@@ -13,7 +36,8 @@ export default function Create({ categories = [], seller = null }) {
         errors,
     } = useForm({
         images: [],
-        name: "",
+        // name: "",
+        title: "",
         category_id: "",
         condition: "new",
         price: "",
@@ -25,14 +49,21 @@ export default function Create({ categories = [], seller = null }) {
         battery_health: "",
     });
 
-    const submit = (status = "published") => {
-        setData("status", status);
+    // const submit = (status = "published") => {
+    //     setData("status", status);
 
-        post(route("marketplace.store"), {
-            forceFormData: true,
-        });
-    };
+    //     post(route("marketplace.store"), {
+    //         forceFormData: true,
+    //     });
+    // };
 
+    post(route("marketplace.store"), {
+    forceFormData: true,
+    data: {
+        ...data,
+        status,
+    },
+});
     return (
         <>
             <Head title="Ongeza Bidhaa Mpya - MauzoVibe" />
@@ -59,11 +90,21 @@ export default function Create({ categories = [], seller = null }) {
 
                         <div className="grid grid-cols-1 xl:grid-cols-[minmax(0,1fr)_350px] gap-5">
 
+                            {/* <ProductForm
+                                data={data}
+                                setData={setData}
+                                errors={errors}
+                                categories={categories}
+                            /> */}
                             <ProductForm
                                 data={data}
                                 setData={setData}
                                 errors={errors}
                                 categories={categories}
+                                processing={processing}
+                                previewImages={previewImages}
+                                onImageChange={handleImageChange}
+                                onRemoveImage={handleRemoveImage}
                             />
 
                             <ProductPreview

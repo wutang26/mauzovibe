@@ -560,7 +560,7 @@ class MarketplaceController extends Controller
                 'nullable|array|max:6',
 
             'images.*' =>
-                'image|mimes:jpg,jpeg,png,webp|max:2048',
+                'image|mimes:jpg,jpeg,png,webp,heic,heif|max:10240',
         ]);
 
         /*
