@@ -1,3 +1,45 @@
+/*
+|--------------------------------------------------------------------------
+| TANZANIA REGIONS
+|--------------------------------------------------------------------------
+*/
+
+const regions = [
+    "Arusha",
+    "Dar es Salaam",
+    "Dodoma",
+    "Geita",
+    "Iringa",
+    "Kagera",
+    "Katavi",
+    "Kigoma",
+    "Kilimanjaro",
+    "Lindi",
+    "Manyara",
+    "Mara",
+    "Mbeya",
+    "Morogoro",
+    "Mtwara",
+    "Mwanza",
+    "Njombe",
+    "Pwani",
+    "Rukwa",
+    "Ruvuma",
+    "Shinyanga",
+    "Simiyu",
+    "Singida",
+    "Songwe",
+    "Tabora",
+    "Tanga",
+
+    // Zanzibar
+    "Kaskazini Pemba",
+    "Kusini Pemba",
+    "Kaskazini Unguja",
+    "Kusini Unguja",
+    "Mjini Magharibi",
+];
+
 export default function ProductForm({
     data = {},
     setData,
@@ -12,20 +54,23 @@ export default function ProductForm({
 }) {
     /*
     |--------------------------------------------------------------------------
-    | Safe values
+    | SAFE VALUES
     |--------------------------------------------------------------------------
-    | Prevent "Cannot read properties of undefined" errors
     */
 
-    const title = data?.title ?? '';
-    const description = data?.description ?? '';
-    const condition = data?.condition ?? 'new';
-    const conditionNotes = data?.condition_notes ?? '';
-    const usageCondition = data?.usage_condition ?? '';
-    const categoryId = data?.category_id ?? '';
-    const price = data?.price ?? '';
-    const location = data?.location ?? '';
-    const year = data?.year ?? '';
+    const title = data?.title ?? "";
+    const description = data?.description ?? "";
+    const condition = data?.condition ?? "new";
+    const conditionNotes = data?.condition_notes ?? "";
+    const usageCondition = data?.usage_condition ?? "";
+    const categoryId = data?.category_id ?? "";
+    const price = data?.price ?? "";
+
+    const region = data?.region ?? "";
+    const city = data?.city ?? "";
+    const location = data?.location ?? "";
+
+    const year = data?.year ?? "";
 
     const safePreviewImages = Array.isArray(previewImages)
         ? previewImages
@@ -37,19 +82,30 @@ export default function ProductForm({
 
     const safeErrors = errors ?? {};
 
+    /*
+    |--------------------------------------------------------------------------
+    | IMAGE HANDLER
+    |--------------------------------------------------------------------------
+    */
+
     const handleImages = (e) => {
         const files = Array.from(e.target.files || []).slice(0, 8);
 
-        if (files.length && typeof onImageChange === 'function') {
+        if (files.length && typeof onImageChange === "function") {
             onImageChange(files);
         }
 
-        // Allow selecting the same file again
-        e.target.value = '';
+        e.target.value = "";
     };
 
+    /*
+    |--------------------------------------------------------------------------
+    | UPDATE FORM DATA
+    |--------------------------------------------------------------------------
+    */
+
     const updateData = (field, value) => {
-        if (typeof setData === 'function') {
+        if (typeof setData === "function") {
             setData(field, value);
         }
     };
@@ -60,9 +116,9 @@ export default function ProductForm({
             className="space-y-5"
         >
 
-            {/* ===================================== */}
-            {/* 1. PRODUCT IMAGES */}
-            {/* ===================================== */}
+            {/* =========================================================
+                1. PRODUCT IMAGES
+            ========================================================== */}
 
             <section className="bg-white border border-slate-200 rounded-2xl shadow-sm overflow-hidden">
 
@@ -82,7 +138,8 @@ export default function ProductForm({
 
                     <div className="grid grid-cols-2 sm:grid-cols-4 lg:grid-cols-6 gap-3">
 
-                        {/* Upload */}
+                        {/* UPLOAD */}
+
                         {safePreviewImages.length < 8 && (
                             <label
                                 className="
@@ -126,7 +183,8 @@ export default function ProductForm({
                             </label>
                         )}
 
-                        {/* Image previews */}
+                        {/* IMAGE PREVIEWS */}
+
                         {safePreviewImages.map((src, index) => (
                             <div
                                 key={index}
@@ -150,7 +208,7 @@ export default function ProductForm({
                                     type="button"
                                     onClick={() => {
                                         if (
-                                            typeof onRemoveImage === 'function'
+                                            typeof onRemoveImage === "function"
                                         ) {
                                             onRemoveImage(index);
                                         }
@@ -170,17 +228,19 @@ export default function ProductForm({
                                 </button>
 
                                 {index === 0 && (
-                                    <span className="
-                                        absolute
-                                        bottom-0
-                                        left-0
-                                        right-0
-                                        bg-green-600/90
-                                        text-white
-                                        text-[10px]
-                                        text-center
-                                        py-1
-                                    ">
+                                    <span
+                                        className="
+                                            absolute
+                                            bottom-0
+                                            left-0
+                                            right-0
+                                            bg-green-600/90
+                                            text-white
+                                            text-[10px]
+                                            text-center
+                                            py-1
+                                        "
+                                    >
                                         Picha kuu
                                     </span>
                                 )}
@@ -188,12 +248,13 @@ export default function ProductForm({
                             </div>
                         ))}
 
-                        {/* Empty slots */}
+                        {/* EMPTY SLOTS */}
+
                         {Array.from({
                             length: Math.max(
                                 0,
                                 4 - safePreviewImages.length
-                            )
+                            ),
                         }).map((_, index) => (
                             <div
                                 key={`empty-${index}`}
@@ -228,12 +289,14 @@ export default function ProductForm({
                         <div className="mt-4">
 
                             <div className="h-2 bg-slate-100 rounded-full overflow-hidden">
+
                                 <div
                                     className="h-full bg-green-600 transition-all"
                                     style={{
-                                        width: `${progress.percentage ?? 0}%`
+                                        width: `${progress.percentage ?? 0}%`,
                                     }}
                                 />
+
                             </div>
 
                             <p className="text-xs text-slate-500 mt-1">
@@ -248,9 +311,9 @@ export default function ProductForm({
             </section>
 
 
-            {/* ===================================== */}
-            {/* 2. PRODUCT DETAILS */}
-            {/* ===================================== */}
+            {/* =========================================================
+                2. PRODUCT DETAILS
+            ========================================================== */}
 
             <section className="bg-white border border-slate-200 rounded-2xl shadow-sm overflow-hidden">
 
@@ -265,6 +328,7 @@ export default function ProductForm({
                 <div className="p-5 space-y-5">
 
                     {/* TITLE */}
+
                     <div>
 
                         <label className="block text-sm font-medium text-slate-700 mb-1">
@@ -279,7 +343,7 @@ export default function ProductForm({
                                 maxLength={100}
                                 onChange={(e) =>
                                     updateData(
-                                        'title',
+                                        "title",
                                         e.target.value
                                     )
                                 }
@@ -298,13 +362,15 @@ export default function ProductForm({
                                 "
                             />
 
-                            <span className="
-                                absolute
-                                right-3
-                                top-3
-                                text-[11px]
-                                text-slate-400
-                            ">
+                            <span
+                                className="
+                                    absolute
+                                    right-3
+                                    top-3
+                                    text-[11px]
+                                    text-slate-400
+                                "
+                            >
                                 {title.length}/100
                             </span>
 
@@ -320,6 +386,7 @@ export default function ProductForm({
 
 
                     {/* CATEGORY */}
+
                     <div>
 
                         <div className="flex items-center justify-between mb-1">
@@ -346,7 +413,7 @@ export default function ProductForm({
                             value={categoryId}
                             onChange={(e) =>
                                 updateData(
-                                    'category_id',
+                                    "category_id",
                                     e.target.value
                                 )
                             }
@@ -395,9 +462,11 @@ export default function ProductForm({
 
 
                     {/* CONDITION + PRICE */}
+
                     <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
 
                         {/* CONDITION */}
+
                         <div>
 
                             <label className="block text-sm font-medium text-slate-700 mb-1">
@@ -410,8 +479,8 @@ export default function ProductForm({
                                     type="button"
                                     onClick={() =>
                                         updateData(
-                                            'condition',
-                                            'new'
+                                            "condition",
+                                            "new"
                                         )
                                     }
                                     className={`
@@ -423,9 +492,9 @@ export default function ProductForm({
                                         font-medium
                                         transition
                                         ${
-                                            condition === 'new'
-                                                ? 'bg-green-600 text-white border-green-600'
-                                                : 'bg-white text-slate-600 border-slate-300'
+                                            condition === "new"
+                                                ? "bg-green-600 text-white border-green-600"
+                                                : "bg-white text-slate-600 border-slate-300"
                                         }
                                     `}
                                 >
@@ -436,8 +505,8 @@ export default function ProductForm({
                                     type="button"
                                     onClick={() =>
                                         updateData(
-                                            'condition',
-                                            'used'
+                                            "condition",
+                                            "used"
                                         )
                                     }
                                     className={`
@@ -449,9 +518,9 @@ export default function ProductForm({
                                         font-medium
                                         transition
                                         ${
-                                            condition === 'used'
-                                                ? 'bg-green-600 text-white border-green-600'
-                                                : 'bg-white text-slate-600 border-slate-300'
+                                            condition === "used"
+                                                ? "bg-green-600 text-white border-green-600"
+                                                : "bg-white text-slate-600 border-slate-300"
                                         }
                                     `}
                                 >
@@ -470,6 +539,7 @@ export default function ProductForm({
 
 
                         {/* PRICE */}
+
                         <div>
 
                             <label className="block text-sm font-medium text-slate-700 mb-1">
@@ -483,11 +553,11 @@ export default function ProductForm({
                                     value={price}
                                     onChange={(e) =>
                                         updateData(
-                                            'price',
+                                            "price",
                                             e.target.value
                                         )
                                     }
-                                    placeholder="1,200,000"
+                                    placeholder="1200000"
                                     min="0"
                                     className="
                                         w-full
@@ -503,14 +573,16 @@ export default function ProductForm({
                                     "
                                 />
 
-                                <span className="
-                                    absolute
-                                    right-3
-                                    top-3
-                                    text-xs
-                                    font-semibold
-                                    text-slate-400
-                                ">
+                                <span
+                                    className="
+                                        absolute
+                                        right-3
+                                        top-3
+                                        text-xs
+                                        font-semibold
+                                        text-slate-400
+                                    "
+                                >
                                     TZS
                                 </span>
 
@@ -527,69 +599,164 @@ export default function ProductForm({
                     </div>
 
 
-                    {/* LOCATION */}
+                    {/* =====================================================
+                        LOCATION
+                    ====================================================== */}
+
                     <div>
 
-                        <label className="block text-sm font-medium text-slate-700 mb-1">
-                            Mahali
+                        <label className="block text-sm font-medium text-slate-700 mb-2">
+                            Mahali pa Bidhaa
                         </label>
 
-                        <select
-                            value={location}
-                            onChange={(e) =>
-                                updateData(
-                                    'location',
-                                    e.target.value
-                                )
-                            }
-                            className="
-                                w-full
-                                border border-slate-300
-                                rounded-lg
-                                px-4 py-2.5
-                                text-sm
-                                bg-white
-                                outline-none
-                                focus:ring-2
-                                focus:ring-green-500
-                                focus:border-green-500
-                            "
-                        >
+                        <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
 
-                            <option value="">
-                                Chagua mahali
-                            </option>
+                            {/* REGION */}
 
-                            <option value="Dar es Salaam">
-                                Dar es Salaam
-                            </option>
+                            <div>
 
-                            <option value="Mwanza">
-                                Mwanza
-                            </option>
+                                <label className="block text-xs font-medium text-slate-500 mb-1">
+                                    Mkoa *
+                                </label>
 
-                            <option value="Arusha">
-                                Arusha
-                            </option>
+                                <select
+                                    value={region}
+                                    onChange={(e) =>
+                                        updateData(
+                                            "region",
+                                            e.target.value
+                                        )
+                                    }
+                                    className="
+                                        w-full
+                                        border border-slate-300
+                                        rounded-lg
+                                        px-4 py-2.5
+                                        text-sm
+                                        bg-white
+                                        outline-none
+                                        focus:ring-2
+                                        focus:ring-green-500
+                                        focus:border-green-500
+                                    "
+                                >
 
-                            <option value="Dodoma">
-                                Dodoma
-                            </option>
+                                    <option value="">
+                                        Chagua mkoa
+                                    </option>
 
-                            <option value="Tabora">
-                                Tabora
-                            </option>
+                                    {regions.map((regionName) => (
+                                        <option
+                                            key={regionName}
+                                            value={regionName}
+                                        >
+                                            {regionName}
+                                        </option>
+                                    ))}
 
-                            <option value="Mbeya">
-                                Mbeya
-                            </option>
+                                </select>
 
-                        </select>
+                                {safeErrors.region && (
+                                    <p className="text-red-500 text-xs mt-1">
+                                        {safeErrors.region}
+                                    </p>
+                                )}
+
+                            </div>
+
+
+                            {/* CITY */}
+
+                            <div>
+
+                                <label className="block text-xs font-medium text-slate-500 mb-1">
+                                    Mji / Wilaya
+                                </label>
+
+                                <input
+                                    type="text"
+                                    value={city}
+                                    onChange={(e) =>
+                                        updateData(
+                                            "city",
+                                            e.target.value
+                                        )
+                                    }
+                                    placeholder="mf. Ilala"
+                                    maxLength={100}
+                                    className="
+                                        w-full
+                                        border border-slate-300
+                                        rounded-lg
+                                        px-4 py-2.5
+                                        text-sm
+                                        outline-none
+                                        focus:ring-2
+                                        focus:ring-green-500
+                                        focus:border-green-500
+                                    "
+                                />
+
+                                {safeErrors.city && (
+                                    <p className="text-red-500 text-xs mt-1">
+                                        {safeErrors.city}
+                                    </p>
+                                )}
+
+                            </div>
+
+
+                            {/* AREA */}
+
+                            <div>
+
+                                <label className="block text-xs font-medium text-slate-500 mb-1">
+                                    Eneo / Mtaa
+                                </label>
+
+                                <input
+                                    type="text"
+                                    value={location}
+                                    onChange={(e) =>
+                                        updateData(
+                                            "location",
+                                            e.target.value
+                                        )
+                                    }
+                                    placeholder="mf. Kariakoo"
+                                    maxLength={100}
+                                    className="
+                                        w-full
+                                        border border-slate-300
+                                        rounded-lg
+                                        px-4 py-2.5
+                                        text-sm
+                                        outline-none
+                                        focus:ring-2
+                                        focus:ring-green-500
+                                        focus:border-green-500
+                                    "
+                                />
+
+                                {safeErrors.location && (
+                                    <p className="text-red-500 text-xs mt-1">
+                                        {safeErrors.location}
+                                    </p>
+                                )}
+
+                            </div>
+
+                        </div>
+
+                        <p className="text-[11px] text-slate-400 mt-2">
+                            Mfano: Dar es Salaam → Ilala → Kariakoo
+                        </p>
 
                     </div>
 
 
                     {/* DESCRIPTION */}
+
                     <div>
 
                         <label className="block text-sm font-medium text-slate-700 mb-1">
@@ -602,7 +769,7 @@ export default function ProductForm({
                             value={description}
                             onChange={(e) =>
                                 updateData(
-                                    'description',
+                                    "description",
                                     e.target.value
                                 )
                             }
@@ -646,11 +813,11 @@ export default function ProductForm({
             </section>
 
 
-            {/* ===================================== */}
-            {/* 3. USED PRODUCT DETAILS */}
-            {/* ===================================== */}
+            {/* =========================================================
+                3. USED PRODUCT DETAILS
+            ========================================================== */}
 
-            {condition === 'used' && (
+            {condition === "used" && (
 
                 <section className="bg-white border border-slate-200 rounded-2xl shadow-sm overflow-hidden">
 
@@ -665,6 +832,7 @@ export default function ProductForm({
                     <div className="p-5 space-y-5">
 
                         {/* USAGE CONDITION */}
+
                         <div>
 
                             <label className="block text-sm font-medium text-slate-700 mb-2">
@@ -674,9 +842,9 @@ export default function ProductForm({
                             <div className="grid grid-cols-3 gap-3">
 
                                 {[
-                                    ['excellent', 'Excellent'],
-                                    ['good', 'Good'],
-                                    ['fair', 'Fair'],
+                                    ["excellent", "Excellent"],
+                                    ["good", "Good"],
+                                    ["fair", "Fair"],
                                 ].map(([value, label]) => (
 
                                     <button
@@ -684,7 +852,7 @@ export default function ProductForm({
                                         type="button"
                                         onClick={() =>
                                             updateData(
-                                                'usage_condition',
+                                                "usage_condition",
                                                 value
                                             )
                                         }
@@ -697,8 +865,8 @@ export default function ProductForm({
                                             transition
                                             ${
                                                 usageCondition === value
-                                                    ? 'border-green-600 bg-green-50 text-green-700'
-                                                    : 'border-slate-300 text-slate-600 bg-white'
+                                                    ? "border-green-600 bg-green-50 text-green-700"
+                                                    : "border-slate-300 text-slate-600 bg-white"
                                             }
                                         `}
                                     >
@@ -719,6 +887,7 @@ export default function ProductForm({
 
 
                         {/* YEAR */}
+
                         <div>
 
                             <label className="block text-sm font-medium text-slate-700 mb-1">
@@ -730,7 +899,7 @@ export default function ProductForm({
                                 value={year}
                                 onChange={(e) =>
                                     updateData(
-                                        'year',
+                                        "year",
                                         e.target.value
                                     )
                                 }
@@ -758,6 +927,7 @@ export default function ProductForm({
 
 
                         {/* NOTES */}
+
                         <div>
 
                             <label className="block text-sm font-medium text-slate-700 mb-1">
@@ -770,7 +940,7 @@ export default function ProductForm({
                                 value={conditionNotes}
                                 onChange={(e) =>
                                     updateData(
-                                        'condition_notes',
+                                        "condition_notes",
                                         e.target.value
                                     )
                                 }
@@ -808,9 +978,9 @@ export default function ProductForm({
             )}
 
 
-            {/* ===================================== */}
-            {/* ACTIONS */}
-            {/* ===================================== */}
+            {/* =========================================================
+                ACTIONS
+            ========================================================== */}
 
             <div className="flex flex-col sm:flex-row justify-end gap-3">
 
@@ -846,9 +1016,8 @@ export default function ProductForm({
                     "
                 >
                     {processing
-                        ? 'Inatuma...'
-                        : 'Weka Bidhaa Sokoni'
-                    }
+                        ? "Inatuma..."
+                        : "Weka Bidhaa Sokoni"}
                 </button>
 
             </div>
@@ -856,3 +1025,4 @@ export default function ProductForm({
         </form>
     );
 }
+
