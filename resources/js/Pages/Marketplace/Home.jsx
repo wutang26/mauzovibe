@@ -1,5 +1,4 @@
 import { useEffect, useState } from 'react';
-// import { Head, Link, usePage } from '@inertiajs/react';
 import { Head, Link, usePage, router } from '@inertiajs/react';
 import '@fortawesome/fontawesome-free/css/all.min.css';
 
@@ -7,6 +6,7 @@ export default function Home({
     categories = [],
     quickCategories = [],
     featuredProducts = [],
+    search: serverSearch = '',
     userLocation: serverUserLocation = null,
 }) {
     const { auth } = usePage().props;
@@ -18,8 +18,13 @@ export default function Home({
     */
     const user = auth?.user ?? null;
 
-    const [search, setSearch] = useState('');
+    // const [search, setSearch] = useState('');
+    const [search, setSearch] = useState(serverSearch || '');
     const [searching, setSearching] = useState(false);
+
+    useEffect(() => {
+        setSearch(serverSearch || '');
+    }, [serverSearch]);
 
     /*
     |--------------------------------------------------------------------------
@@ -43,18 +48,24 @@ export default function Home({
     const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
 
     const handleSearch = (e) => {
-    e?.preventDefault();
+    e.preventDefault();
 
     const query = search.trim();
+
+    if (!query) {
+        return;
+    }
 
     setSearching(true);
 
     router.get(
-        route('marketplace.index'),
-        query ? { search: query } : {},
+        route('marketplace.search'),
         {
-            preserveState: true,
-            preserveScroll: true,
+            q: query,
+        },
+        {
+            preserveState: false,
+            preserveScroll: false,
             replace: true,
             onFinish: () => {
                 setSearching(false);
@@ -62,7 +73,6 @@ export default function Home({
         }
     );
 };
-
     /*
     |--------------------------------------------------------------------------
     | GET CURRENT USER LOCATION
@@ -247,498 +257,494 @@ export default function Home({
                 {/* =========================================================
                     STICKY HEADER
                 ========================================================= */}
-               <header className="sticky top-0 z-[100] bg-white border-b border-gray-200 shadow-sm">
+                <header className="sticky top-0 z-[100] bg-white border-b border-gray-200 shadow-sm">
 
-    {/* =========================================================
+                    {/* =========================================================
         MAIN HEADER
     ========================================================= */}
-    <div className="max-w-7xl mx-auto px-3 sm:px-4">
+                    <div className="max-w-7xl mx-auto px-3 sm:px-4">
 
-        <div className="flex items-center gap-2 sm:gap-3 min-h-[64px]">
+                        <div className="flex items-center gap-2 sm:gap-3 min-h-[64px]">
 
-            {/* =====================================================
+                            {/* =====================================================
                 LOGO
             ===================================================== */}
-            <Link
-                href={route('welcome')}
-                className="flex items-center gap-2 shrink-0"
-            >
-                <div className="w-9 h-9 sm:w-10 sm:h-10 bg-green-600 rounded-xl flex items-center justify-center shadow-md">
-                    <i className="fa-solid fa-store text-white text-sm sm:text-base"></i>
-                </div>
+                            <Link
+                                href={route('welcome')}
+                                className="flex items-center gap-2 shrink-0"
+                            >
+                                <div className="w-9 h-9 sm:w-10 sm:h-10 bg-green-600 rounded-xl flex items-center justify-center shadow-md">
+                                    <i className="fa-solid fa-store text-white text-sm sm:text-base"></i>
+                                </div>
 
-                <div className="hidden min-[400px]:block">
-                    <div className="font-bold text-lg sm:text-xl leading-tight text-gray-900">
-                        MauzoVibe
-                    </div>
+                                <div className="hidden min-[400px]:block">
+                                    <div className="font-bold text-lg sm:text-xl leading-tight text-gray-900">
+                                        MauzoVibe
+                                    </div>
 
-                    <div className="text-[10px] sm:text-[11px] text-gray-500">
-                        Ecommerce
-                    </div>
-                </div>
-            </Link>
+                                    <div className="text-[10px] sm:text-[11px] text-gray-500">
+                                        Ecommerce
+                                    </div>
+                                </div>
+                            </Link>
 
 
-            {/* =====================================================
+                            {/* =====================================================
                 DESKTOP SEARCH
             ===================================================== */}
-            <form
-                onSubmit={handleSearch}
-                className="hidden sm:block flex-1 max-w-2xl mx-1 sm:mx-2"
-            >
-                <div className="relative">
+                            <form
+                                onSubmit={handleSearch}
+                                className="hidden sm:block flex-1 max-w-2xl mx-1 sm:mx-2"
+                            >
+                                <div className="relative">
 
-                    <input
-                        type="text"
-                        value={search}
-                        onChange={(e) => setSearch(e.target.value)}
-                        placeholder="Tafuta bidhaa, mfano: iPhone 15, Laptop..."
-                        className="w-full border border-gray-300 rounded-full py-2.5 pl-5 pr-14 text-sm focus:outline-none focus:ring-2 focus:ring-green-500/30 focus:border-green-500"
-                    />
+                                    <input
+                                        type="text"
+                                        value={search}
+                                        onChange={(e) => setSearch(e.target.value)}
+                                        placeholder="Tafuta bidhaa, mfano: iPhone 15, Laptop..."
+                                        className="w-full border border-gray-300 rounded-full py-2.5 pl-5 pr-14 text-sm focus:outline-none focus:ring-2 focus:ring-green-500/30 focus:border-green-500"
+                                    />
 
-                    <button
-                        type="submit"
-                        disabled={searching}
-                        className="absolute right-1.5 top-1/2 -translate-y-1/2 bg-green-600 hover:bg-green-700 disabled:bg-green-400 text-white w-9 h-9 rounded-full flex items-center justify-center transition"
-                    >
-                        <i
-                            className={`fa-solid ${
-                                searching
-                                    ? 'fa-spinner fa-spin'
-                                    : 'fa-magnifying-glass'
-                            } text-sm`}
-                        ></i>
-                    </button>
+                                    <button
+                                        type="submit"
+                                        disabled={searching}
+                                        className="absolute right-1.5 top-1/2 -translate-y-1/2 bg-green-600 hover:bg-green-700 disabled:bg-green-400 text-white w-9 h-9 rounded-full flex items-center justify-center transition"
+                                    >
+                                        <i
+                                            className={`fa-solid ${searching
+                                                    ? 'fa-spinner fa-spin'
+                                                    : 'fa-magnifying-glass'
+                                                } text-sm`}
+                                        ></i>
+                                    </button>
 
-                </div>
-            </form>
+                                </div>
+                            </form>
 
 
-            {/* =====================================================
+                            {/* =====================================================
                 DESKTOP ACTIONS
             ===================================================== */}
-            <div className="hidden sm:flex items-center gap-3 lg:gap-4 ml-auto shrink-0">
+                            <div className="hidden sm:flex items-center gap-3 lg:gap-4 ml-auto shrink-0">
 
-                {/* FAVOURITES */}
-                <Link
-                    href={route('marketplace.favourites')}
-                    className="relative flex items-center gap-1.5 text-gray-700 hover:text-green-600 transition"
-                >
-                    <i className="fa-regular fa-heart text-lg"></i>
+                                {/* FAVOURITES */}
+                                <Link
+                                    href={route('marketplace.favourites')}
+                                    className="relative flex items-center gap-1.5 text-gray-700 hover:text-green-600 transition"
+                                >
+                                    <i className="fa-regular fa-heart text-lg"></i>
 
-                    <span className="hidden lg:inline text-sm">
-                        Favourites
-                    </span>
+                                    <span className="hidden lg:inline text-sm">
+                                        Favourites
+                                    </span>
 
-                    <span className="absolute -top-1.5 -right-2 lg:static lg:ml-0.5 bg-green-600 text-white text-[10px] rounded-full w-4 h-4 flex items-center justify-center">
-                        1
-                    </span>
-                </Link>
-
-
-                {/* MESSAGES */}
-                <Link
-                    href={route('marketplace.messages')}
-                    className="relative flex items-center gap-1.5 text-gray-700 hover:text-green-600 transition"
-                >
-                    <i className="fa-regular fa-comment text-lg"></i>
-
-                    <span className="hidden lg:inline text-sm">
-                        Messages
-                    </span>
-
-                    <span className="absolute -top-1.5 -right-2 lg:static lg:ml-0.5 bg-green-600 text-white text-[10px] rounded-full w-4 h-4 flex items-center justify-center">
-                        2
-                    </span>
-                </Link>
+                                    <span className="absolute -top-1.5 -right-2 lg:static lg:ml-0.5 bg-green-600 text-white text-[10px] rounded-full w-4 h-4 flex items-center justify-center">
+                                        1
+                                    </span>
+                                </Link>
 
 
-                {/* CART */}
-                <Link
-                    href={route('marketplace.cart')}
-                    className="relative flex items-center gap-1.5 text-gray-700 hover:text-green-600 transition"
-                >
-                    <i className="fa-solid fa-cart-shopping text-lg"></i>
+                                {/* MESSAGES */}
+                                <Link
+                                    href={route('marketplace.messages')}
+                                    className="relative flex items-center gap-1.5 text-gray-700 hover:text-green-600 transition"
+                                >
+                                    <i className="fa-regular fa-comment text-lg"></i>
 
-                    <span className="hidden lg:inline text-sm">
-                        Cart
-                    </span>
+                                    <span className="hidden lg:inline text-sm">
+                                        Messages
+                                    </span>
 
-                    <span className="absolute -top-1.5 -right-2 lg:static lg:ml-0.5 bg-green-600 text-white text-[10px] rounded-full w-4 h-4 flex items-center justify-center">
-                        1
-                    </span>
-                </Link>
-
-
-                {/* SELLER */}
-                {user ? (
-                    <Link
-                        href={route('marketplace.dashboard')}
-                        className="bg-green-600 hover:bg-green-700 text-white px-3 lg:px-4 py-2 rounded-full text-sm font-medium transition whitespace-nowrap flex items-center gap-1.5"
-                    >
-                        <i className="fa-solid fa-store"></i>
-
-                        <span className="hidden lg:inline">
-                            Seller Dashboard
-                        </span>
-
-                        <span className="lg:hidden">
-                            Seller
-                        </span>
-                    </Link>
-                ) : (
-                    <Link
-                        href={route('login')}
-                        className="bg-green-600 hover:bg-green-700 text-white px-3 lg:px-5 py-2 rounded-xl font-medium flex items-center gap-2 transition text-sm whitespace-nowrap"
-                    >
-                        <i className="fa-solid fa-upload"></i>
-
-                        <span>
-                            Uza Bidhaa
-                        </span>
-                    </Link>
-                )}
-
-            </div>
+                                    <span className="absolute -top-1.5 -right-2 lg:static lg:ml-0.5 bg-green-600 text-white text-[10px] rounded-full w-4 h-4 flex items-center justify-center">
+                                        2
+                                    </span>
+                                </Link>
 
 
-            {/* =====================================================
+                                {/* CART */}
+                                <Link
+                                    href={route('marketplace.cart')}
+                                    className="relative flex items-center gap-1.5 text-gray-700 hover:text-green-600 transition"
+                                >
+                                    <i className="fa-solid fa-cart-shopping text-lg"></i>
+
+                                    <span className="hidden lg:inline text-sm">
+                                        Cart
+                                    </span>
+
+                                    <span className="absolute -top-1.5 -right-2 lg:static lg:ml-0.5 bg-green-600 text-white text-[10px] rounded-full w-4 h-4 flex items-center justify-center">
+                                        1
+                                    </span>
+                                </Link>
+
+
+                                {/* SELLER */}
+                                {user ? (
+                                    <Link
+                                        href={route('marketplace.dashboard')}
+                                        className="bg-green-600 hover:bg-green-700 text-white px-3 lg:px-4 py-2 rounded-full text-sm font-medium transition whitespace-nowrap flex items-center gap-1.5"
+                                    >
+                                        <i className="fa-solid fa-store"></i>
+
+                                        <span className="hidden lg:inline">
+                                            Seller Dashboard
+                                        </span>
+
+                                        <span className="lg:hidden">
+                                            Seller
+                                        </span>
+                                    </Link>
+                                ) : (
+                                    <Link
+                                        href={route('login')}
+                                        className="bg-green-600 hover:bg-green-700 text-white px-3 lg:px-5 py-2 rounded-xl font-medium flex items-center gap-2 transition text-sm whitespace-nowrap"
+                                    >
+                                        <i className="fa-solid fa-upload"></i>
+
+                                        <span>
+                                            Uza Bidhaa
+                                        </span>
+                                    </Link>
+                                )}
+
+                            </div>
+
+
+                            {/* =====================================================
                 MOBILE ACTIONS
             ===================================================== */}
-            <div className="flex sm:hidden items-center gap-2 ml-auto">
+                            <div className="flex sm:hidden items-center gap-2 ml-auto">
 
-                {/* FAVOURITES */}
-                <Link
-                    href={route('marketplace.favourites')}
-                    className="relative w-9 h-9 rounded-full flex items-center justify-center text-gray-700 hover:bg-green-50 hover:text-green-600 transition"
-                >
-                    <i className="fa-regular fa-heart text-lg"></i>
+                                {/* FAVOURITES */}
+                                <Link
+                                    href={route('marketplace.favourites')}
+                                    className="relative w-9 h-9 rounded-full flex items-center justify-center text-gray-700 hover:bg-green-50 hover:text-green-600 transition"
+                                >
+                                    <i className="fa-regular fa-heart text-lg"></i>
 
-                    <span className="absolute -top-0.5 -right-0.5 bg-green-600 text-white text-[9px] rounded-full w-4 h-4 flex items-center justify-center">
-                        1
-                    </span>
-                </Link>
-
-
-                {/* MESSAGES */}
-                <Link
-                    href={route('marketplace.messages')}
-                    className="relative w-9 h-9 rounded-full flex items-center justify-center text-gray-700 hover:bg-green-50 hover:text-green-600 transition"
-                >
-                    <i className="fa-regular fa-comment text-lg"></i>
-
-                    <span className="absolute -top-0.5 -right-0.5 bg-green-600 text-white text-[9px] rounded-full w-4 h-4 flex items-center justify-center">
-                        2
-                    </span>
-                </Link>
+                                    <span className="absolute -top-0.5 -right-0.5 bg-green-600 text-white text-[9px] rounded-full w-4 h-4 flex items-center justify-center">
+                                        1
+                                    </span>
+                                </Link>
 
 
-                {/* CART */}
-                <Link
-                    href={route('marketplace.cart')}
-                    className="relative w-9 h-9 rounded-full flex items-center justify-center text-gray-700 hover:bg-green-50 hover:text-green-600 transition"
-                >
-                    <i className="fa-solid fa-cart-shopping text-lg"></i>
+                                {/* MESSAGES */}
+                                <Link
+                                    href={route('marketplace.messages')}
+                                    className="relative w-9 h-9 rounded-full flex items-center justify-center text-gray-700 hover:bg-green-50 hover:text-green-600 transition"
+                                >
+                                    <i className="fa-regular fa-comment text-lg"></i>
 
-                    <span className="absolute -top-0.5 -right-0.5 bg-green-600 text-white text-[9px] rounded-full w-4 h-4 flex items-center justify-center">
-                        1
-                    </span>
-                </Link>
-
-
-                {/* MENU BUTTON */}
-                <button
-                    type="button"
-                    onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
-                    className="w-9 h-9 rounded-lg bg-green-600 text-white flex items-center justify-center hover:bg-green-700 transition"
-                    aria-label="Open menu"
-                >
-                    <i
-                        className={`fa-solid ${
-                            mobileMenuOpen
-                                ? 'fa-xmark'
-                                : 'fa-bars'
-                        } text-base`}
-                    ></i>
-                </button>
-
-            </div>
-
-        </div>
+                                    <span className="absolute -top-0.5 -right-0.5 bg-green-600 text-white text-[9px] rounded-full w-4 h-4 flex items-center justify-center">
+                                        2
+                                    </span>
+                                </Link>
 
 
-        {/* =========================================================
+                                {/* CART */}
+                                <Link
+                                    href={route('marketplace.cart')}
+                                    className="relative w-9 h-9 rounded-full flex items-center justify-center text-gray-700 hover:bg-green-50 hover:text-green-600 transition"
+                                >
+                                    <i className="fa-solid fa-cart-shopping text-lg"></i>
+
+                                    <span className="absolute -top-0.5 -right-0.5 bg-green-600 text-white text-[9px] rounded-full w-4 h-4 flex items-center justify-center">
+                                        1
+                                    </span>
+                                </Link>
+
+
+                                {/* MENU BUTTON */}
+                                <button
+                                    type="button"
+                                    onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
+                                    className="w-9 h-9 rounded-lg bg-green-600 text-white flex items-center justify-center hover:bg-green-700 transition"
+                                    aria-label="Open menu"
+                                >
+                                    <i
+                                        className={`fa-solid ${mobileMenuOpen
+                                                ? 'fa-xmark'
+                                                : 'fa-bars'
+                                            } text-base`}
+                                    ></i>
+                                </button>
+
+                            </div>
+
+                        </div>
+
+
+                        {/* =========================================================
             MOBILE SEARCH
         ========================================================= */}
-        <form
-            onSubmit={handleSearch}
-            className="sm:hidden pb-3"
-        >
-            <div className="relative">
+                        <form
+                            onSubmit={handleSearch}
+                            className="sm:hidden pb-3"
+                        >
+                            <div className="relative">
 
-                <input
-                    type="text"
-                    value={search}
-                    onChange={(e) => setSearch(e.target.value)}
-                    placeholder="Tafuta bidhaa..."
-                    className="w-full border border-gray-300 rounded-full py-2.5 pl-4 pr-12 text-sm focus:outline-none focus:ring-2 focus:ring-green-500/30 focus:border-green-500"
-                />
+                                <input
+                                    type="text"
+                                    value={search}
+                                    onChange={(e) => setSearch(e.target.value)}
+                                    placeholder="Tafuta bidhaa..."
+                                    className="w-full border border-gray-300 rounded-full py-2.5 pl-4 pr-12 text-sm focus:outline-none focus:ring-2 focus:ring-green-500/30 focus:border-green-500"
+                                />
 
-                <button
-                    type="submit"
-                    disabled={searching}
-                    className="absolute right-1.5 top-1/2 -translate-y-1/2 bg-green-600 hover:bg-green-700 disabled:bg-green-400 text-white w-9 h-9 rounded-full flex items-center justify-center transition"
-                >
-                    <i
-                        className={`fa-solid ${
-                            searching
-                                ? 'fa-spinner fa-spin'
-                                : 'fa-magnifying-glass'
-                        } text-sm`}
-                    ></i>
-                </button>
+                                <button
+                                    type="submit"
+                                    disabled={searching}
+                                    className="absolute right-1.5 top-1/2 -translate-y-1/2 bg-green-600 hover:bg-green-700 disabled:bg-green-400 text-white w-9 h-9 rounded-full flex items-center justify-center transition"
+                                >
+                                    <i
+                                        className={`fa-solid ${searching
+                                                ? 'fa-spinner fa-spin'
+                                                : 'fa-magnifying-glass'
+                                            } text-sm`}
+                                    ></i>
+                                </button>
 
-            </div>
-        </form>
+                            </div>
+                        </form>
 
-    </div>
+                    </div>
 
 
-    {/* =========================================================
+                    {/* =========================================================
         MOBILE DROPDOWN MENU
     ========================================================= */}
-    {mobileMenuOpen && (
-        <div className="sm:hidden border-t border-gray-100 bg-white shadow-lg">
+                    {mobileMenuOpen && (
+                        <div className="sm:hidden border-t border-gray-100 bg-white shadow-lg">
 
-            <div className="max-w-7xl mx-auto px-3 py-3">
+                            <div className="max-w-7xl mx-auto px-3 py-3">
 
-                <nav className="grid grid-cols-2 gap-2">
+                                <nav className="grid grid-cols-2 gap-2">
 
-                    {/* HOME */}
-                    <Link
-                        href={route('marketplace.index')}
-                        onClick={() => setMobileMenuOpen(false)}
-                        className="flex items-center gap-3 px-3 py-3 rounded-xl bg-green-50 text-green-700 font-semibold"
-                    >
-                        <i className="fa-solid fa-house w-5"></i>
-                        <span>Home</span>
-                    </Link>
-
-
-                    {/* CATEGORIES */}
-                    <button
-                        type="button"
-                        onClick={() => {
-                            setShowAllCategories(true);
-                            setMobileMenuOpen(false);
-                        }}
-                        className="flex items-center gap-3 px-3 py-3 rounded-xl bg-green-50 text-green-700 font-semibold text-left"
-                    >
-                        <i className="fa-solid fa-layer-group w-5"></i>
-                        <span>Categories</span>
-                    </button>
+                                    {/* HOME */}
+                                    <Link
+                                        href={route('marketplace.index')}
+                                        onClick={() => setMobileMenuOpen(false)}
+                                        className="flex items-center gap-3 px-3 py-3 rounded-xl bg-green-50 text-green-700 font-semibold"
+                                    >
+                                        <i className="fa-solid fa-house w-5"></i>
+                                        <span>Home</span>
+                                    </Link>
 
 
-                    {/* NEW */}
-                    <Link
-                        href={route('marketplace.new')}
-                        onClick={() => setMobileMenuOpen(false)}
-                        className="flex items-center gap-3 px-3 py-3 rounded-xl text-gray-700 hover:bg-gray-50"
-                    >
-                        <i className="fa-solid fa-box-open w-5 text-green-600"></i>
-                        <span>Bidhaa Mpya</span>
-                    </Link>
+                                    {/* CATEGORIES */}
+                                    <button
+                                        type="button"
+                                        onClick={() => {
+                                            setShowAllCategories(true);
+                                            setMobileMenuOpen(false);
+                                        }}
+                                        className="flex items-center gap-3 px-3 py-3 rounded-xl bg-green-50 text-green-700 font-semibold text-left"
+                                    >
+                                        <i className="fa-solid fa-layer-group w-5"></i>
+                                        <span>Categories</span>
+                                    </button>
 
 
-                    {/* USED */}
-                    <Link
-                        href={route('marketplace.used')}
-                        onClick={() => setMobileMenuOpen(false)}
-                        className="flex items-center gap-3 px-3 py-3 rounded-xl text-gray-700 hover:bg-gray-50"
-                    >
-                        <i className="fa-solid fa-box w-5 text-green-600"></i>
-                        <span>Bidhaa Used</span>
-                    </Link>
+                                    {/* NEW */}
+                                    <Link
+                                        href={route('marketplace.new')}
+                                        onClick={() => setMobileMenuOpen(false)}
+                                        className="flex items-center gap-3 px-3 py-3 rounded-xl text-gray-700 hover:bg-gray-50"
+                                    >
+                                        <i className="fa-solid fa-box-open w-5 text-green-600"></i>
+                                        <span>Bidhaa Mpya</span>
+                                    </Link>
 
 
-                    {/* STORES */}
-                    <Link
-                        href={route('marketplace.stores')}
-                        onClick={() => setMobileMenuOpen(false)}
-                        className="flex items-center gap-3 px-3 py-3 rounded-xl text-gray-700 hover:bg-gray-50"
-                    >
-                        <i className="fa-solid fa-store w-5 text-green-600"></i>
-                        <span>Maduka</span>
-                    </Link>
+                                    {/* USED */}
+                                    <Link
+                                        href={route('marketplace.used')}
+                                        onClick={() => setMobileMenuOpen(false)}
+                                        className="flex items-center gap-3 px-3 py-3 rounded-xl text-gray-700 hover:bg-gray-50"
+                                    >
+                                        <i className="fa-solid fa-box w-5 text-green-600"></i>
+                                        <span>Bidhaa Used</span>
+                                    </Link>
 
 
-                    {/* OFFERS */}
-                    <Link
-                        href={route('marketplace.offers')}
-                        onClick={() => setMobileMenuOpen(false)}
-                        className="flex items-center gap-3 px-3 py-3 rounded-xl text-gray-700 hover:bg-gray-50"
-                    >
-                        <i className="fa-solid fa-tags w-5 text-green-600"></i>
-                        <span>Ofa Maalum</span>
-                    </Link>
+                                    {/* STORES */}
+                                    <Link
+                                        href={route('marketplace.stores')}
+                                        onClick={() => setMobileMenuOpen(false)}
+                                        className="flex items-center gap-3 px-3 py-3 rounded-xl text-gray-700 hover:bg-gray-50"
+                                    >
+                                        <i className="fa-solid fa-store w-5 text-green-600"></i>
+                                        <span>Maduka</span>
+                                    </Link>
 
 
-                    {/* HELP */}
-                    <Link
-                        href={route('marketplace.help')}
-                        onClick={() => setMobileMenuOpen(false)}
-                        className="flex items-center gap-3 px-3 py-3 rounded-xl text-gray-700 hover:bg-gray-50"
-                    >
-                        <i className="fa-solid fa-circle-question w-5 text-green-600"></i>
-                        <span>Msaada</span>
-                    </Link>
+                                    {/* OFFERS */}
+                                    <Link
+                                        href={route('marketplace.offers')}
+                                        onClick={() => setMobileMenuOpen(false)}
+                                        className="flex items-center gap-3 px-3 py-3 rounded-xl text-gray-700 hover:bg-gray-50"
+                                    >
+                                        <i className="fa-solid fa-tags w-5 text-green-600"></i>
+                                        <span>Ofa Maalum</span>
+                                    </Link>
 
 
-                    {/* SELLER */}
-                    {user ? (
-                        <Link
-                            href={route('marketplace.dashboard')}
-                            onClick={() => setMobileMenuOpen(false)}
-                            className="flex items-center gap-3 px-3 py-3 rounded-xl bg-green-600 text-white font-semibold col-span-2 justify-center"
-                        >
-                            <i className="fa-solid fa-store"></i>
-                            Seller Dashboard
-                        </Link>
-                    ) : (
-                        <Link
-                            href={route('login')}
-                            onClick={() => setMobileMenuOpen(false)}
-                            className="flex items-center gap-3 px-3 py-3 rounded-xl bg-green-600 text-white font-semibold col-span-2 justify-center"
-                        >
-                            <i className="fa-solid fa-upload"></i>
-                            Uza Bidhaa
-                        </Link>
+                                    {/* HELP */}
+                                    <Link
+                                        href={route('marketplace.help')}
+                                        onClick={() => setMobileMenuOpen(false)}
+                                        className="flex items-center gap-3 px-3 py-3 rounded-xl text-gray-700 hover:bg-gray-50"
+                                    >
+                                        <i className="fa-solid fa-circle-question w-5 text-green-600"></i>
+                                        <span>Msaada</span>
+                                    </Link>
+
+
+                                    {/* SELLER */}
+                                    {user ? (
+                                        <Link
+                                            href={route('marketplace.dashboard')}
+                                            onClick={() => setMobileMenuOpen(false)}
+                                            className="flex items-center gap-3 px-3 py-3 rounded-xl bg-green-600 text-white font-semibold col-span-2 justify-center"
+                                        >
+                                            <i className="fa-solid fa-store"></i>
+                                            Seller Dashboard
+                                        </Link>
+                                    ) : (
+                                        <Link
+                                            href={route('login')}
+                                            onClick={() => setMobileMenuOpen(false)}
+                                            className="flex items-center gap-3 px-3 py-3 rounded-xl bg-green-600 text-white font-semibold col-span-2 justify-center"
+                                        >
+                                            <i className="fa-solid fa-upload"></i>
+                                            Uza Bidhaa
+                                        </Link>
+                                    )}
+
+                                </nav>
+
+                            </div>
+
+                        </div>
                     )}
 
-                </nav>
 
-            </div>
-
-        </div>
-    )}
-
-
-    {/* =========================================================
+                    {/* =========================================================
         SECONDARY NAVIGATION
     ========================================================= */}
-    <div className="border-t border-gray-100 bg-white">
+                    <div className="border-t border-gray-100 bg-white">
 
-        <div className="max-w-7xl mx-auto px-3 sm:px-4">
+                        <div className="max-w-7xl mx-auto px-3 sm:px-4">
 
-            <div className="flex items-center gap-3 py-2">
+                            <div className="flex items-center gap-3 py-2">
 
-                {/* SCROLLABLE NAV */}
-                <div className="flex items-center gap-3 sm:gap-4 lg:gap-6 overflow-x-auto scrollbar-hide flex-1 min-w-0">
+                                {/* SCROLLABLE NAV */}
+                                <div className="flex items-center gap-3 sm:gap-4 lg:gap-6 overflow-x-auto scrollbar-hide flex-1 min-w-0">
 
-                    {/* CATEGORIES */}
-                    <button
-                        type="button"
-                        onClick={() => setShowAllCategories(true)}
-                        className="bg-green-600 hover:bg-green-700 text-white px-3 py-1.5 rounded-lg flex items-center gap-1.5 font-medium text-sm whitespace-nowrap shrink-0 transition"
-                    >
-                        <i className="fa-solid fa-bars"></i>
+                                    {/* CATEGORIES */}
+                                    <button
+                                        type="button"
+                                        onClick={() => setShowAllCategories(true)}
+                                        className="bg-green-600 hover:bg-green-700 text-white px-3 py-1.5 rounded-lg flex items-center gap-1.5 font-medium text-sm whitespace-nowrap shrink-0 transition"
+                                    >
+                                        <i className="fa-solid fa-bars"></i>
 
-                        <span className="hidden min-[380px]:inline">
-                            Categories
-                        </span>
-                    </button>
-
-
-                    {/* HOME */}
-                    <Link
-                        href={route('marketplace.index')}
-                        className="font-semibold text-green-600 border-b-2 border-green-600 pb-0.5 whitespace-nowrap shrink-0"
-                    >
-                        Home
-                    </Link>
+                                        <span className="hidden min-[380px]:inline">
+                                            Categories
+                                        </span>
+                                    </button>
 
 
-                    {/* NEW */}
-                    <Link
-                        href={route('marketplace.new')}
-                        className="text-gray-700 hover:text-green-600 transition whitespace-nowrap shrink-0"
-                    >
-                        Bidhaa Mpya
-                    </Link>
+                                    {/* HOME */}
+                                    <Link
+                                        href={route('marketplace.index')}
+                                        className="font-semibold text-green-600 border-b-2 border-green-600 pb-0.5 whitespace-nowrap shrink-0"
+                                    >
+                                        Home
+                                    </Link>
 
 
-                    {/* USED */}
-                    <Link
-                        href={route('marketplace.used')}
-                        className="text-gray-700 hover:text-green-600 transition whitespace-nowrap shrink-0"
-                    >
-                        Bidhaa Used
-                    </Link>
+                                    {/* NEW */}
+                                    <Link
+                                        href={route('marketplace.new')}
+                                        className="text-gray-700 hover:text-green-600 transition whitespace-nowrap shrink-0"
+                                    >
+                                        Bidhaa Mpya
+                                    </Link>
 
 
-                    {/* STORES */}
-                    <Link
-                        href={route('marketplace.stores')}
-                        className="text-gray-700 hover:text-green-600 transition whitespace-nowrap shrink-0"
-                    >
-                        Maduka
-                    </Link>
+                                    {/* USED */}
+                                    <Link
+                                        href={route('marketplace.used')}
+                                        className="text-gray-700 hover:text-green-600 transition whitespace-nowrap shrink-0"
+                                    >
+                                        Bidhaa Used
+                                    </Link>
 
 
-                    {/* OFFERS */}
-                    <Link
-                        href={route('marketplace.offers')}
-                        className="text-gray-700 hover:text-green-600 transition whitespace-nowrap shrink-0"
-                    >
-                        Ofa Maalum
-                    </Link>
+                                    {/* STORES */}
+                                    <Link
+                                        href={route('marketplace.stores')}
+                                        className="text-gray-700 hover:text-green-600 transition whitespace-nowrap shrink-0"
+                                    >
+                                        Maduka
+                                    </Link>
 
 
-                    {/* HELP */}
-                    <Link
-                        href={route('marketplace.help')}
-                        className="text-gray-700 hover:text-green-600 transition whitespace-nowrap shrink-0"
-                    >
-                        Msaada
-                    </Link>
-
-                </div>
+                                    {/* OFFERS */}
+                                    <Link
+                                        href={route('marketplace.offers')}
+                                        className="text-gray-700 hover:text-green-600 transition whitespace-nowrap shrink-0"
+                                    >
+                                        Ofa Maalum
+                                    </Link>
 
 
-                {/* =====================================================
+                                    {/* HELP */}
+                                    <Link
+                                        href={route('marketplace.help')}
+                                        className="text-gray-700 hover:text-green-600 transition whitespace-nowrap shrink-0"
+                                    >
+                                        Msaada
+                                    </Link>
+
+                                </div>
+
+
+                                {/* =====================================================
                     LOCATION
                 ===================================================== */}
-                <div className="flex items-center gap-1.5 text-gray-600 shrink-0 pl-2 border-l border-gray-200 bg-white">
+                                <div className="flex items-center gap-1.5 text-gray-600 shrink-0 pl-2 border-l border-gray-200 bg-white">
 
-                    <i
-                        className={`fa-solid ${
-                            locationLoading
-                                ? 'fa-spinner fa-spin'
-                                : 'fa-location-dot'
-                        } text-green-600`}
-                    ></i>
+                                    <i
+                                        className={`fa-solid ${locationLoading
+                                                ? 'fa-spinner fa-spin'
+                                                : 'fa-location-dot'
+                                            } text-green-600`}
+                                    ></i>
 
-                    <span className="hidden sm:inline truncate max-w-[100px] lg:max-w-[150px] text-xs sm:text-sm">
-                        {locationLoading
-                            ? 'Inatafuta...'
-                            : currentLocation}
-                    </span>
+                                    <span className="hidden sm:inline truncate max-w-[100px] lg:max-w-[150px] text-xs sm:text-sm">
+                                        {locationLoading
+                                            ? 'Inatafuta...'
+                                            : currentLocation}
+                                    </span>
 
-                    <span className="sm:hidden text-xs truncate max-w-[55px]">
-                        {locationLoading
-                            ? '...'
-                            : currentLocation.split(',')[0]}
-                    </span>
+                                    <span className="sm:hidden text-xs truncate max-w-[55px]">
+                                        {locationLoading
+                                            ? '...'
+                                            : currentLocation.split(',')[0]}
+                                    </span>
 
-                </div>
+                                </div>
 
-            </div>
+                            </div>
 
-        </div>
+                        </div>
 
-    </div>
+                    </div>
 
-</header>
+                </header>
 
 
                 {/* =========================================================
@@ -779,9 +785,8 @@ export default function Home({
                                                 <span className="flex items-center gap-3 text-gray-700 group-hover:text-green-700 min-w-0">
 
                                                     <i
-                                                        className={`fa-solid ${
-                                                            cat.icon || 'fa-tag'
-                                                        } w-5 text-gray-400 group-hover:text-green-600 shrink-0`}
+                                                        className={`fa-solid ${cat.icon || 'fa-tag'
+                                                            } w-5 text-gray-400 group-hover:text-green-600 shrink-0`}
                                                     ></i>
 
                                                     <span className="truncate">
@@ -1047,11 +1052,10 @@ export default function Home({
                                                 : 'View all categories'}
 
                                             <i
-                                                className={`fa-solid ${
-                                                    showAllCategories
+                                                className={`fa-solid ${showAllCategories
                                                         ? 'fa-chevron-up'
                                                         : 'fa-chevron-down'
-                                                } text-xs`}
+                                                    } text-xs`}
                                             ></i>
 
                                         </button>
@@ -1076,9 +1080,8 @@ export default function Home({
                                                 <div className="w-10 h-10 sm:w-12 sm:h-12 mx-auto mb-1.5 sm:mb-2 bg-green-50 text-green-600 rounded-xl flex items-center justify-center group-hover:bg-green-100 group-hover:scale-105 transition">
 
                                                     <i
-                                                        className={`fa-solid ${
-                                                            cat.icon || 'fa-tag'
-                                                        } text-lg sm:text-xl`}
+                                                        className={`fa-solid ${cat.icon || 'fa-tag'
+                                                            } text-lg sm:text-xl`}
                                                     ></i>
 
                                                 </div>
@@ -1091,12 +1094,12 @@ export default function Home({
 
                                                 <div className="text-[10px] sm:text-xs text-gray-500 mt-0.5">
 
-                                                  {Number(
-                                                    cat.listings_count ??
-                                                    cat.products_count ??
-                                                    cat.total ??
-                                                    0
-                                                ).toLocaleString()}
+                                                    {Number(
+                                                        cat.listings_count ??
+                                                        cat.products_count ??
+                                                        cat.total ??
+                                                        0
+                                                    ).toLocaleString()}
 
                                                 </div>
 
@@ -1207,7 +1210,6 @@ export default function Home({
                                                         loading="lazy"
                                                     />
 
-
                                                     <button
                                                         type="button"
                                                         onClick={(e) => {
@@ -1216,13 +1218,10 @@ export default function Home({
                                                         }}
                                                         className="absolute top-2 right-2 bg-white/90 hover:bg-white rounded-full w-7 h-7 sm:w-8 sm:h-8 flex items-center justify-center shadow-sm transition"
                                                     >
-
                                                         <i className="fa-regular fa-heart text-gray-600 text-sm"></i>
-
                                                     </button>
 
                                                 </div>
-
 
                                                 <div className="p-2.5 sm:p-3.5">
 
@@ -1230,11 +1229,9 @@ export default function Home({
                                                         {product.title}
                                                     </h3>
 
-
                                                     <div className="text-green-600 font-bold mt-1 sm:mt-1.5 text-sm sm:text-[15px]">
                                                         {product.formatted_price}
                                                     </div>
-
 
                                                     <div className="text-[10px] sm:text-xs text-gray-500 mt-1 sm:mt-1.5 flex items-center gap-1">
 
@@ -1245,7 +1242,6 @@ export default function Home({
                                                         </span>
 
                                                     </div>
-
 
                                                     <div className="text-[10px] sm:text-xs mt-0.5 sm:mt-1 capitalize text-gray-500">
                                                         {product.condition}
@@ -1261,49 +1257,118 @@ export default function Home({
 
                                 ) : (
 
-                                    <div className="bg-white border rounded-xl p-8 sm:p-12 text-center text-gray-400">
+                                    <div className="bg-white border border-gray-200 rounded-2xl p-8 sm:p-12 text-center">
 
-                                        <div className="text-4xl mb-3">
-                                            <i className="fa-solid fa-box-open"></i>
+                                        {/* ICON */}
+                                        <div className="w-16 h-16 mx-auto mb-4 bg-green-50 rounded-full flex items-center justify-center">
+
+                                            <i
+                                                className={`fa-solid ${search.trim()
+                                                        ? 'fa-magnifying-glass'
+                                                        : 'fa-box-open'
+                                                    } text-green-600 text-2xl`}
+                                            ></i>
+
                                         </div>
 
 
-                                        <p className="text-sm sm:text-base mb-5">
-                                            Hakuna bidhaa bado. Kuwa wa kwanza kuweka!
+                                        {/* TITLE */}
+                                        <h3 className="text-lg sm:text-xl font-bold text-gray-900 mb-2">
+
+                                            {search.trim()
+                                                ? `Hakuna bidhaa zilizopatikana`
+                                                : 'Hakuna bidhaa bado'}
+
+                                        </h3>
+
+
+                                        {/* MESSAGE */}
+                                        <p className="text-sm text-gray-500 max-w-md mx-auto mb-5">
+
+                                            {search.trim() ? (
+                                                <>
+                                                    Hakuna bidhaa inayolingana na utafutaji wako wa{' '}
+                                                    <span className="font-semibold text-gray-700">
+                                                        "{search.trim()}"
+                                                    </span>
+                                                    .
+                                                </>
+                                            ) : (
+                                                'Hakuna bidhaa bado. Kuwa wa kwanza kuweka bidhaa!'
+                                            )}
+
                                         </p>
 
 
-                                        {user ? (
+                                        {/* SEARCH ACTION */}
+                                        {search.trim() ? (
 
-                                            <Link
-                                                href={route('marketplace.dashboard')}
-                                                className="inline-flex items-center gap-2 bg-green-600 hover:bg-green-700 text-white px-5 sm:px-6 py-2.5 rounded-xl font-medium transition text-sm sm:text-base"
-                                            >
+                                            <div className="flex flex-col sm:flex-row items-center justify-center gap-2">
 
-                                                <i className="fa-solid fa-store"></i>
+                                                <button
+                                                    type="button"
+                                                    onClick={() => {
+                                                        setSearch('');
 
-                                                Seller Dashboard
+                                                        router.get(
+                                                            route('marketplace.index'),
+                                                            {},
+                                                            {
+                                                                preserveState: true,
+                                                                preserveScroll: true,
+                                                                replace: true,
+                                                            }
+                                                        );
+                                                    }}
+                                                    className="inline-flex items-center justify-center gap-2 bg-green-600 hover:bg-green-700 text-white px-5 py-2.5 rounded-xl font-medium transition text-sm"
+                                                >
 
-                                            </Link>
+                                                    <i className="fa-solid fa-arrow-left"></i>
+
+                                                    Onyesha Bidhaa Zote
+
+                                                </button>
+
+                                            </div>
 
                                         ) : (
 
-                                            <Link
-                                                href={route('login')}
-                                                className="inline-flex items-center gap-2 bg-green-600 hover:bg-green-700 text-white px-5 sm:px-6 py-2.5 rounded-xl font-medium transition text-sm sm:text-base"
-                                            >
+                                            /* SELL PRODUCT */
+                                            user ? (
 
-                                                <i className="fa-solid fa-upload"></i>
+                                                <Link
+                                                    href={route('marketplace.dashboard')}
+                                                    className="inline-flex items-center gap-2 bg-green-600 hover:bg-green-700 text-white px-5 sm:px-6 py-2.5 rounded-xl font-medium transition text-sm sm:text-base"
+                                                >
 
-                                                Uza Bidhaa
+                                                    <i className="fa-solid fa-store"></i>
 
-                                            </Link>
+                                                    Seller Dashboard
+
+                                                </Link>
+
+                                            ) : (
+
+                                                <Link
+                                                    href={route('login')}
+                                                    className="inline-flex items-center gap-2 bg-green-600 hover:bg-green-700 text-white px-5 sm:px-6 py-2.5 rounded-xl font-medium transition text-sm sm:text-base"
+                                                >
+
+                                                    <i className="fa-solid fa-upload"></i>
+
+                                                    Uza Bidhaa
+
+                                                </Link>
+
+                                            )
 
                                         )}
 
                                     </div>
 
                                 )}
+
+
 
                             </section>
 

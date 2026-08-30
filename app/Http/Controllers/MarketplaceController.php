@@ -1499,205 +1499,418 @@ class MarketplaceController extends Controller
      * MARKETPLACE HELP
      * --------------------------------------------------------------------------
      */
-    public function help(
-        Request $request
-    ): Response {
-        $categories =
-            $this->getMarketplaceCategories(true);
+    // public function help(
+    //     Request $request
+    // ): Response {
+    //     $categories =
+    //         $this->getMarketplaceCategories(true);
 
-        $userLocation =
-            $this->getUserLocation(
-                $request
-            );
+    //     $userLocation =
+    //         $this->getUserLocation(
+    //             $request
+    //         );
 
-        return Inertia::render(
-            'Marketplace/Help',
-            [
-                'categories' =>
-                    $categories,
+    //     return Inertia::render(
+    //         'Marketplace/Help',
+    //         [
+    //             'categories' =>
+    //                 $categories,
 
-                'userLocation' =>
-                    $userLocation,
-            ]
-        );
-    }
+    //             'userLocation' =>
+    //                 $userLocation,
+    //         ]
+    //     );
+    // }
+
+    // /**
+    //  * --------------------------------------------------------------------------
+    //  * MARKETPLACE SEARCH
+    //  * --------------------------------------------------------------------------
+    //  */
+    // public function search(
+    //     Request $request
+    // ): Response {
+    //     $query =
+    //         trim(
+    //             $request->input(
+    //                 'q',
+    //                 ''
+    //             )
+    //         );
+
+    //     /*
+    //     |--------------------------------------------------------------------------
+    //     | CATEGORIES
+    //     |--------------------------------------------------------------------------
+    //     */
+
+    //     $categories =
+    //         $this->getMarketplaceCategories(true);
+
+    //     /*
+    //     |--------------------------------------------------------------------------
+    //     | SEARCH PRODUCTS
+    //     |--------------------------------------------------------------------------
+    //     */
+
+    //     $products =
+    //         MarketplaceListing::query()
+
+    //             ->where(
+    //                 'status',
+    //                 'active'
+    //             )
+
+    //             ->when(
+    //                 $query !== '',
+    //                 function ($q) use ($query) {
+
+    //                     $q->where(
+    //                         function ($search) use ($query) {
+
+    //                             $search
+
+    //                                 ->where(
+    //                                     'title',
+    //                                     'like',
+    //                                     "%{$query}%"
+    //                                 )
+
+    //                                 ->orWhere(
+    //                                     'description',
+    //                                     'like',
+    //                                     "%{$query}%"
+    //                                 )
+
+    //                                 ->orWhere(
+    //                                     'location',
+    //                                     'like',
+    //                                     "%{$query}%"
+    //                                 )
+
+    //                                 ->orWhere(
+    //                                     'city',
+    //                                     'like',
+    //                                     "%{$query}%"
+    //                                 )
+
+    //                                 /*
+    //                                 |--------------------------------------------------------------------------
+    //                                 | CATEGORY SEARCH
+    //                                 |--------------------------------------------------------------------------
+    //                                 */
+
+    //                                 ->orWhereHas(
+    //                                     'category',
+    //                                     function (
+    //                                         $category
+    //                                     ) use ($query) {
+
+    //                                         $category->where(
+    //                                             'name',
+    //                                             'like',
+    //                                             "%{$query}%"
+    //                                         );
+    //                                     }
+    //                                 )
+
+    //                                 /*
+    //                                 |--------------------------------------------------------------------------
+    //                                 | SELLER SEARCH
+    //                                 |--------------------------------------------------------------------------
+    //                                 */
+
+    //                                 ->orWhereHas(
+    //                                     'user',
+    //                                     function (
+    //                                         $user
+    //                                     ) use ($query) {
+
+    //                                         $user->where(
+    //                                             'name',
+    //                                             'like',
+    //                                             "%{$query}%"
+    //                                         );
+    //                                     }
+    //                                 );
+    //                         }
+    //                     );
+    //                 }
+    //             )
+
+    //             ->with(
+    //                 'category:id,name,slug,icon'
+    //             )
+
+    //             ->select([
+    //                 'id',
+    //                 'marketplace_category_id',
+    //                 'title',
+    //                 'slug',
+    //                 'description',
+    //                 'price',
+    //                 'condition',
+    //                 'location',
+    //                 'city',
+    //                 'images',
+    //                 'created_at',
+    //             ])
+
+    //             ->latest('created_at')
+
+    //             ->paginate(24)
+
+    //             ->withQueryString()
+
+    //             ->through(function ($listing) {
+
+    //                 return $this->formatListing(
+    //                     $listing,
+    //                     true
+    //                 );
+    //             });
+
+    //     /*
+    //     |--------------------------------------------------------------------------
+    //     | USER LOCATION
+    //     |--------------------------------------------------------------------------
+    //     */
+
+    //     $userLocation =
+    //         $this->getUserLocation(
+    //             $request
+    //         );
+
+    //     return Inertia::render(
+    //         'Marketplace/Search',
+    //         [
+    //             'query' =>
+    //                 $query,
+
+    //             'products' =>
+    //                 $products,
+
+    //             'categories' =>
+    //                 $categories,
+
+    //             'userLocation' =>
+    //                 $userLocation,
+    //         ]
+    //     );
+    // }
 
     /**
-     * --------------------------------------------------------------------------
-     * MARKETPLACE SEARCH
-     * --------------------------------------------------------------------------
-     */
-    public function search(
-        Request $request
-    ): Response {
-        $query =
-            trim(
-                $request->input(
-                    'q',
-                    ''
-                )
-            );
+ * --------------------------------------------------------------------------
+ * MARKETPLACE SEARCH
+ * --------------------------------------------------------------------------
+ */
+public function search(Request $request): Response
+{
+    $query = trim(
+        $request->input('q', '')
+    );
 
-        /*
-        |--------------------------------------------------------------------------
-        | CATEGORIES
-        |--------------------------------------------------------------------------
-        */
+    /*
+    |--------------------------------------------------------------------------
+    | CATEGORIES
+    |--------------------------------------------------------------------------
+    */
 
-        $categories =
-            $this->getMarketplaceCategories(true);
+    $categories = $this->getMarketplaceCategories(true);
 
-        /*
-        |--------------------------------------------------------------------------
-        | SEARCH PRODUCTS
-        |--------------------------------------------------------------------------
-        */
+    /*
+    |--------------------------------------------------------------------------
+    | SEARCH PRODUCTS
+    |--------------------------------------------------------------------------
+    */
 
-        $products =
-            MarketplaceListing::query()
+    $products = MarketplaceListing::query()
 
-                ->where(
-                    'status',
-                    'active'
-                )
+        ->where('status', 'active')
 
-                ->when(
-                    $query !== '',
-                    function ($q) use ($query) {
+        ->when(
+            $query !== '',
+            function ($q) use ($query) {
 
-                        $q->where(
-                            function ($search) use ($query) {
+                $q->where(function ($search) use ($query) {
 
-                                $search
+                    /*
+                    |--------------------------------------------------------------------------
+                    | PRODUCT SEARCH
+                    |--------------------------------------------------------------------------
+                    */
 
-                                    ->where(
-                                        'title',
-                                        'like',
-                                        "%{$query}%"
-                                    )
+                    $search
+                        ->where(
+                            'title',
+                            'like',
+                            "%{$query}%"
+                        )
 
-                                    ->orWhere(
-                                        'description',
-                                        'like',
-                                        "%{$query}%"
-                                    )
+                        ->orWhere(
+                            'description',
+                            'like',
+                            "%{$query}%"
+                        )
 
-                                    ->orWhere(
-                                        'location',
-                                        'like',
-                                        "%{$query}%"
-                                    )
+                        ->orWhere(
+                            'location',
+                            'like',
+                            "%{$query}%"
+                        )
 
-                                    ->orWhere(
-                                        'city',
-                                        'like',
-                                        "%{$query}%"
-                                    )
-
-                                    /*
-                                    |--------------------------------------------------------------------------
-                                    | CATEGORY SEARCH
-                                    |--------------------------------------------------------------------------
-                                    */
-
-                                    ->orWhereHas(
-                                        'category',
-                                        function (
-                                            $category
-                                        ) use ($query) {
-
-                                            $category->where(
-                                                'name',
-                                                'like',
-                                                "%{$query}%"
-                                            );
-                                        }
-                                    )
-
-                                    /*
-                                    |--------------------------------------------------------------------------
-                                    | SELLER SEARCH
-                                    |--------------------------------------------------------------------------
-                                    */
-
-                                    ->orWhereHas(
-                                        'user',
-                                        function (
-                                            $user
-                                        ) use ($query) {
-
-                                            $user->where(
-                                                'name',
-                                                'like',
-                                                "%{$query}%"
-                                            );
-                                        }
-                                    );
-                            }
+                        ->orWhere(
+                            'city',
+                            'like',
+                            "%{$query}%"
                         );
-                    }
-                )
 
-                ->with(
-                    'category:id,name,slug,icon'
-                )
+                    /*
+                    |--------------------------------------------------------------------------
+                    | CATEGORY SEARCH
+                    |--------------------------------------------------------------------------
+                    */
 
-                ->select([
-                    'id',
-                    'marketplace_category_id',
-                    'title',
-                    'slug',
-                    'description',
-                    'price',
-                    'condition',
-                    'location',
-                    'city',
-                    'images',
-                    'created_at',
-                ])
+                    $search->orWhereHas(
+                        'category',
+                        function ($category) use ($query) {
 
-                ->latest('created_at')
+                            $category
+                                ->where(
+                                    'name',
+                                    'like',
+                                    "%{$query}%"
+                                )
+                                ->orWhere(
+                                    'slug',
+                                    'like',
+                                    "%{$query}%"
+                                );
+                        }
+                    );
 
-                ->paginate(24)
+                    /*
+                    |--------------------------------------------------------------------------
+                    | SELLER SEARCH
+                    |--------------------------------------------------------------------------
+                    */
 
-                ->withQueryString()
+                    $search->orWhereHas(
+                        'user',
+                        function ($user) use ($query) {
 
-                ->through(function ($listing) {
-
-                    return $this->formatListing(
-                        $listing,
-                        true
+                            $user
+                                ->where(
+                                    'name',
+                                    'like',
+                                    "%{$query}%"
+                                )
+                                ->orWhere(
+                                    'email',
+                                    'like',
+                                    "%{$query}%"
+                                )
+                                ->orWhere(
+                                    'phone',
+                                    'like',
+                                    "%{$query}%"
+                                );
+                        }
                     );
                 });
+            }
+        )
 
         /*
         |--------------------------------------------------------------------------
-        | USER LOCATION
+        | CATEGORY RELATION
         |--------------------------------------------------------------------------
         */
 
-        $userLocation =
-            $this->getUserLocation(
-                $request
+        ->with(
+            'category:id,name,slug,icon'
+        )
+
+        /*
+        |--------------------------------------------------------------------------
+        | ONLY REQUIRED COLUMNS
+        |--------------------------------------------------------------------------
+        */
+
+        ->select([
+            'id',
+            'user_id',
+            'marketplace_category_id',
+            'title',
+            'slug',
+            'description',
+            'price',
+            'condition',
+            'location',
+            'city',
+            'images',
+            'created_at',
+        ])
+
+        ->latest('created_at')
+
+        /*
+        |--------------------------------------------------------------------------
+        | PAGINATION
+        |--------------------------------------------------------------------------
+        */
+
+        ->paginate(24)
+
+        ->withQueryString()
+
+        /*
+        |--------------------------------------------------------------------------
+        | FORMAT RESULTS
+        |--------------------------------------------------------------------------
+        */
+
+        ->through(function ($listing) {
+
+            return $this->formatListing(
+                $listing,
+                true
             );
+        });
 
-        return Inertia::render(
-            'Marketplace/Search',
-            [
-                'query' =>
-                    $query,
+    /*
+    |--------------------------------------------------------------------------
+    | USER LOCATION
+    |--------------------------------------------------------------------------
+    */
 
-                'products' =>
-                    $products,
+    $userLocation = $this->getUserLocation(
+        $request
+    );
 
-                'categories' =>
-                    $categories,
+    /*
+    |--------------------------------------------------------------------------
+    | RESPONSE
+    |--------------------------------------------------------------------------
+    */
 
-                'userLocation' =>
-                    $userLocation,
-            ]
-        );
-    }
+    return Inertia::render(
+        'Marketplace/Search',
+        [
+            'query' =>
+                $query,
+
+            'products' =>
+                $products,
+
+            'categories' =>
+                $categories,
+
+            'userLocation' =>
+                $userLocation,
+        ]
+    );
+}
 
     /**
      * --------------------------------------------------------------------------

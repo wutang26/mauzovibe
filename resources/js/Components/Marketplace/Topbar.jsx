@@ -8,6 +8,29 @@ export default function Topbar({
     const [profileOpen, setProfileOpen] = useState(false);
 
     const profileRef = useRef(null);
+    const [search, setSearch] = useState("");
+
+    const handleSearch = (e) => {
+    e.preventDefault();
+
+    const value = search.trim();
+
+    if (!value) {
+        router.visit(route("marketplace.index"));
+        return;
+    }
+
+    router.get(
+        route("marketplace.search"),
+        {
+            q: value,
+        },
+        {
+            preserveState: true,
+            preserveScroll: true,
+        }
+    );
+};
 
     /*
     |--------------------------------------------------------------------------
@@ -168,7 +191,7 @@ export default function Topbar({
 
                 {/* SEARCH */}
 
-                <div
+                {/* <div
                     className="
                         relative
                         w-[180px]
@@ -211,8 +234,62 @@ export default function Topbar({
                         ⌕
                     </span>
 
-                </div>
+                </div> */}
+            <form
+    onSubmit={handleSearch}
+    className="
+        relative
+        w-[180px]
+        sm:w-[260px]
+        lg:w-[320px]
+    "
+>
+    <input
+        type="search"
+        value={search}
+        onChange={(e) => setSearch(e.target.value)}
+        placeholder="Tafuta bidhaa au huduma..."
+        className="
+            w-full
+            h-10
+            sm:h-11
+            pl-4
+            pr-12
+            rounded-xl
+            border
+            border-slate-200
+            bg-slate-50
+            text-sm
+            outline-none
+            focus:border-emerald-500
+            focus:ring-2
+            focus:ring-emerald-100
+        "
+    />
 
+    <button
+        type="submit"
+        className="
+            absolute
+            right-2
+            top-1/2
+            -translate-y-1/2
+            w-8
+            h-8
+            rounded-lg
+            flex
+            items-center
+            justify-center
+            text-slate-500
+            hover:text-emerald-600
+            hover:bg-emerald-50
+            transition
+        "
+        aria-label="Search"
+    >
+        ⌕
+    </button>
+</form>
             </div>
 
 
