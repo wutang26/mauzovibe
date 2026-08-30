@@ -172,10 +172,19 @@ export default function ProductForm({
                                     JPG, PNG · Max 5MB
                                 </span>
 
-                                <input
+                                {/* <input
                                     type="file"
                                     multiple
                                     accept="image/png,image/jpeg,image/jpg"
+                                    onChange={handleImages}
+                                    className="hidden"
+                                /> */}
+
+                                <input
+                                    type="file"
+                                    multiple
+                                    accept="image/*"
+                                    capture="environment"
                                     onChange={handleImages}
                                     className="hidden"
                                 />
