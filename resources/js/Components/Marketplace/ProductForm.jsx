@@ -180,11 +180,10 @@ export default function ProductForm({
                                     className="hidden"
                                 /> */}
 
-                                <input
+                               <input
                                     type="file"
                                     multiple
                                     accept="image/*"
-                                    capture="environment"
                                     onChange={handleImages}
                                     className="hidden"
                                 />
