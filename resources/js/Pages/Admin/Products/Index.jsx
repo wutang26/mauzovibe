@@ -202,19 +202,14 @@ export default function Index({ products }) {
                                                         {
                                                             product.image ?
 
-                                                                <img
-
-                                                                    src={`/storage/${product.image}`}
-
-                                                                    alt={product.name}
-
-                                                                    className="
-                                                                    w-full
-                                                                    h-full
-                                                                    object-cover
-                                                                    "
-
-                                                                />
+                                                            <img
+                                                            src={product.image_url}
+                                                            alt={product.name}
+                                                            className="w-full h-full object-cover"
+                                                            onError={(e) => {
+                                                                e.currentTarget.style.display = "none";
+                                                            }}
+                                                        />
 
 
                                                                 :
@@ -342,77 +337,77 @@ export default function Index({ products }) {
 
                                             <td className="p-4">
 
-                                               <div className="flex gap-2">
+                                                <div className="flex gap-2">
 
-                                        {/* View */}
-                                        <Link
-                                            href={route(
-                                                "admin.products.show",
-                                                product.id
-                                            )}
-                                            className="
+                                                    {/* View */}
+                                                    <Link
+                                                        href={route(
+                                                            "admin.products.show",
+                                                            product.id
+                                                        )}
+                                                        className="
                                                 rounded-lg
                                                 p-2
                                                 transition
                                                 hover:bg-slate-100
                                             "
-                                            title="View Product"
-                                        >
-                                            <EyeIcon
-                                                className="
+                                                        title="View Product"
+                                                    >
+                                                        <EyeIcon
+                                                            className="
                                                     h-5
                                                     w-5
                                                     text-slate-600
                                                 "
-                                            />
-                                        </Link>
+                                                        />
+                                                    </Link>
 
 
-    {/* Edit */}
-    <Link
-        href={route(
-            "admin.products.edit",
-            product.id
-        )}
-        className="
+                                                    {/* Edit */}
+                                                    <Link
+                                                        href={route(
+                                                            "admin.products.edit",
+                                                            product.id
+                                                        )}
+                                                        className="
             rounded-lg
             p-2
             transition
             hover:bg-blue-100
         "
-        title="Edit Product"
-    >
-        <PencilSquareIcon
-            className="
+                                                        title="Edit Product"
+                                                    >
+                                                        <PencilSquareIcon
+                                                            className="
                 h-5
                 w-5
                 text-blue-600
             "
-        />
-    </Link>
+                                                        />
+                                                    </Link>
 
 
-    {/* Delete */}
-    <button
-        onClick={() => deleteProduct(product.id)}
-        className="
+                                                    {/* Delete */}
+                                                    <button
+                                                        onClick={() => deleteProduct(product.id)}
+                                                        className="
             rounded-lg
             p-2
             transition
             hover:bg-red-100
         "
-        title="Delete Product"
-    >
-        <TrashIcon
-            className="
+                                                        title="Delete Product"
+                                                    >
+                                                        <TrashIcon
+                                                            className="
                 h-5
                 w-5
                 text-red-600
             "
-        />
-    </button>
+                                                        />
+                                                    </button>
 
-</div>
+                                                </div>
 
 
                                             </td>
