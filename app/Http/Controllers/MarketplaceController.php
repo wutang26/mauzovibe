@@ -1499,28 +1499,28 @@ class MarketplaceController extends Controller
      * MARKETPLACE HELP
      * --------------------------------------------------------------------------
      */
-    // public function help(
-    //     Request $request
-    // ): Response {
-    //     $categories =
-    //         $this->getMarketplaceCategories(true);
+    public function help(
+        Request $request
+    ): Response {
+        $categories =
+            $this->getMarketplaceCategories(true);
 
-    //     $userLocation =
-    //         $this->getUserLocation(
-    //             $request
-    //         );
+        $userLocation =
+            $this->getUserLocation(
+                $request
+            );
 
-    //     return Inertia::render(
-    //         'Marketplace/Help',
-    //         [
-    //             'categories' =>
-    //                 $categories,
+        return Inertia::render(
+            'Marketplace/Help',
+            [
+                'categories' =>
+                    $categories,
 
-    //             'userLocation' =>
-    //                 $userLocation,
-    //         ]
-    //     );
-    // }
+                'userLocation' =>
+                    $userLocation,
+            ]
+        );
+    }
 
     // /**
     //  * --------------------------------------------------------------------------
