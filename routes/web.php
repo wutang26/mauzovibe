@@ -1149,18 +1149,41 @@ Route::middleware(['auth'])->group(function () {
 
 });
 
-//Daily Posts
-// Route::middleware(['auth'])->prefix('admin')->name('admin.')->group(function () {
+//Daily Posts Route
 
-//     Route::resource('daily-posts', \App\Http\Controllers\Admin\DailyPostController::class);
+// Route::middleware(['auth'])
+//     ->prefix('admin')
+//     ->name('admin.')
+//     ->group(function () {
 
-// });
-Route::middleware(['auth'])
+//        Route::resource(
+//             'daily-posts',
+//             DailyPostController::class
+//         )
+//         ->except(['show'])
+//         ->parameters([
+//             'daily-posts' => 'dailyPost',
+//         ]);
+
+//         Route::patch(
+//             'daily-posts/{dailyPost}/toggle',
+//             [DailyPostController::class, 'toggle']
+//         )->name('daily-posts.toggle');
+
+//     });
+
+
+// ==========================================================
+// DAILY POSTS MANAGEMENT
+// Only Super Admin and Admin can access
+// ==========================================================
+
+Route::middleware(['auth', 'role:Super Admin|Admin'])
     ->prefix('admin')
     ->name('admin.')
     ->group(function () {
 
-       Route::resource(
+        Route::resource(
             'daily-posts',
             DailyPostController::class
         )
@@ -1175,6 +1198,7 @@ Route::middleware(['auth'])
         )->name('daily-posts.toggle');
 
     });
+
 
 
 // ==========================================================
