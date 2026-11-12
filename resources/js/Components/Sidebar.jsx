@@ -183,20 +183,53 @@ export default function Sidebar({ open }) {
         // Daily Welcome Page Posts
 
 {
-    name: "Daily Posts",
-    icon: NewspaperIcon,
-    children: [
-        {
-            name: "All Daily Posts",
-            icon: NewspaperIcon,
-            link: route("admin.daily-posts.index"),
-        },
-        {
-            name: "Add Daily Post",
-            icon: ClipboardDocumentListIcon,
-            link: route("admin.daily-posts.create"),
-        },
-    ],
+    // name: "Daily Posts",
+    // icon: NewspaperIcon,
+    // children: [
+    //     {
+    //         name: "All Daily Posts",
+    //         icon: NewspaperIcon,
+    //         link: route("admin.daily-posts.index"),
+    //     },
+    //     {
+    //         name: "Add Daily Post",
+    //         icon: ClipboardDocumentListIcon,
+    //         link: route("admin.daily-posts.create"),
+    //     },
+    // ],
+
+    /*
+|--------------------------------------------------------------------------
+| DAILY POSTS - ADMIN & SUPER ADMIN ONLY
+|--------------------------------------------------------------------------
+*/
+
+/*
+|--------------------------------------------------------------------------
+| DAILY POSTS - ADMIN & SUPER ADMIN ONLY
+|--------------------------------------------------------------------------
+*/
+
+...(isAdmin
+    ? [
+          {
+              name: "Daily Posts",
+              icon: NewspaperIcon,
+              children: [
+                  {
+                      name: "All Daily Posts",
+                      icon: NewspaperIcon,
+                      link: route("admin.daily-posts.index"),
+                  },
+                  {
+                      name: "Add Daily Post",
+                      icon: ClipboardDocumentListIcon,
+                      link: route("admin.daily-posts.create"),
+                  },
+              ],
+          },
+      ]
+    : []),
 },
        
 
