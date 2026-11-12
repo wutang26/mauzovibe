@@ -205,11 +205,11 @@ export default function Sidebar({ open }) {
                     icon: CubeIcon,
                     link: route("admin.reports.stock"),
                 },
-                {
-                    name: "Marketplace Reports",
-                    icon: FlagIcon,
-                    link: route("admin.reports.marketplace"),
-                },
+                // {
+                //     name: "Marketplace Reports",
+                //     icon: FlagIcon,
+                //     link: route("admin.reports.marketplace"),
+                // },
             ],
         },
 
@@ -246,17 +246,17 @@ export default function Sidebar({ open }) {
         |--------------------------------------------------------------------------
         */
 
-        {
-            name: "Marketplace",
-            icon: BuildingStorefrontIcon,
-            children: [
-                {
-                    name: "Browse Marketplace",
-                    icon: ShoppingCartIcon,
-                    link: route("marketplace.index"),
-                },
-            ],
-        },
+        // {
+        //     name: "Marketplace",
+        //     icon: BuildingStorefrontIcon,
+        //     children: [
+        //         {
+        //             name: "Browse Marketplace",
+        //             icon: ShoppingCartIcon,
+        //             link: route("marketplace.index"),
+        //         },
+        //     ],
+        // },
 
         /*
         |--------------------------------------------------------------------------
@@ -557,7 +557,7 @@ export default function Sidebar({ open }) {
                 className="
                     absolute
                     bottom-0
-                    left-0
+                    left-0m
                     w-full
                     border-t
                     border-emerald-800
