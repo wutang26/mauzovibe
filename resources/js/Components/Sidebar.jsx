@@ -1,5 +1,5 @@
-import { useState } from "react";
 
+import { useState } from "react";
 import { Link, usePage } from "@inertiajs/react";
 
 import {
@@ -25,7 +25,6 @@ export default function Sidebar({ open }) {
     const [openMenus, setOpenMenus] = useState({});
 
     const { auth } = usePage().props;
-
     const user = auth?.user;
 
     /*
@@ -37,16 +36,28 @@ export default function Sidebar({ open }) {
     const isAdmin =
         user?.roles?.some((role) =>
             ["Admin", "Super Admin"].includes(
-                typeof role === "string" ? role : role.name
+                typeof role === "string" ? role : role?.name
             )
         ) ?? false;
 
-    const toggleMenu = (menu) => {
-        setOpenMenus((prev) => ({
-            ...prev,
-            [menu]: !prev[menu],
+    /*
+    |--------------------------------------------------------------------------
+    | TOGGLE MENU
+    |--------------------------------------------------------------------------
+    */
+
+    const toggleMenu = (menuName) => {
+        setOpenMenus((previous) => ({
+            ...previous,
+            [menuName]: !previous[menuName],
         }));
     };
+
+    /*
+    |--------------------------------------------------------------------------
+    | SIDEBAR MENU
+    |--------------------------------------------------------------------------
+    */
 
     const menu = [
         {
@@ -54,6 +65,12 @@ export default function Sidebar({ open }) {
             icon: HomeIcon,
             link: route("dashboard"),
         },
+
+        /*
+        |--------------------------------------------------------------------------
+        | SALES / POS
+        |--------------------------------------------------------------------------
+        */
 
         {
             name: "Mauzo (POS)",
@@ -76,6 +93,12 @@ export default function Sidebar({ open }) {
                 },
             ],
         },
+
+        /*
+        |--------------------------------------------------------------------------
+        | INVENTORY
+        |--------------------------------------------------------------------------
+        */
 
         {
             name: "Inventory",
@@ -106,9 +129,14 @@ export default function Sidebar({ open }) {
                     icon: CubeIcon,
                     link: route("admin.lowstock.index"),
                 },
-                
             ],
         },
+
+        /*
+        |--------------------------------------------------------------------------
+        | CUSTOMERS
+        |--------------------------------------------------------------------------
+        */
 
         {
             name: "Customers",
@@ -136,6 +164,12 @@ export default function Sidebar({ open }) {
                 },
             ],
         },
+
+        /*
+        |--------------------------------------------------------------------------
+        | REPORTS
+        |--------------------------------------------------------------------------
+        */
 
         {
             name: "Reports",
@@ -171,69 +205,46 @@ export default function Sidebar({ open }) {
                     icon: CubeIcon,
                     link: route("admin.reports.stock"),
                 },
-                        // Marketplace Reports
                 {
                     name: "Marketplace Reports",
                     icon: FlagIcon,
-                    link:  route("admin.reports.marketplace"),
-                   
+                    link: route("admin.reports.marketplace"),
                 },
-                    ],
+            ],
         },
-        // Daily Welcome Page Posts
 
-{
-    // name: "Daily Posts",
-    // icon: NewspaperIcon,
-    // children: [
-    //     {
-    //         name: "All Daily Posts",
-    //         icon: NewspaperIcon,
-    //         link: route("admin.daily-posts.index"),
-    //     },
-    //     {
-    //         name: "Add Daily Post",
-    //         icon: ClipboardDocumentListIcon,
-    //         link: route("admin.daily-posts.create"),
-    //     },
-    // ],
+        /*
+        |--------------------------------------------------------------------------
+        | DAILY POSTS - ADMIN & SUPER ADMIN ONLY
+        |--------------------------------------------------------------------------
+        */
 
-    /*
-|--------------------------------------------------------------------------
-| DAILY POSTS - ADMIN & SUPER ADMIN ONLY
-|--------------------------------------------------------------------------
-*/
-
-/*
-|--------------------------------------------------------------------------
-| DAILY POSTS - ADMIN & SUPER ADMIN ONLY
-|--------------------------------------------------------------------------
-*/
-
-...(isAdmin
-    ? [
-          {
-              name: "Daily Posts",
-              icon: NewspaperIcon,
-              children: [
+        ...(isAdmin
+            ? [
                   {
-                      name: "All Daily Posts",
+                      name: "Daily Posts",
                       icon: NewspaperIcon,
-                      link: route("admin.daily-posts.index"),
+                      children: [
+                          {
+                              name: "All Daily Posts",
+                              icon: NewspaperIcon,
+                              link: route("admin.daily-posts.index"),
+                          },
+                          {
+                              name: "Add Daily Post",
+                              icon: ClipboardDocumentListIcon,
+                              link: route("admin.daily-posts.create"),
+                          },
+                      ],
                   },
-                  {
-                      name: "Add Daily Post",
-                      icon: ClipboardDocumentListIcon,
-                      link: route("admin.daily-posts.create"),
-                  },
-              ],
-          },
-      ]
-    : []),
-},
-       
+              ]
+            : []),
 
-       // Marketplace
+        /*
+        |--------------------------------------------------------------------------
+        | MARKETPLACE
+        |--------------------------------------------------------------------------
+        */
 
         {
             name: "Marketplace",
@@ -246,6 +257,12 @@ export default function Sidebar({ open }) {
                 },
             ],
         },
+
+        /*
+        |--------------------------------------------------------------------------
+        | SETTINGS
+        |--------------------------------------------------------------------------
+        */
 
         {
             name: "Settings",
@@ -275,7 +292,7 @@ export default function Sidebar({ open }) {
 
                 /*
                 |--------------------------------------------------------------------------
-                | SYSTEM AUDIT - ADMIN & SUPER ADMIN ONLY
+                | SYSTEM AUDIT & SUBSCRIPTIONS - ADMIN ONLY
                 |--------------------------------------------------------------------------
                 */
 
@@ -286,18 +303,22 @@ export default function Sidebar({ open }) {
                               icon: DocumentMagnifyingGlassIcon,
                               link: route("admin.audit.index"),
                           },
-                           {
-                            name: "Subscriptions",
-                            icon: DocumentMagnifyingGlassIcon,
-                            link: route("subscription.index"),
-                        },
+                          {
+                              name: "Subscriptions",
+                              icon: DocumentMagnifyingGlassIcon,
+                              link: route("subscription.index"),
+                          },
                       ]
                     : []),
-
-               
             ],
         },
     ];
+
+    /*
+    |--------------------------------------------------------------------------
+    | SIDEBAR UI
+    |--------------------------------------------------------------------------
+    */
 
     return (
         <aside
@@ -362,9 +383,13 @@ export default function Sidebar({ open }) {
                 "
             >
                 {menu.map((item) => {
-                    const Icon = item.icon;
+                    const Icon = item.icon || HomeIcon;
 
-                    /* NORMAL LINK */
+                    /*
+                    |--------------------------------------------------------------------------
+                    | NORMAL LINK
+                    |--------------------------------------------------------------------------
+                    */
 
                     if (!item.children) {
                         return (
@@ -405,7 +430,11 @@ export default function Sidebar({ open }) {
                         );
                     }
 
-                    /* DROPDOWN */
+                    /*
+                    |--------------------------------------------------------------------------
+                    | DROPDOWN MENU
+                    |--------------------------------------------------------------------------
+                    */
 
                     return (
                         <div
@@ -413,9 +442,8 @@ export default function Sidebar({ open }) {
                             className="mb-1"
                         >
                             <button
-                                onClick={() =>
-                                    toggleMenu(item.name)
-                                }
+                                type="button"
+                                onClick={() => toggleMenu(item.name)}
                                 className="
                                     w-full
                                     flex
@@ -467,63 +495,57 @@ export default function Sidebar({ open }) {
                                 )}
                             </button>
 
-                            {open &&
-                                openMenus[item.name] && (
-                                    <div
-                                        className="
-                                            ml-6
-                                            mt-1
-                                            border-l
-                                            border-emerald-700
-                                            pl-1
-                                        "
-                                    >
-                                        {item.children.map(
-                                            (child) => {
-                                                const ChildIcon =
-                                                    child.icon;
+                            {/* Dropdown Children */}
 
-                                                return (
-                                                    <Link
-                                                        key={
-                                                            child.name
-                                                        }
-                                                        href={
-                                                            child.link ||
-                                                            "#"
-                                                        }
-                                                        className="
-                                                            flex
-                                                            items-center
-                                                            gap-3
-                                                            py-2.5
-                                                            px-4
-                                                            text-sm
-                                                            text-emerald-200
-                                                            rounded-r-lg
-                                                            hover:bg-emerald-800
-                                                            hover:text-white
-                                                            transition-all
-                                                            duration-200
-                                                            group
-                                                        "
-                                                    >
-                                                        <ChildIcon
-                                                            className="
-                                                                h-4
-                                                                w-4
-                                                                text-emerald-400
-                                                                group-hover:text-white
-                                                            "
-                                                        />
+                            {open && openMenus[item.name] && (
+                                <div
+                                    className="
+                                        ml-6
+                                        mt-1
+                                        border-l
+                                        border-emerald-700
+                                        pl-1
+                                    "
+                                >
+                                    {item.children.map((child) => {
+                                        const ChildIcon =
+                                            child.icon || HomeIcon;
 
-                                                        {child.name}
-                                                    </Link>
-                                                );
-                                            }
-                                        )}
-                                    </div>
-                                )}
+                                        return (
+                                            <Link
+                                                key={child.name}
+                                                href={child.link || "#"}
+                                                className="
+                                                    flex
+                                                    items-center
+                                                    gap-3
+                                                    py-2.5
+                                                    px-4
+                                                    text-sm
+                                                    text-emerald-200
+                                                    rounded-r-lg
+                                                    hover:bg-emerald-800
+                                                    hover:text-white
+                                                    transition-all
+                                                    duration-200
+                                                    group
+                                                "
+                                            >
+                                                <ChildIcon
+                                                    className="
+                                                        h-4
+                                                        w-4
+                                                        text-emerald-400
+                                                        group-hover:text-white
+                                                    "
+                                                />
+
+                                                {child.name}
+                                            </Link>
+                                        );
+                                    })}
+                                </div>
+                            )}
                         </div>
                     );
                 })}
