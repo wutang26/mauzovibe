@@ -14,7 +14,7 @@ export default function Pricing() {
             name: "Free Trial",
             description: "Jaribu MauzoVibe bila malipo.",
             price: "BURE",
-            period: "kwa siku 30",
+            period: "kwa siku 07",
             icon: RocketLaunchIcon,
 
             features: [
