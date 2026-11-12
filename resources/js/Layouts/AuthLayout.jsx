@@ -269,12 +269,12 @@ export default function AuthLayout({ children, title, subtitle }) {
                                 About Us
                             </a>
 
-                             <a
+                             {/* <a
                                 href={route("marketplace.index")}
                                 className="hover:text-emerald-600 transition"
                             >
                                 Marketplace
-                            </a>
+                            </a> */}
 
 
                         </div>

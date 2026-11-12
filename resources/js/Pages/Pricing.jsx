@@ -56,7 +56,7 @@ export default function Pricing() {
         {
             name: "Business",
             description: "Kwa biashara zinazokua na matawi.",
-            price: "10,000",
+            price: "15,000",
             period: "kwa mwezi / kwa kila tawi",
             icon: SparklesIcon,
 
