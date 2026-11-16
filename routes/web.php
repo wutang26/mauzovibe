@@ -1,3 +1,4 @@
+
 <?php
 
 use App\Http\Controllers\Admin\BranchController;
@@ -8,24 +9,28 @@ use App\Http\Controllers\Admin\SaleController;
 use App\Http\Controllers\Admin\SaleReturnController;
 use App\Http\Controllers\Admin\StockController;
 use App\Http\Controllers\Admin\UserManagementController;
+use App\Http\Controllers\Admin\CreditSaleController;
+use App\Http\Controllers\Admin\DebtorController;
+use App\Http\Controllers\Admin\PaymentHistoryController;
+use App\Http\Controllers\Admin\ReportController;
+use App\Http\Controllers\Admin\AuditController;
+
 use App\Http\Controllers\Auth\LoginController;
 use App\Http\Controllers\BranchSelectionController;
 use App\Http\Controllers\SubscriptionController;
 use App\Http\Controllers\DashboardController;
 use App\Http\Controllers\ProductController;
 use App\Http\Controllers\ProfileController;
-use App\Http\Controllers\Admin\CreditSaleController;
-use Illuminate\Support\Facades\Route;
-use App\Http\Controllers\Admin\DebtorController;
-use App\Http\Controllers\Admin\PaymentHistoryController;
-use App\Http\Controllers\Admin\ReportController;
-use App\Http\Controllers\Admin\AuditController;
+
 use App\Http\Controllers\MarketplaceController;
 use App\Http\Controllers\Marketplace\MarketplaceProfileController;
 use App\Http\Controllers\MarketplaceListingActionController;
 use App\Http\Controllers\Marketplace\MarketplaceSellerController;
+
 use App\Http\Controllers\DailyPostController;
+
 use App\Models\DailyPost;
+use Illuminate\Support\Facades\Route;
 use Inertia\Inertia;
 
 
@@ -35,27 +40,15 @@ use Inertia\Inertia;
 |--------------------------------------------------------------------------
 */
 
-// Route::get('/', function () {
-//     return Inertia::render('Welcome', [
-//         'canLogin'       => Route::has('login'),
-//         'canRegister'    => Route::has('register'),
-//         // 'laravelVersion' => Application::VERSION,
-//         'phpVersion'     => PHP_VERSION,
-//     ]);
-// })->name('welcome');
-
-
 Route::get('/', function () {
     $dailyPosts = DailyPost::query()
         ->where('is_active', true)
         ->where(function ($query) {
-            $query
-                ->whereNull('starts_at')
+            $query->whereNull('starts_at')
                 ->orWhere('starts_at', '<=', now());
         })
         ->where(function ($query) {
-            $query
-                ->whereNull('ends_at')
+            $query->whereNull('ends_at')
                 ->orWhere('ends_at', '>=', now());
         })
         ->orderBy('sort_order')
@@ -83,47 +76,36 @@ Route::get('/', function () {
     ]);
 })->name('welcome');
 
-// Route::get('/', function () {
-//     return Inertia::render('Welcome', [
-//         'canLogin' => Route::has('login'),
-//         'canRegister' => false,
-//     ]);
-// });
 
-// Show custom register page
 Route::get('/register', function () {
     return Inertia::render('Auth/Register');
 })->name('register');
 
-// Process registration
-Route::post('/register', [\App\Http\Controllers\Auth\RegisterController::class, 'store'])
-    ->name('register.store');
-    
+Route::post(
+    '/register',
+    [\App\Http\Controllers\Auth\RegisterController::class, 'store']
+)->name('register.store');
+
+
 /*
 |--------------------------------------------------------------------------
-| CUSTOM AUTHENTICATION
+| AUTHENTICATION
 |--------------------------------------------------------------------------
-|
-| This replaces Laravel/Breeze default authentication pages.
-|
 */
 
-
-// Show custom login page
 Route::get('/login', function () {
     return Inertia::render('Auth/Login');
 })->name('login');
 
+Route::post(
+    '/login',
+    [LoginController::class, 'store']
+)->name('login.store');
 
-// Process login
-Route::post('/login', [LoginController::class, 'store'])
-    ->name('login.store');
-
-
-// Logout
-Route::post('/logout', [LoginController::class, 'destroy'])
-    ->middleware('auth')
-    ->name('logout');
+Route::post(
+    '/logout',
+    [LoginController::class, 'destroy']
+)->middleware('auth')->name('logout');
 
 
 /*
@@ -131,7 +113,6 @@ Route::post('/logout', [LoginController::class, 'destroy'])
 | BRANCH SELECTION
 |--------------------------------------------------------------------------
 */
-
 
 Route::middleware('auth')->group(function () {
 
@@ -154,13 +135,13 @@ Route::middleware('auth')->group(function () {
 |--------------------------------------------------------------------------
 */
 
-
 Route::middleware('auth')->group(function () {
-
 
     /*
     |--------------------------------------------------------------------------
     | DASHBOARD
+    |--------------------------------------------------------------------------
+    | Dashboard remains accessible even after subscription expiry.
     |--------------------------------------------------------------------------
     */
 
@@ -204,13 +185,10 @@ Route::middleware('auth')->group(function () {
     |--------------------------------------------------------------------------
     */
 
-    // Route::prefix('admin/users')
-    //     ->name('admin.users.')
-    //     ->group(function () {
     Route::prefix('admin/users')
-    ->name('admin.users.')
-    ->middleware('role:Super Admin|Admin')
-    ->group(function () {
+        ->name('admin.users.')
+        ->middleware('role:Super Admin|Admin')
+        ->group(function () {
 
             Route::get(
                 '/',
@@ -235,57 +213,57 @@ Route::middleware('auth')->group(function () {
         });
 
 
-/*
-|--------------------------------------------------------------------------
-| BRANCH MANAGEMENT
-|--------------------------------------------------------------------------
-*/
+    /*
+    |--------------------------------------------------------------------------
+    | BRANCH MANAGEMENT
+    |--------------------------------------------------------------------------
+    */
 
-Route::prefix('admin')
-    ->name('admin.')
-    ->group(function () {
-
-        // Kila mtumiaji anaweza kuona branches anazoruhusiwa
-        Route::get(
-            '/branches',
-            [BranchController::class, 'index']
-        )->name('branches.index');
-
-        // Admin na Super Admin pekee wanaweza kusimamia branches
-        Route::middleware('role:Super Admin|Admin')->group(function () {
+    Route::prefix('admin')
+        ->name('admin.')
+        ->group(function () {
 
             Route::get(
-                '/branches/create',
-                [BranchController::class, 'create']
-            )->name('branches.create');
-
-            Route::post(
                 '/branches',
-                [BranchController::class, 'store']
-            )->name('branches.store');
+                [BranchController::class, 'index']
+            )->name('branches.index');
 
-            Route::get(
-                '/branches/{branch}',
-                [BranchController::class, 'show']
-            )->name('branches.show');
+            Route::middleware('role:Super Admin|Admin')->group(function () {
 
-            Route::get(
-                '/branches/{branch}/edit',
-                [BranchController::class, 'edit']
-            )->name('branches.edit');
+                Route::get(
+                    '/branches/create',
+                    [BranchController::class, 'create']
+                )->name('branches.create');
 
-            Route::put(
-                '/branches/{branch}',
-                [BranchController::class, 'update']
-            )->name('branches.update');
+                Route::post(
+                    '/branches',
+                    [BranchController::class, 'store']
+                )->name('branches.store');
 
-            Route::delete(
-                '/branches/{branch}',
-                [BranchController::class, 'destroy']
-            )->name('branches.destroy');
+                Route::get(
+                    '/branches/{branch}',
+                    [BranchController::class, 'show']
+                )->name('branches.show');
+
+                Route::get(
+                    '/branches/{branch}/edit',
+                    [BranchController::class, 'edit']
+                )->name('branches.edit');
+
+                Route::put(
+                    '/branches/{branch}',
+                    [BranchController::class, 'update']
+                )->name('branches.update');
+
+                Route::delete(
+                    '/branches/{branch}',
+                    [BranchController::class, 'destroy']
+                )->name('branches.destroy');
+
+            });
 
         });
-    });
+
 
     /*
     |--------------------------------------------------------------------------
@@ -293,15 +271,11 @@ Route::prefix('admin')
     |--------------------------------------------------------------------------
     */
 
-    // Route::get(
-    //     '/branches/{branch}/view',
-    //     [BranchController::class, 'show']
-    // )->name('branches.show');
-
     Route::get(
-    '/branches/{branch}/view',
-    [BranchController::class, 'show'])->middleware('role:Super Admin|Admin')
-->name('branches.show');
+        '/branches/{branch}/view',
+        [BranchController::class, 'show']
+    )->middleware('role:Super Admin|Admin')
+        ->name('branches.show');
 
 
     /*
@@ -324,6 +298,7 @@ Route::prefix('admin')
 
     Route::prefix('admin')
         ->name('admin.')
+        ->middleware(['branch', 'subscription.active'])
         ->group(function () {
 
             Route::resource(
@@ -342,6 +317,7 @@ Route::prefix('admin')
 
     Route::prefix('admin')
         ->name('admin.')
+        ->middleware(['branch', 'subscription.active'])
         ->group(function () {
 
             Route::resource(
@@ -360,6 +336,7 @@ Route::prefix('admin')
 
     Route::prefix('admin/stockin')
         ->name('admin.stockin.')
+        ->middleware(['branch', 'subscription.active'])
         ->group(function () {
 
             Route::get(
@@ -408,6 +385,7 @@ Route::prefix('admin')
 
     Route::prefix('admin/stockout')
         ->name('admin.stockout.')
+        ->middleware(['branch', 'subscription.active'])
         ->group(function () {
 
             Route::get(
@@ -456,6 +434,7 @@ Route::prefix('admin')
 
     Route::prefix('admin/low-stock')
         ->name('admin.lowstock.')
+        ->middleware(['branch', 'subscription.active'])
         ->group(function () {
 
             Route::get(
@@ -472,54 +451,43 @@ Route::prefix('admin')
     |--------------------------------------------------------------------------
     */
 
-   /*
-|--------------------------------------------------------------------------
-| SALES / POS
-|--------------------------------------------------------------------------
-*/
+    Route::prefix('admin/sales')
+        ->name('admin.sales.')
+        ->middleware(['branch', 'subscription.active'])
+        ->group(function () {
 
-Route::prefix('admin/sales')
-    ->name('admin.sales.')
-    ->middleware('branch')
-    ->group(function () {
+            Route::get(
+                '/quick-sale',
+                [SaleController::class, 'quickSale']
+            )->name('quick-sale');
 
-        // Quick Sale POS
-        Route::get(
-            '/quick-sale',
-            [SaleController::class, 'quickSale']
-        )->name('quick-sale');
+            Route::get(
+                '/',
+                [SaleController::class, 'index']
+            )->name('index');
 
-        // Sales History
-        Route::get(
-            '/',
-            [SaleController::class, 'index']
-        )->name('index');
+            Route::get(
+                '/create',
+                [SaleController::class, 'create']
+            )->name('create');
 
-        // New Sale / POS
-        Route::get(
-            '/create',
-            [SaleController::class, 'create']
-        )->name('create');
+            Route::post(
+                '/',
+                [SaleController::class, 'store']
+            )->name('store');
 
-        // Complete Sale
-        Route::post(
-            '/',
-            [SaleController::class, 'store']
-        )->name('store');
+            Route::get(
+                '/{sale}',
+                [SaleController::class, 'show']
+            )->name('show');
 
-        // View Sale
-        Route::get(
-            '/{sale}',
-            [SaleController::class, 'show']
-        )->name('show');
+            Route::get(
+                '/{sale}/return',
+                [SaleReturnController::class, 'create']
+            )->name('return.create');
 
-        // Return Sale
-        Route::get(
-            '/{sale}/return',
-            [SaleReturnController::class, 'create']
-        )->name('return.create');
+        });
 
-    });
 
     /*
     |--------------------------------------------------------------------------
@@ -529,28 +497,24 @@ Route::prefix('admin/sales')
 
     Route::prefix('admin')
         ->name('admin.')
-        ->middleware('branch')
+        ->middleware(['branch', 'subscription.active'])
         ->group(function () {
 
-            // Returns History
             Route::get(
                 '/returns',
                 [SaleReturnController::class, 'index']
             )->name('returns.index');
 
-            // Create Return
             Route::get(
                 '/sales/{sale}/return',
                 [SaleReturnController::class, 'create']
             )->name('sales.return.create');
 
-            // Process Return
             Route::post(
                 '/returns/{sale}',
                 [SaleReturnController::class, 'store']
             )->name('returns.store');
 
-            // View Return
             Route::get(
                 '/returns/{return}',
                 [SaleReturnController::class, 'show']
@@ -560,16 +524,23 @@ Route::prefix('admin/sales')
 
 });
 
-// REGISTER ANOTHER BRANCH
+
+/*
+|--------------------------------------------------------------------------
+| REGISTER ANOTHER BRANCH
+|--------------------------------------------------------------------------
+*/
+
 Route::get(
     '/branches/register',
     [BranchController::class, 'register']
-)->name('branches.register');
+)->middleware('auth')->name('branches.register');
 
 Route::post(
     '/branches/register',
     [BranchController::class, 'storeRegisteredBranch']
-)->name('branches.register.store');
+)->middleware('auth')->name('branches.register.store');
+
 
 /*
 |--------------------------------------------------------------------------
@@ -579,51 +550,46 @@ Route::post(
 
 Route::prefix('admin/customers')
     ->name('admin.customers.')
-    ->middleware('branch')
+    ->middleware(['auth', 'branch', 'subscription.active'])
     ->group(function () {
 
-        // Customer List
         Route::get(
             '/',
             [CustomerController::class, 'index']
         )->name('index');
 
-        // Create Customer
         Route::get(
             '/create',
             [CustomerController::class, 'create']
         )->name('create');
 
-        // Store Customer
         Route::post(
             '/',
             [CustomerController::class, 'store']
         )->name('store');
 
-        // View Customer
         Route::get(
             '/{customer}',
             [CustomerController::class, 'show']
         )->name('show');
 
-        // Edit Customer
         Route::get(
             '/{customer}/edit',
             [CustomerController::class, 'edit']
         )->name('edit');
 
-        // Update Customer
         Route::put(
             '/{customer}',
             [CustomerController::class, 'update']
         )->name('update');
 
-        // Delete Customer
         Route::delete(
             '/{customer}',
             [CustomerController::class, 'destroy']
         )->name('destroy');
-});
+
+    });
+
 
 /*
 |--------------------------------------------------------------------------
@@ -633,46 +599,39 @@ Route::prefix('admin/customers')
 
 Route::prefix('admin/credit-sales')
     ->name('admin.credit-sales.')
-    ->middleware('branch')
+    ->middleware(['auth', 'branch', 'subscription.active'])
     ->group(function () {
 
-        // Credit Sales List
         Route::get(
             '/',
             [CreditSaleController::class, 'index']
         )->name('index');
 
-        // Create Credit Sale
         Route::get(
             '/create',
             [CreditSaleController::class, 'create']
         )->name('create');
 
-        // Store Credit Sale
         Route::post(
             '/',
             [CreditSaleController::class, 'store']
         )->name('store');
 
-        // View Credit Sale
         Route::get(
             '/{creditSale}',
             [CreditSaleController::class, 'show']
         )->name('show');
 
-        // Edit Credit Sale
         Route::get(
             '/{creditSale}/edit',
             [CreditSaleController::class, 'edit']
         )->name('edit');
 
-        // Update Credit Sale
         Route::put(
             '/{creditSale}',
             [CreditSaleController::class, 'update']
         )->name('update');
 
-        // Delete Credit Sale
         Route::delete(
             '/{creditSale}',
             [CreditSaleController::class, 'destroy']
@@ -680,49 +639,29 @@ Route::prefix('admin/credit-sales')
 
     });
 
-    /*
+
+/*
 |--------------------------------------------------------------------------
 | DEBTORS
 |--------------------------------------------------------------------------
 */
 
-// Route::prefix('admin/debtors')
-//     ->name('admin.Debtors.')
-//     ->middleware('branch')
-//     ->group(function () {
-
-//         // Debtors List
-//         Route::get(
-//             '/',
-//             [DebtorController::class, 'index']
-//         )->name('index');
-
-//         // Debtor Details
-//         Route::get(
-//             '/{sale}',
-//             [DebtorController::class, 'show']
-//         )->name('show');
-
-//  });
-
 Route::prefix('admin/debtors')
     ->name('admin.debtors.')
-    ->middleware('branch')
+    ->middleware(['auth', 'branch', 'subscription.active'])
     ->group(function () {
 
-    // Debtors List
-    Route::get(
-        '/',
-        [DebtorController::class, 'index']
-    )->name('index');
+        Route::get(
+            '/',
+            [DebtorController::class, 'index']
+        )->name('index');
 
-    // Debtor Details
-    Route::get(
-        '/{sale}',
-        [DebtorController::class, 'show']
-    )->name('show');
+        Route::get(
+            '/{sale}',
+            [DebtorController::class, 'show']
+        )->name('show');
 
-});
+    });
 
 
 /*
@@ -733,7 +672,7 @@ Route::prefix('admin/debtors')
 
 Route::prefix('admin/payment-history')
     ->name('admin.payment-history.')
-    ->middleware('branch')
+    ->middleware(['auth', 'branch', 'subscription.active'])
     ->group(function () {
 
         Route::get(
@@ -746,7 +685,8 @@ Route::prefix('admin/payment-history')
             [PaymentHistoryController::class, 'show']
         )->name('show');
 
-});
+    });
+
 
 /*
 |--------------------------------------------------------------------------
@@ -756,53 +696,47 @@ Route::prefix('admin/payment-history')
 
 Route::prefix('admin/reports')
     ->name('admin.reports.')
-    ->middleware('branch')
+    ->middleware(['auth', 'branch', 'subscription.active'])
     ->group(function () {
 
-        // Daily Report
         Route::get(
             '/daily',
             [ReportController::class, 'daily']
         )->name('daily');
 
-        // Weekly Report
         Route::get(
             '/weekly',
             [ReportController::class, 'weekly']
         )->name('weekly');
 
-        //Monthly Report
-       Route::get('/admin/reports/monthly', [ReportController::class, 'monthly'])
-    ->name('monthly');
+        Route::get(
+            '/monthly',
+            [ReportController::class, 'monthly']
+        )->name('monthly');
 
-      // Yearly Report
-     Route::get(
+        Route::get(
             '/yearly',
             [ReportController::class, 'yearly']
         )->name('yearly');
-    
-    //Profit Report
-    Route::get('/profit', [ReportController::class, 'profit'])
-    ->name('profit');
 
-    //Stock Report
-    Route::get(
-    '/stock',
-    [ReportController::class, 'stock'])->name('stock');
-});
+        Route::get(
+            '/profit',
+            [ReportController::class, 'profit']
+        )->name('profit');
+
+        Route::get(
+            '/stock',
+            [ReportController::class, 'stock']
+        )->name('stock');
+
+    });
+
 
 /*
 |--------------------------------------------------------------------------
 | MARKETPLACE REPORTS
 |--------------------------------------------------------------------------
-| Only Admin and Super Admin can view marketplace listing reports.
-|--------------------------------------------------------------------------
-*/
-/*
-|--------------------------------------------------------------------------
-| MARKETPLACE REPORTS
-|--------------------------------------------------------------------------
-| Only Admin and Super Admin can manage marketplace reports.
+| These are separate from POS subscription enforcement.
 |--------------------------------------------------------------------------
 */
 
@@ -811,47 +745,20 @@ Route::prefix('admin/reports')
     ->middleware(['auth', 'role:Super Admin|Admin'])
     ->group(function () {
 
-        /*
-        |--------------------------------------------------------------------------
-        | Marketplace Reports List
-        |--------------------------------------------------------------------------
-        */
-
         Route::get(
             '/marketplace',
             [MarketplaceListingActionController::class, 'index']
         )->name('marketplace');
-
-
-        /*
-        |--------------------------------------------------------------------------
-        | View Single Marketplace Report
-        |--------------------------------------------------------------------------
-        */
 
         Route::get(
             '/marketplace/{report}',
             [MarketplaceListingActionController::class, 'adminShowReport']
         )->name('marketplace.show');
 
-
-        /*
-        |--------------------------------------------------------------------------
-        | Update Report Status
-        |--------------------------------------------------------------------------
-        */
-
         Route::patch(
             '/marketplace/{report}/status',
             [MarketplaceListingActionController::class, 'updateReportStatus']
         )->name('marketplace.status');
-
-
-        /*
-        |--------------------------------------------------------------------------
-        | Disable Reported Listing
-        |--------------------------------------------------------------------------
-        */
 
         Route::patch(
             '/marketplace/{report}/disable-listing',
@@ -859,13 +766,13 @@ Route::prefix('admin/reports')
         )->name('marketplace.disable-listing');
 
     });
-// Route::prefix('admin')->name('admin.')->middleware(['auth'])->group(function () {
 
-//     // Audit Checking
-//     Route::get('/audit', [AuditController::class, 'index'])
-//         ->name('audit.index');
 
-// });
+/*
+|--------------------------------------------------------------------------
+| AUDIT
+|--------------------------------------------------------------------------
+*/
 
 Route::prefix('admin')
     ->name('admin.')
@@ -878,76 +785,42 @@ Route::prefix('admin')
         )->name('audit.index');
 
     });
-    
-
- /*
-|--------------------------------------------------------------------------
-| SUBSCRIPTION
-|--------------------------------------------------------------------------
-| All authenticated users can view subscription status.
-| Only Super Admin and Admin can subscribe/renew.
-|--------------------------------------------------------------------------
-*/
-
-// Route::middleware(['auth'])->group(function () {
-
-//     // Everyone can view subscription
-//     Route::get(
-//         '/subscription',
-//         [SubscriptionController::class, 'index']
-//     )->name('subscription.index');
 
 
-//     // Only Admin and Super Admin can subscribe
-//     Route::post(
-//         '/subscription/subscribe',
-//         [SubscriptionController::class, 'subscribe']
-//     )
-//         ->middleware('role:Super Admin|Admin')
-//         ->name('subscription.subscribe');
-
-
-//     // Temporary payment testing endpoint
-//     // Only Admin and Super Admin can use it
-//     Route::post(
-//         '/subscription/payment-success',
-//         [SubscriptionController::class, 'paymentSuccess']
-//     )
-//         ->middleware('role:Super Admin|Admin')
-//         ->name('subscription.payment.success');
-
-// });
 /*
 |--------------------------------------------------------------------------
 | SUBSCRIPTION
 |--------------------------------------------------------------------------
-| Only Super Admin and Admin can access subscription management.
+| Must remain accessible even when subscription expires.
 |--------------------------------------------------------------------------
 */
 
-Route::middleware(['auth'])  //'role:Super Admin|Admin'
-    ->group(function () {
+Route::middleware('auth')->group(function () {
 
-        // Subscription page
-        Route::get(
-            '/subscription',
-            [SubscriptionController::class, 'index']
-        )->name('subscription.index');
+    Route::get(
+        '/subscription',
+        [SubscriptionController::class, 'index']
+    )->name('subscription.index');
 
-        // Subscribe / Renew
-        Route::post(
-            '/subscription/subscribe',
-            [SubscriptionController::class, 'subscribe']
-        )->name('subscription.subscribe');
+    Route::post(
+        '/subscription/subscribe',
+        [SubscriptionController::class, 'subscribe']
+    )->name('subscription.subscribe');
 
-        // Payment success
-        Route::post(
-            '/subscription/payment-success',
-            [SubscriptionController::class, 'paymentSuccess']
-        )->name('subscription.payment.success');
-    });
+    Route::post(
+        '/subscription/payment-success',
+        [SubscriptionController::class, 'paymentSuccess']
+    )->name('subscription.payment.success');
 
-//Home Page routes
+});
+
+
+/*
+|--------------------------------------------------------------------------
+| PUBLIC INFORMATION PAGES
+|--------------------------------------------------------------------------
+*/
+
 Route::get('/about', function () {
     return Inertia::render('About');
 })->name('about');
@@ -964,7 +837,6 @@ Route::get('/privacy', function () {
     return Inertia::render('Privacy');
 })->name('privacy');
 
-
 Route::get('/terms', function () {
     return Inertia::render('Terms');
 })->name('terms');
@@ -973,86 +845,134 @@ Route::get('/support', function () {
     return Inertia::render('Support');
 })->name('support');
 
-//MarketPlace Routes
-/// MARKETPLACE ROUTES
-// ======================
 
-Route::prefix('marketplace')->name('marketplace.')->group(function () {
+/*
+|--------------------------------------------------------------------------
+| MARKETPLACE PUBLIC ROUTES
+|--------------------------------------------------------------------------
+*/
 
-    // Public page
-    Route::get('/', [MarketplaceController::class, 'index'])->name('index');
+Route::prefix('marketplace')
+    ->name('marketplace.')
+    ->group(function () {
 
-    // Authenticated routes
-    Route::middleware(['auth'])->group(function () {
-        Route::get('/create', [MarketplaceController::class, 'create'])->name('create');
-        Route::post('/', [MarketplaceController::class, 'store'])->name('store');
+        Route::get(
+            '/',
+            [MarketplaceController::class, 'index']
+        )->name('index');
+
+        Route::middleware('auth')->group(function () {
+
+            Route::get(
+                '/create',
+                [MarketplaceController::class, 'create']
+            )->name('create');
+
+            Route::post(
+                '/',
+                [MarketplaceController::class, 'store']
+            )->name('store');
+
+        });
+
     });
-});
 
-//Market Place Dashboard
-// Route::middleware(['auth'])->group(function () {
-//     Route::get('/marketplace/dashboard', function () {
-//         return Inertia::render('Marketplace/Dashboard');
-//     })->name('marketplace.dashboard');
-// });
 
-Route::middleware(['auth'])->group(function () {
+/*
+|--------------------------------------------------------------------------
+| MARKETPLACE DASHBOARD
+|--------------------------------------------------------------------------
+*/
+
+Route::middleware('auth')->group(function () {
+
     Route::get(
         '/marketplace/dashboard',
         [MarketplaceController::class, 'dashboard']
     )->name('marketplace.dashboard');
+
 });
 
-// Marketplace Registration
 
-// Marketplace Registration
+/*
+|--------------------------------------------------------------------------
+| MARKETPLACE REGISTRATION
+|--------------------------------------------------------------------------
+*/
+
 Route::get('/marketplace/register', function () {
     return Inertia::render('Auth/Register', [
         'marketplace' => true,
     ]);
 })->name('marketplace.register');
 
-Route::post('/marketplace/register', [
-    \App\Http\Controllers\Auth\RegisteredUserController::class,
-    'store'
-])->name('marketplace.register.store');
+Route::post(
+    '/marketplace/register',
+    [
+        \App\Http\Controllers\Auth\RegisteredUserController::class,
+        'store'
+    ]
+)->name('marketplace.register.store');
 
-// kwaajili ya Kila Category
+
+/*
+|--------------------------------------------------------------------------
+| MARKETPLACE CATEGORIES AND LISTINGS
+|--------------------------------------------------------------------------
+*/
+
 Route::get(
     '/marketplace/category/{slug}',
     [MarketplaceController::class, 'category']
 )->name('marketplace.category');
 
-//View Details
-Route::get('/marketplace/listing/{listing:slug}', 
+Route::get(
+    '/marketplace/listing/{listing:slug}',
     [MarketplaceController::class, 'show']
 )->name('marketplace.listing.show');
 
-// =====================================================
-// MARKETPLACE NAVIGATION PAGES
-// =====================================================
+Route::get(
+    '/marketplace/new',
+    [MarketplaceController::class, 'newProducts']
+)->name('marketplace.new');
 
-Route::get('/marketplace/new', [MarketplaceController::class, 'newProducts'])
-    ->name('marketplace.new');
+Route::get(
+    '/marketplace/used',
+    [MarketplaceController::class, 'usedProducts']
+)->name('marketplace.used');
 
-Route::get('/marketplace/used', [MarketplaceController::class, 'usedProducts'])
-    ->name('marketplace.used');
+Route::get(
+    '/marketplace/stores',
+    [MarketplaceController::class, 'stores']
+)->name('marketplace.stores');
 
-Route::get('/marketplace/stores', [MarketplaceController::class, 'stores'])
-    ->name('marketplace.stores');
+Route::get(
+    '/marketplace/store/{userId}',
+    [MarketplaceController::class, 'storeShow']
+)->name('marketplace.store');
 
-Route::get('/marketplace/store/{userId}', [MarketplaceController::class,'storeShow'
-])->name('marketplace.store');
+Route::get(
+    '/marketplace/offers',
+    [MarketplaceController::class, 'offers']
+)->name('marketplace.offers');
 
-Route::get('/marketplace/offers', [MarketplaceController::class, 'offers'])
-    ->name('marketplace.offers');
+Route::get(
+    '/marketplace/help',
+    [MarketplaceController::class, 'help']
+)->name('marketplace.help');
 
-Route::get('/marketplace/help', [MarketplaceController::class, 'help'])
-    ->name('marketplace.help');
-Route::get('/marketplace/search', [MarketplaceController::class,'search'
-])->name('marketplace.search');
+Route::get(
+    '/marketplace/search',
+    [MarketplaceController::class, 'search']
+)->name('marketplace.search');
 
-//Update Profile kuendelea kuuza
+
+/*
+|--------------------------------------------------------------------------
+| MARKETPLACE PROFILE COMPLETION
+|--------------------------------------------------------------------------
+*/
+
 Route::middleware('auth')->group(function () {
 
     Route::get(
@@ -1067,30 +987,28 @@ Route::middleware('auth')->group(function () {
 
 });
 
+
 /*
 |--------------------------------------------------------------------------
-| MARKETPLACE SETTINGS - PROFILE
+| MARKETPLACE SETTINGS
 |--------------------------------------------------------------------------
 */
 
-Route::middleware(['auth'])
+Route::middleware('auth')
     ->prefix('marketplace/settings')
     ->name('marketplace.settings.')
     ->group(function () {
 
-        // View Marketplace Profile
         Route::get(
             '/profile',
             [MarketplaceProfileController::class, 'profile']
         )->name('profile');
 
-        // Edit Marketplace Profile
         Route::get(
             '/profile/edit',
             [MarketplaceProfileController::class, 'edit']
         )->name('profile.edit');
 
-        // Update Marketplace Profile
         Route::put(
             '/profile',
             [MarketplaceProfileController::class, 'update']
@@ -1098,7 +1016,14 @@ Route::middleware(['auth'])
 
     });
 
-    Route::middleware('auth')->group(function () {
+
+/*
+|--------------------------------------------------------------------------
+| MARKETPLACE SAVE AND REPORT LISTINGS
+|--------------------------------------------------------------------------
+*/
+
+Route::middleware('auth')->group(function () {
 
     Route::post(
         '/marketplace/listing/{listing}/save',
@@ -1112,35 +1037,25 @@ Route::middleware(['auth'])
 
 });
 
+
 /*
 |--------------------------------------------------------------------------
 | MARKETPLACE SELLER PAGES
 |--------------------------------------------------------------------------
 */
 
-/*
-|--------------------------------------------------------------------------
-| MARKETPLACE SELLER
-|--------------------------------------------------------------------------
-*/
+Route::middleware('auth')->group(function () {
 
-Route::middleware(['auth'])->group(function () {
-
-    // Mauzo
     Route::get(
         '/marketplace/sales',
         [MarketplaceSellerController::class, 'sales']
     )->name('marketplace.sales');
 
-
-    // Ujumbe
     Route::get(
         '/marketplace/messages',
         [MarketplaceSellerController::class, 'messages']
     )->name('marketplace.messages');
 
-
-    // Hesabu / Mapato
     Route::get(
         '/marketplace/earnings',
         [MarketplaceSellerController::class, 'earnings']
@@ -1148,34 +1063,12 @@ Route::middleware(['auth'])->group(function () {
 
 });
 
-//Daily Posts Route
 
-// Route::middleware(['auth'])
-//     ->prefix('admin')
-//     ->name('admin.')
-//     ->group(function () {
-
-//        Route::resource(
-//             'daily-posts',
-//             DailyPostController::class
-//         )
-//         ->except(['show'])
-//         ->parameters([
-//             'daily-posts' => 'dailyPost',
-//         ]);
-
-//         Route::patch(
-//             'daily-posts/{dailyPost}/toggle',
-//             [DailyPostController::class, 'toggle']
-//         )->name('daily-posts.toggle');
-
-//     });
-
-
-// ==========================================================
-// DAILY POSTS MANAGEMENT
-// Only Super Admin and Admin can access
-// ==========================================================
+/*
+|--------------------------------------------------------------------------
+| DAILY POSTS MANAGEMENT
+|--------------------------------------------------------------------------
+*/
 
 Route::middleware(['auth', 'role:Super Admin|Admin'])
     ->prefix('admin')
@@ -1186,10 +1079,10 @@ Route::middleware(['auth', 'role:Super Admin|Admin'])
             'daily-posts',
             DailyPostController::class
         )
-        ->except(['show'])
-        ->parameters([
-            'daily-posts' => 'dailyPost',
-        ]);
+            ->except(['show'])
+            ->parameters([
+                'daily-posts' => 'dailyPost',
+            ]);
 
         Route::patch(
             'daily-posts/{dailyPost}/toggle',
@@ -1199,26 +1092,23 @@ Route::middleware(['auth', 'role:Super Admin|Admin'])
     });
 
 
-
-// ==========================================================
-// MARKETPLACE USER PAGES
-// ==========================================================
+/*
+|--------------------------------------------------------------------------
+| MARKETPLACE USER PAGES
+|--------------------------------------------------------------------------
+*/
 
 Route::middleware('auth')->group(function () {
 
-    // Favourites
     Route::get('/marketplace/favourites', function () {
         return Inertia::render('Marketplace/Favourites');
     })->name('marketplace.favourites');
 
-
-    // Cart
     Route::get('/marketplace/cart', function () {
         return Inertia::render('Marketplace/Cart');
     })->name('marketplace.cart');
 
 });
-
 
 
 require __DIR__.'/auth.php';

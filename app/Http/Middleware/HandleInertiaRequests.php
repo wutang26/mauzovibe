@@ -27,223 +27,135 @@ class HandleInertiaRequests extends Middleware
      *
      * @return array<string, mixed>
      */
-    // public function share(Request $request): array
-    // {
-    //     // ==========================================================
-    //     // ACTIVE BRANCH + SUBSCRIPTION
-    //     // ==========================================================
-
-    //     $activeBranch = session('branch_id')
-    //         ? \App\Models\Branch::with('subscription')
-    //             ->find(session('branch_id'))
-    //         : null;
-
-    //     $subscription = $activeBranch?->subscription;
-
-    //     // ==========================================================
-    //     // CALCULATE REMAINING TRIAL DAYS
-    //     // ==========================================================
-
-    //     $daysRemaining = null;
-
-    //     if (
-    //         $subscription?->status === 'trial' &&
-    //         $subscription->trial_ends_at
-    //     ) {
-    //         $daysRemaining = max(
-    //             0,
-    //             now()->diffInDays(
-    //                 $subscription->trial_ends_at,
-    //                 false
-    //             )
-    //         );
-    //     }
-
-    //     return [
-    //         ...parent::share($request),
-
-    //         'auth' => [
-
-    //             // ==================================================
-    //             // AUTHENTICATED USER
-    //             // ==================================================
-
-    //             'user' => $request->user()
-    //                 ? $request->user()->load([
-    //                     'branches',
-    //                     'roles',
-    //                 ])
-    //                 : null,
-
-    //             // ==================================================
-    //             // ACTIVE BRANCH
-    //             // ==================================================
-
-    //             'active_branch' => $activeBranch,
-
-    //             // ==================================================
-    //             // SUBSCRIPTION
-    //             // ==================================================
-
-    //             'subscription' => $subscription,
-
-    //             // ==================================================
-    //             // FREE TRIAL INFORMATION
-    //             // ==================================================
-
-    //             'trial' => [
-    //                 'status' => $subscription?->status,
-
-    //                 'days_remaining' => $daysRemaining,
-
-    //                 'trial_ends_at' => $subscription?->trial_ends_at,
-
-    //                 'is_expired' => $subscription?->status === 'expired',
-    //             ],
-    //         ],
-    //     ];
-    // }
-
     public function share(Request $request): array
-{
-    // ==========================================================
-    // ACTIVE BRANCH
-    // ==========================================================
+    {
+        // ==========================================================
+        // ACTIVE BRANCH
+        // ==========================================================
 
-    $activeBranch = null;
-    $subscription = null;
+        $activeBranch = null;
+        $subscription = null;
 
-    if ($request->user()) {
+        if ($request->user()) {
+            $branchId = session('branch_id');
 
-        $branchId = session('branch_id');
+            // Get active branch from session
+            if ($branchId) {
+                $activeBranch = \App\Models\Branch::with('subscription')
+                    ->whereHas('users', function ($query) use ($request) {
+                        $query->where('users.id', $request->user()->id);
+                    })
+                    ->find($branchId);
+            }
 
-        // Get active branch from session
-        if ($branchId) {
+            // Fallback to user's first branch
+            if (!$activeBranch) {
+                $activeBranch = $request->user()
+                    ->branches()
+                    ->with('subscription')
+                    ->first();
 
-            $activeBranch = \App\Models\Branch::with('subscription')
-                ->whereHas('users', function ($query) use ($request) {
-                    $query->where('users.id', $request->user()->id);
-                })
-                ->find($branchId);
+                if ($activeBranch) {
+                    session(['branch_id' => $activeBranch->id]);
+                }
+            }
+
+            $subscription = $activeBranch?->subscription;
         }
 
-        // Fallback to user's first branch
-        if (!$activeBranch) {
+        // ==========================================================
+        // CALCULATE TRIAL STATUS
+        // ==========================================================
 
-            $activeBranch = $request->user()
-                ->branches()
-                ->with('subscription')
-                ->first();
+        $daysRemaining = null;
+        $trialStatus = $subscription?->status;
 
-            if ($activeBranch) {
-                session(['branch_id' => $activeBranch->id]);
+        if (
+            $subscription?->status === 'trial' &&
+            $subscription->trial_ends_at
+        ) {
+            $secondsRemaining = now()->diffInSeconds(
+                $subscription->trial_ends_at,
+                false
+            );
+
+            $daysRemaining = max(
+                0,
+                (int) ceil($secondsRemaining / 86400)
+            );
+
+            // Calculate expired status for display only.
+            // Subscription middleware handles database status.
+            if ($secondsRemaining <= 0) {
+                $trialStatus = 'expired';
             }
         }
 
-        $subscription = $activeBranch?->subscription;
-    }
+        // ==========================================================
+        // PAID SUBSCRIPTION GRACE PERIOD
+        // ==========================================================
 
-    // ==========================================================
-    // CALCULATE TRIAL STATUS
-    // ==========================================================
+        $isInGracePeriod = false;
+        $graceDaysRemaining = 0;
+        $graceEndsAt = null;
 
-    $daysRemaining = null;
-    $trialStatus = $subscription?->status;
+        if (
+            $subscription?->status === 'active' &&
+            $subscription->ends_at
+        ) {
+            $graceEndsAt = $subscription->ends_at
+                ->copy()
+                ->addDays(7);
 
-    if (
-        $subscription?->status === 'trial' &&
-        $subscription->trial_ends_at
-    ) {
+            if (now()->greaterThan($subscription->ends_at)) {
+                $isInGracePeriod = now()->lessThanOrEqualTo($graceEndsAt);
 
-        $secondsRemaining = now()->diffInSeconds(
-            $subscription->trial_ends_at,
-            false
-        );
-
-     $daysRemaining = null;
-$trialStatus = $subscription?->status;
-
-if (
-    $subscription?->status === 'trial' &&
-    $subscription->trial_ends_at
-) {
-    $secondsRemaining = now()->diffInSeconds(
-        $subscription->trial_ends_at,
-        false
-    );
-
-    $daysRemaining = max(
-        0,
-        (int) ceil($secondsRemaining / 86400)
-    );
-
-    // Trial expired
-    if ($daysRemaining <= 0) {
-        $trialStatus = 'expired';
-
-        $subscription->update([
-            'status' => 'expired',
-        ]);
-    }
-}
-        // Trial has expired
-        if ($daysRemaining <= 0) {
-
-            $trialStatus = 'expired';
-
-            $subscription->update([
-                'status' => 'expired',
-            ]);
+                if ($isInGracePeriod) {
+                    $graceDaysRemaining = max(
+                        0,
+                        (int) ceil(
+                            now()->diffInSeconds(
+                                $graceEndsAt,
+                                false
+                            ) / 86400
+                        )
+                    );
+                }
+            }
         }
-    }
 
-    // ==========================================================
-    // SHARED PROPS
-    // ==========================================================
+        // ==========================================================
+        // SHARED PROPS
+        // ==========================================================
 
-    return [
-        ...parent::share($request),
+        return [
+            ...parent::share($request),
 
-        'auth' => [
+            'auth' => [
+                'user' => $request->user()
+                    ? $request->user()->load([
+                        'branches',
+                        'roles',
+                    ])
+                    : null,
 
-            // ==================================================
-            // AUTHENTICATED USER
-            // ==================================================
+                'active_branch' => $activeBranch,
 
-            'user' => $request->user()
-                ? $request->user()->load([
-                    'branches',
-                    'roles',
-                ])
-                : null,
+                'subscription' => $subscription,
 
-            // ==================================================
-            // ACTIVE BRANCH
-            // ==================================================
+                'trial' => [
+                    'status' => $trialStatus,
+                    'days_remaining' => $daysRemaining,
+                    'trial_ends_at' => $subscription?->trial_ends_at,
+                    'is_expired' => $trialStatus === 'expired',
+                ],
 
-            'active_branch' => $activeBranch,
-
-            // ==================================================
-            // SUBSCRIPTION
-            // ==================================================
-
-            'subscription' => $subscription,
-
-            // ==================================================
-            // FREE TRIAL
-            // ==================================================
-
-            'trial' => [
-
-                'status' => $trialStatus,
-
-                'days_remaining' => $daysRemaining,
-
-                'trial_ends_at' => $subscription?->trial_ends_at,
-
-                'is_expired' => $trialStatus === 'expired',
+                'subscription_grace' => [
+                    'is_active' => $isInGracePeriod,
+                    'days_remaining' => $graceDaysRemaining,
+                    'ends_at' => $graceEndsAt,
+                ],
             ],
-        ],
-    ];
-}
+        ];
+    }
 }

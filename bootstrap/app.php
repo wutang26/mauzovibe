@@ -1,3 +1,4 @@
+
 <?php
 
 use Illuminate\Foundation\Application;
@@ -11,28 +12,37 @@ return Application::configure(basePath: dirname(__DIR__))
         commands: __DIR__.'/../routes/console.php',
         health: '/up',
     )
-    // ->withMiddleware(function (Middleware $middleware): void {
-    //     $middleware->web(append: [
-    //         \App\Http\Middleware\HandleInertiaRequests::class,
-    //         \Illuminate\Http\Middleware\AddLinkHeadersForPreloadedAssets::class,
-    //     ]);
-
     ->withMiddleware(function (Middleware $middleware): void {
 
-    $middleware->web(append: [
-        \App\Http\Middleware\HandleInertiaRequests::class,
-        \Illuminate\Http\Middleware\AddLinkHeadersForPreloadedAssets::class,
-    ]);
+        /*
+        |--------------------------------------------------------------------------
+        | WEB MIDDLEWARE
+        |--------------------------------------------------------------------------
+        */
 
-    $middleware->alias([
-        'branch' => \App\Http\Middleware\EnsureBranchSelected::class,
-        'admin.settings' => \App\Http\Middleware\AdminSettings::class,
-        'role' => RoleMiddleware::class,
-    ]);
+        $middleware->web(append: [
+            \App\Http\Middleware\HandleInertiaRequests::class,
+            \Illuminate\Http\Middleware\AddLinkHeadersForPreloadedAssets::class,
+        ]);
 
-})
+        /*
+        |--------------------------------------------------------------------------
+        | MIDDLEWARE ALIASES
+        |--------------------------------------------------------------------------
+        */
 
-        //
+        $middleware->alias([
+            'branch' => \App\Http\Middleware\EnsureBranchSelected::class,
+
+            'subscription.active' => \App\Http\Middleware\EnsureSubscriptionActive::class,
+
+            'admin.settings' => \App\Http\Middleware\AdminSettings::class,
+
+            'role' => RoleMiddleware::class,
+        ]);
+
+    })
     ->withExceptions(function (Exceptions $exceptions): void {
         //
-    })->create();
+    })
+    ->create();

@@ -25,23 +25,33 @@ class EnsureSubscriptionActive
             return $next($request);
         }
 
+        /*
+        |--------------------------------------------------------------------------
+        | 2. Super Admin and Admin bypass
+        |--------------------------------------------------------------------------
+        */
+
+        if ($user->hasAnyRole(['Super Admin', 'Admin'])) {
+            return $next($request);
+        }
 
         /*
         |--------------------------------------------------------------------------
-        | 2. Get selected branch
+        | 3. Get selected branch
         |--------------------------------------------------------------------------
         */
 
         $branchId = session('branch_id');
 
         if (!$branchId) {
-            return $next($request);
+            return redirect()
+                ->route('choose.branch')
+                ->with('error', 'Please select a branch to continue.');
         }
-
 
         /*
         |--------------------------------------------------------------------------
-        | 3. Get subscription for selected branch
+        | 4. Get subscription for selected branch
         |--------------------------------------------------------------------------
         */
 
@@ -50,32 +60,29 @@ class EnsureSubscriptionActive
             ->with('subscription')
             ->first();
 
-
         /*
         |--------------------------------------------------------------------------
-        | 4. Make sure branch exists
+        | 5. Make sure branch exists
         |--------------------------------------------------------------------------
         */
 
         if (!$branch) {
             return redirect()
-                ->route('dashboard')
+                ->route('choose.branch')
                 ->with('error', 'You do not have access to this branch.');
         }
 
-
         /*
         |--------------------------------------------------------------------------
-        | 5. Get subscription
+        | 6. Get subscription
         |--------------------------------------------------------------------------
         */
 
         $subscription = $branch->subscription;
 
-
         /*
         |--------------------------------------------------------------------------
-        | 6. No subscription
+        | 7. No subscription
         |--------------------------------------------------------------------------
         */
 
@@ -88,16 +95,14 @@ class EnsureSubscriptionActive
                 );
         }
 
-
         /*
         |--------------------------------------------------------------------------
-        | 7. Check Trial
+        | 8. Check Free Trial
         |--------------------------------------------------------------------------
         */
 
         if ($subscription->status === 'trial') {
 
-            // Trial has no expiry date
             if (!$subscription->trial_ends_at) {
                 return redirect()
                     ->route('subscription.index')
@@ -107,7 +112,7 @@ class EnsureSubscriptionActive
                     );
             }
 
-            // Trial expired
+            // Trial expires immediately. No grace period.
             if (now()->greaterThanOrEqualTo($subscription->trial_ends_at)) {
 
                 $subscription->update([
@@ -122,20 +127,17 @@ class EnsureSubscriptionActive
                     );
             }
 
-            // Trial still active
             return $next($request);
         }
 
-
         /*
         |--------------------------------------------------------------------------
-        | 8. Check Active Subscription
+        | 9. Check Paid Active Subscription
         |--------------------------------------------------------------------------
         */
 
         if ($subscription->status === 'active') {
 
-            // Active subscription has no expiry date
             if (!$subscription->ends_at) {
                 return redirect()
                     ->route('subscription.index')
@@ -145,29 +147,36 @@ class EnsureSubscriptionActive
                     );
             }
 
-            // Subscription expired
-            if (now()->greaterThanOrEqualTo($subscription->ends_at)) {
+            // Calculate the end of the 7-day grace period.
+            $graceEndsAt = $subscription->ends_at
+                ->copy()
+                ->addDays(7);
 
-                $subscription->update([
-                    'status' => 'expired',
-                ]);
+            /*
+             * Allow access while subscription is active
+             * or within the 7-day grace period.
+             */
+            if (now()->lessThanOrEqualTo($graceEndsAt)) {
 
-                return redirect()
-                    ->route('subscription.index')
-                    ->with(
-                        'error',
-                        'Your subscription has expired. Please renew to continue.'
-                    );
+                return $next($request);
             }
 
-            // Subscription still active
-            return $next($request);
-        }
+            // Grace period has ended.
+            $subscription->update([
+                'status' => 'expired',
+            ]);
 
+            return redirect()
+                ->route('subscription.index')
+                ->with(
+                    'error',
+                    'Your subscription and 7-day grace period have expired. Please renew to continue.'
+                );
+        }
 
         /*
         |--------------------------------------------------------------------------
-        | 9. Expired / Cancelled / Inactive
+        | 10. Expired / Cancelled / Pending / Inactive
         |--------------------------------------------------------------------------
         */
 
@@ -175,7 +184,7 @@ class EnsureSubscriptionActive
             ->route('subscription.index')
             ->with(
                 'error',
-                'Your subscription is not active. Please subscribe to continue.'
+                'Your subscription is not active. Please subscribe or renew to continue.'
             );
     }
 }
