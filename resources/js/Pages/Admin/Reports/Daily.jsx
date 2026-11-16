@@ -1,6 +1,7 @@
 import React from "react";
 import { Head, router } from "@inertiajs/react";
 import AdminLayout from "@/Layouts/AdminLayout";
+import "./DailyReport.css";
 import {
     CalendarDaysIcon,
     BanknotesIcon,
@@ -29,6 +30,16 @@ export default function Daily({
         }).format(Number(amount || 0));
     };
 
+    // Format Risiti
+    const formatReportDate = (date) => {
+    if (!date) return "";
+
+    return new Date(`${date}T00:00:00`).toLocaleDateString("en-GB", {
+        day: "2-digit",
+        month: "long",
+        year: "numeric",
+    });
+};
     const formatPaymentMethod = (method) => {
         const methods = {
             cash: "Cash",
@@ -566,6 +577,99 @@ export default function Daily({
                         </div>
                     </div>
                 </div>
+
+                {/* PRINT-ONLY SALES REPORT */}
+<div className="print-report">
+    <div className="print-header">
+        <h1>MAUZOVIBE</h1>
+        <p className="print-subtitle">SALES MANAGEMENT REPORT</p>
+        <h2>DAILY SALES REPORT</h2>
+        <p>Date: {formatReportDate(reportDate)}</p>
+    </div>
+
+    <div className="print-total">
+        <p>TOTAL SALES</p>
+        <h1>TZS {formatMoney(summary.netSales)}</h1>
+    </div>
+
+    <div className="print-statistics">
+        <div>
+            <span>Transactions</span>
+            <strong>{summary.totalTransactions}</strong>
+        </div>
+
+        <div>
+            <span>Items Sold</span>
+            <strong>{summary.totalItemsSold}</strong>
+        </div>
+
+        <div>
+            <span>Discounts</span>
+            <strong>TZS {formatMoney(summary.totalDiscount)}</strong>
+        </div>
+
+        <div>
+            <span>Profit</span>
+            <strong>TZS {formatMoney(summary.totalProfit)}</strong>
+        </div>
+    </div>
+
+    <div className="print-sales">
+        <h3>SALES TRANSACTIONS</h3>
+
+        <table>
+            <thead>
+                <tr>
+                    <th>Invoice</th>
+                    <th>Customer</th>
+                    <th className="amount-column">Amount (TZS)</th>
+                </tr>
+            </thead>
+
+            <tbody>
+                {sales.map((sale) => (
+                    <tr key={sale.id}>
+                        <td>{sale.invoice_number}</td>
+                        <td>{sale.customer || "Walk-in Customer"}</td>
+                        <td className="amount-column">
+                            {formatMoney(sale.total)}
+                        </td>
+                    </tr>
+                ))}
+
+                {sales.length === 0 && (
+                    <tr>
+                        <td colSpan="3" className="empty-sales">
+                            No sales found for this date.
+                        </td>
+                    </tr>
+                )}
+            </tbody>
+        </table>
+    </div>
+
+    <div className="print-financial-summary">
+        <div className="print-grand-total">
+            <span>TOTAL SALES</span>
+            <strong>TZS {formatMoney(summary.netSales)}</strong>
+        </div>
+
+        <div>
+            <span>Amount Paid</span>
+            <strong>TZS {formatMoney(summary.totalPaid)}</strong>
+        </div>
+
+        <div>
+            <span>Outstanding</span>
+            <strong>TZS {formatMoney(summary.totalOutstanding)}</strong>
+        </div>
+    </div>
+
+    <div className="print-footer">
+        <strong>Powered by NAC Technologies</strong>
+        <p>Thank you for your business.</p>
+    </div>
+</div>
             </AdminLayout>
         </>
     );
