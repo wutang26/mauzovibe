@@ -1333,6 +1333,252 @@ export default function Show({ sale }) {
                     </div>
 
 
+
+                    {/* =====================================================
+                        PRINT-ONLY POS RECEIPT
+                    ===================================================== */}
+                    <section
+                        className="receipt-print"
+                        aria-hidden="true"
+                        style={{ display: "none" }}
+                    >
+                        <div className="receipt-brand">
+                            <div className="receipt-brand-name">MauzoVibe</div>
+                            <div className="receipt-brand-tagline">
+                                Smart Sales Management
+                            </div>
+                            <div className="receipt-divider" />
+                            <div className="receipt-title">SALES RECEIPT</div>
+                        </div>
+
+                        <div className="receipt-meta">
+                            <div>
+                                <span>Receipt No.</span>
+                                <strong>{sale.invoice_number || `SALE-${sale.id}`}</strong>
+                            </div>
+                            <div>
+                                <span>Date</span>
+                                <strong>{formatDate(sale.created_at)}</strong>
+                            </div>
+                            <div>
+                                <span>Cashier</span>
+                                <strong>{sale.user?.name || "-"}</strong>
+                            </div>
+                            <div>
+                                <span>Customer</span>
+                                <strong>{sale.customer?.name || sale.customer_name || "Walk-in Customer"}</strong>
+                            </div>
+                            <div>
+                                <span>Payment</span>
+                                <strong>{payment.label}</strong>
+                            </div>
+                        </div>
+
+                        <div className="receipt-divider" />
+
+                        <table className="receipt-items">
+                            <thead>
+                                <tr>
+                                    <th>Item</th>
+                                    <th>Qty</th>
+                                    <th>Price</th>
+                                    <th>Total</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {items.map((item) => {
+                                    const quantity = Number(item.quantity || 0);
+                                    const unitPrice = Number(item.unit_price || 0);
+                                    const itemTotal =
+                                        item.total !== null && item.total !== undefined
+                                            ? Number(item.total)
+                                            : quantity * unitPrice;
+
+                                    return (
+                                        <tr key={`receipt-${item.id}`}>
+                                            <td className="receipt-item-name">
+                                                {item.product?.name || "Unknown Product"}
+                                                {item.product?.sku ? (
+                                                    <small>{item.product.sku}</small>
+                                                ) : null}
+                                            </td>
+                                            <td>{quantity}</td>
+                                            <td>{formatMoney(unitPrice)}</td>
+                                            <td>{formatMoney(itemTotal)}</td>
+                                        </tr>
+                                    );
+                                })}
+                            </tbody>
+                        </table>
+
+                        <div className="receipt-divider" />
+
+                        <div className="receipt-totals">
+                            <div>
+                                <span>Subtotal</span>
+                                <strong>{formatMoney(subtotal)}</strong>
+                            </div>
+                            <div>
+                                <span>Discount</span>
+                                <strong>- {formatMoney(discount)}</strong>
+                            </div>
+                            <div className="receipt-grand-total">
+                                <span>TOTAL</span>
+                                <strong>TZS {formatMoney(total)}</strong>
+                            </div>
+                            <div>
+                                <span>Amount Paid</span>
+                                <strong>{formatMoney(paidAmount)}</strong>
+                            </div>
+                            <div>
+                                <span>Change</span>
+                                <strong>{formatMoney(changeAmount)}</strong>
+                            </div>
+                            {!isPaid && (
+                                <div>
+                                    <span>Balance Due</span>
+                                    <strong>{formatMoney(Math.max(total - paidAmount, 0))}</strong>
+                                </div>
+                            )}
+                        </div>
+
+                        <div className="receipt-payment-status">
+                            {isPaid ? "PAID" : "PAYMENT PENDING"}
+                        </div>
+
+                        <div className="receipt-thank-you">
+                            <strong>Thank you for shopping with us!</strong>
+                            <span>Karibu tena.</span>
+                        </div>
+
+                        <div className="receipt-footer">
+                            Powered by NAC Technologies
+                        </div>
+                    </section>
+
+
+                    {/* =====================================================
+                        PRINT-ONLY POS RECEIPT
+                    ===================================================== */}
+                    <section
+                        className="receipt-print"
+                        aria-hidden="true"
+                        style={{ display: "none" }}
+                    >
+                        <div className="receipt-brand">
+                            <div className="receipt-brand-name">MauzoVibe</div>
+                            <div className="receipt-brand-tagline">
+                                Smart Sales Management
+                            </div>
+                            <div className="receipt-divider" />
+                            <div className="receipt-title">SALES RECEIPT</div>
+                        </div>
+
+                        <div className="receipt-meta">
+                            <div>
+                                <span>Receipt No.</span>
+                                <strong>{sale.invoice_number || `SALE-${sale.id}`}</strong>
+                            </div>
+                            <div>
+                                <span>Date</span>
+                                <strong>{formatDate(sale.created_at)}</strong>
+                            </div>
+                            <div>
+                                <span>Cashier</span>
+                                <strong>{sale.user?.name || "-"}</strong>
+                            </div>
+                            <div>
+                                <span>Customer</span>
+                                <strong>{sale.customer?.name || sale.customer_name || "Walk-in Customer"}</strong>
+                            </div>
+                            <div>
+                                <span>Payment</span>
+                                <strong>{payment.label}</strong>
+                            </div>
+                        </div>
+
+                        <div className="receipt-divider" />
+
+                        <table className="receipt-items">
+                            <thead>
+                                <tr>
+                                    <th>Item</th>
+                                    <th>Qty</th>
+                                    <th>Price</th>
+                                    <th>Total</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {items.map((item) => {
+                                    const quantity = Number(item.quantity || 0);
+                                    const unitPrice = Number(item.unit_price || 0);
+                                    const itemTotal =
+                                        item.total !== null && item.total !== undefined
+                                            ? Number(item.total)
+                                            : quantity * unitPrice;
+
+                                    return (
+                                        <tr key={`receipt-${item.id}`}>
+                                            <td className="receipt-item-name">
+                                                {item.product?.name || "Unknown Product"}
+                                                {item.product?.sku ? (
+                                                    <small>{item.product.sku}</small>
+                                                ) : null}
+                                            </td>
+                                            <td>{quantity}</td>
+                                            <td>{formatMoney(unitPrice)}</td>
+                                            <td>{formatMoney(itemTotal)}</td>
+                                        </tr>
+                                    );
+                                })}
+                            </tbody>
+                        </table>
+
+                        <div className="receipt-divider" />
+
+                        <div className="receipt-totals">
+                            <div>
+                                <span>Subtotal</span>
+                                <strong>{formatMoney(subtotal)}</strong>
+                            </div>
+                            <div>
+                                <span>Discount</span>
+                                <strong>- {formatMoney(discount)}</strong>
+                            </div>
+                            <div className="receipt-grand-total">
+                                <span>TOTAL</span>
+                                <strong>TZS {formatMoney(total)}</strong>
+                            </div>
+                            <div>
+                                <span>Amount Paid</span>
+                                <strong>{formatMoney(paidAmount)}</strong>
+                            </div>
+                            <div>
+                                <span>Change</span>
+                                <strong>{formatMoney(changeAmount)}</strong>
+                            </div>
+                            {!isPaid && (
+                                <div>
+                                    <span>Balance Due</span>
+                                    <strong>{formatMoney(Math.max(total - paidAmount, 0))}</strong>
+                                </div>
+                            )}
+                        </div>
+
+                        <div className="receipt-payment-status">
+                            {isPaid ? "PAID" : "PAYMENT PENDING"}
+                        </div>
+
+                        <div className="receipt-thank-you">
+                            <strong>Thank you for shopping with us!</strong>
+                            <span>Karibu tena.</span>
+                        </div>
+
+                        <div className="receipt-footer">
+                            Powered by NAC Technologies
+                        </div>
+                    </section>
+
                     {/* =====================================================
                         FOOTER
                     ===================================================== */}
@@ -1612,52 +1858,189 @@ export default function Show({ sale }) {
 
 
                     /* =====================================================
-                       PRINT
+                       THERMAL RECEIPT PRINT
                     ===================================================== */
 
+                    @page {
+                        size: 80mm auto;
+                        margin: 3mm;
+                    }
+
                     @media print {
-
+                        html,
                         body {
-                            background: #ffffff !important;
-                        }
-
-                        header,
-                        nav,
-                        aside {
-                            display: none !important;
-                        }
-
-                        .sale-details-page {
-                            padding: 0 !important;
+                            width: 80mm !important;
+                            min-width: 0 !important;
                             margin: 0 !important;
+                            padding: 0 !important;
                             background: #ffffff !important;
                         }
 
-                        .sale-details-header,
-                        .sale-details-header-actions,
-                        .sale-details-actions,
-                        .sale-details-page button {
-                            display: none !important;
+                        body * {
+                            visibility: hidden !important;
                         }
 
-                        .sale-details-responsive-grid {
-                            display: grid !important;
-                            grid-template-columns: 1fr 1fr 1fr !important;
-                            gap: 10px !important;
+                        .receipt-print,
+                        .receipt-print * {
+                            visibility: visible !important;
                         }
 
-                        .sale-details-responsive-grid > :last-child {
-                            grid-column: auto !important;
+                       .receipt-print {
+                        display: block !important;
+                        position: absolute !important;
+
+                        /* Center receipt horizontally */
+                        left: 50% !important;
+                        top: 0 !important;
+                        transform: translateX(-50%) !important;
+
+                        width: 74mm !important;
+                        max-width: 74mm !important;
+                        margin: 0 !important;
+                        padding: 2mm 1mm !important;
+
+                        color: #000000 !important;
+                        background: #ffffff !important;
+                        font-family: Arial, Helvetica, sans-serif !important;
+                        font-size: 10px !important;
+                        line-height: 1.35 !important;
+                        box-sizing: border-box !important;
+                    }
+
+                        .receipt-brand {
+                            text-align: center !important;
+                            margin-bottom: 8px !important;
                         }
 
-                        .sale-details-page * {
+                        .receipt-brand-name {
+                            font-size: 22px !important;
+                            line-height: 1.1 !important;
+                            font-weight: 900 !important;
+                            letter-spacing: -0.6px !important;
+                        }
+
+                        .receipt-brand-tagline {
+                            margin-top: 2px !important;
+                            font-size: 9px !important;
+                        }
+
+                        .receipt-title {
+                            margin-top: 7px !important;
+                            font-size: 12px !important;
+                            font-weight: 800 !important;
+                            letter-spacing: 1px !important;
+                        }
+
+                        .receipt-divider {
+                            border-top: 1px dashed #333333 !important;
+                            margin: 7px 0 !important;
+                            height: 0 !important;
+                        }
+
+                        .receipt-meta > div,
+                        .receipt-totals > div {
+                            display: flex !important;
+                            justify-content: space-between !important;
+                            align-items: flex-start !important;
+                            gap: 8px !important;
+                            margin: 3px 0 !important;
+                        }
+
+                        .receipt-meta span,
+                        .receipt-totals span {
+                            flex: 0 0 auto !important;
+                        }
+
+                        .receipt-meta strong,
+                        .receipt-totals strong {
+                            text-align: right !important;
+                            overflow-wrap: anywhere !important;
+                        }
+
+                        .receipt-items {
+                            width: 100% !important;
+                            border-collapse: collapse !important;
+                            table-layout: fixed !important;
+                            font-size: 9px !important;
+                        }
+
+                        .receipt-items th {
+                            padding: 4px 1px !important;
+                            border-bottom: 1px solid #000000 !important;
+                            text-align: right !important;
+                            font-weight: 800 !important;
+                        }
+
+                        .receipt-items td {
+                            padding: 4px 1px !important;
+                            border-bottom: 1px dotted #999999 !important;
+                            text-align: right !important;
+                            vertical-align: top !important;
+                            overflow-wrap: anywhere !important;
+                        }
+
+                        .receipt-items th:first-child,
+                        .receipt-items td:first-child {
+                            width: 39% !important;
+                            text-align: left !important;
+                        }
+
+                        .receipt-items th:nth-child(2),
+                        .receipt-items td:nth-child(2) {
+                            width: 11% !important;
+                        }
+
+                        .receipt-items th:nth-child(3),
+                        .receipt-items td:nth-child(3) {
+                            width: 23% !important;
+                        }
+
+                        .receipt-items th:nth-child(4),
+                        .receipt-items td:nth-child(4) {
+                            width: 27% !important;
+                        }
+
+                        .receipt-item-name small {
+                            display: block !important;
+                            font-size: 8px !important;
+                        }
+
+                        .receipt-grand-total {
+                            padding-top: 5px !important;
+                            margin-top: 5px !important;
+                            border-top: 1px solid #000000 !important;
+                            font-size: 13px !important;
+                            font-weight: 900 !important;
+                        }
+
+                        .receipt-payment-status {
+                            margin: 9px auto !important;
+                            padding: 5px !important;
+                            border: 1px solid #000000 !important;
+                            text-align: center !important;
+                            font-size: 11px !important;
+                            font-weight: 900 !important;
+                            letter-spacing: 1px !important;
+                        }
+
+                        .receipt-thank-you {
+                            display: flex !important;
+                            flex-direction: column !important;
+                            gap: 2px !important;
+                            margin-top: 12px !important;
+                            text-align: center !important;
+                        }
+
+                        .receipt-footer {
+                            margin-top: 9px !important;
+                            text-align: center !important;
+                            font-size: 8px !important;
+                        }
+
+                        .receipt-print * {
                             box-shadow: none !important;
+                            text-shadow: none !important;
                         }
-
-                        .sale-details-page > div {
-                            max-width: none !important;
-                        }
-
                     }
 
                 `}</style>
