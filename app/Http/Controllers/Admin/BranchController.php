@@ -17,33 +17,45 @@ class BranchController extends Controller
 {
 
     public function index()
-    {
+{
+    $user = auth()->user();
 
-        // $branches = Branch::withCount('users')
-        //     ->latest()
-        //     ->get();
+    // Super Admin anaweza kuona branches zote
+    if ($user->hasRole('Super Admin')) {
 
-        
-
-        // return inertia('Admin/Branches/Index',[
-        //     'branches'=>$branches
-        // ]);
-
-        $branches = Branch::with([
-        'users.roles'
-    ])
-    ->withCount('users')
-    ->latest()
-    ->get();
-
-
-    return inertia('Admin/Branches/Index',[
-
-        'branches'=>$branches
-
-    ]);
+        $branches = Branch::with('users.roles')
+            ->withCount('users')
+            ->latest()
+            ->get();
 
     }
+
+    // Admin anaona branches za biashara yake tu
+    elseif ($user->hasRole('Admin') && $user->business_id) {
+
+        $branches = Branch::where('business_id', $user->business_id)
+            ->with('users.roles')
+            ->withCount('users')
+            ->latest()
+            ->get();
+
+    }
+
+    // Watumiaji wengine wanaona branches walizopangiwa tu
+    else {
+
+        $branches = $user->branches()
+            ->with('users.roles')
+            ->withCount('users')
+            ->latest('branches.created_at')
+            ->get();
+
+    }
+
+    return Inertia::render('Admin/Branches/Index', [
+        'branches' => $branches,
+    ]);
+}
 
 
 
@@ -220,25 +232,68 @@ public function show(Branch $branch)
 }
 
 //Switch Branches
+
 public function switchBranch(Branch $branch)
 {
-
     $user = auth()->user();
 
-    // Check user belongs to branch
+    // Super Admin anaweza kubadilisha kwenda branch yoyote
+    if ($user->hasRole('Super Admin')) {
+        session([
+            'branch_id' => $branch->id,
+        ]);
 
-    if(!$user->branches->contains($branch->id))
-    {
-        abort(403);
+        return back()->with('success', 'Branch imebadilishwa kikamilifu.');
+    }
+
+    // Admin anaweza kubadilisha kwenda branch ya biashara yake tu
+    if ($user->hasRole('Admin')) {
+
+        if (!$user->business_id || $branch->business_id != $user->business_id) {
+            abort(403, 'Huna ruhusa ya kutumia branch hii.');
+        }
+
+        session([
+            'branch_id' => $branch->id,
+        ]);
+
+        return back()->with('success', 'Branch imebadilishwa kikamilifu.');
+    }
+
+    // Watumiaji wengine lazima wawe wamepangiwa branch
+    $belongsToBranch = $user->branches()
+        ->where('branches.id', $branch->id)
+        ->exists();
+
+    if (!$belongsToBranch) {
+        abort(403, 'Huna ruhusa ya kutumia branch hii.');
     }
 
     session([
-        'branch_id'=>$branch->id
+        'branch_id' => $branch->id,
     ]);
 
-    return back();
-
+    return back()->with('success', 'Branch imebadilishwa kikamilifu.');
 }
+// public function switchBranch(Branch $branch)
+// {
+
+//     $user = auth()->user();
+
+//     // Check user belongs to branch
+
+//     if(!$user->branches->contains($branch->id))
+//     {
+//         abort(403);
+//     }
+
+//     session([
+//         'branch_id'=>$branch->id
+//     ]);
+
+//     return back();
+
+// }
 
 /**
  * Show register another branch page.

@@ -235,24 +235,7 @@ Route::middleware('auth')->group(function () {
         });
 
 
-    /*
-    |--------------------------------------------------------------------------
-    | BRANCH MANAGEMENT
-    |--------------------------------------------------------------------------
-    */
-    // Route::prefix('admin')
-    // ->name('admin.')
-    // ->middleware('role:Super Admin|Admin')
-    // ->group(function () {
-
-    //         Route::resource(
-    //             'branches',
-    //             BranchController::class
-    //         );
-
-    //     });
-
-    /*
+/*
 |--------------------------------------------------------------------------
 | BRANCH MANAGEMENT
 |--------------------------------------------------------------------------
@@ -262,42 +245,47 @@ Route::prefix('admin')
     ->name('admin.')
     ->group(function () {
 
-        // All authenticated users can view branches and create a branch
-        Route::resource(
-            'branches',
-            BranchController::class
-        )->only([
-            'index',
-            'create',
-            'store',
-            'show',
-        ]);
+        // Kila mtumiaji anaweza kuona branches anazoruhusiwa
+        Route::get(
+            '/branches',
+            [BranchController::class, 'index']
+        )->name('branches.index');
 
-        // Only Admin and Super Admin can edit/delete branches
-        Route::resource(
-            'branches',
-            BranchController::class
-        )->only([
-            'edit',
-            'update',
-            'destroy',
-        ])->middleware('role:Super Admin|Admin');
+        // Admin na Super Admin pekee wanaweza kusimamia branches
+        Route::middleware('role:Super Admin|Admin')->group(function () {
+
+            Route::get(
+                '/branches/create',
+                [BranchController::class, 'create']
+            )->name('branches.create');
+
+            Route::post(
+                '/branches',
+                [BranchController::class, 'store']
+            )->name('branches.store');
+
+            Route::get(
+                '/branches/{branch}',
+                [BranchController::class, 'show']
+            )->name('branches.show');
+
+            Route::get(
+                '/branches/{branch}/edit',
+                [BranchController::class, 'edit']
+            )->name('branches.edit');
+
+            Route::put(
+                '/branches/{branch}',
+                [BranchController::class, 'update']
+            )->name('branches.update');
+
+            Route::delete(
+                '/branches/{branch}',
+                [BranchController::class, 'destroy']
+            )->name('branches.destroy');
+
+        });
     });
-
-        //Assig Users to Branch
-    Route::middleware('role:Super Admin|Admin')->group(function () {
-
-    Route::get(
-        '/admin/branches/{branch}/assign-user',
-        [BranchController::class, 'assignUser']
-    )->name('branches.assign-user');
-
-    Route::post(
-        '/admin/branches/{branch}/assign-user',
-        [BranchController::class, 'storeAssignedUser']
-    )->name('branches.store-assigned-user');
-
-});
 
     /*
     |--------------------------------------------------------------------------
