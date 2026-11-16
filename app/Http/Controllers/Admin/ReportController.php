@@ -230,6 +230,17 @@ class ReportController extends Controller
             'change_amount' => (float) $sale->change_amount,
 
             'items_count' => $sale->items->sum('quantity'),
+
+            'items_count' => $sale->items->sum('quantity'),
+
+            'items' => $sale->items->map(function ($item) {
+                return [
+                    'id' => $item->id,
+                    'product_name' => $item->product?->name ?? 'Unknown Product',
+                    'sku' => $item->product?->sku ?? '-',
+                    'quantity' => (float) $item->quantity,
+                ];
+            })->values(),
         ];
     })->values();
 

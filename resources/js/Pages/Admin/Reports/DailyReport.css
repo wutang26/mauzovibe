@@ -221,3 +221,26 @@
         margin-top: 6px;
     }
 }
+.print-product-list {
+    display: flex;
+    flex-direction: column;
+    gap: 3px;
+}
+
+.print-product-item {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start;
+    gap: 8px;
+    font-size: 12px;
+    line-height: 1.4;
+}
+
+.print-product-item span {
+    flex: 1;
+}
+
+.print-product-item strong {
+    white-space: nowrap;
+    font-weight: 700;
+}

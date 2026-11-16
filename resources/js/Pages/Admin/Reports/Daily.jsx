@@ -614,7 +614,7 @@ export default function Daily({
         </div>
     </div>
 
-    <div className="print-sales">
+    {/* <div className="print-sales">
         <h3>SALES TRANSACTIONS</h3>
 
         <table>
@@ -646,7 +646,65 @@ export default function Daily({
                 )}
             </tbody>
         </table>
-    </div>
+    </div> */}
+
+    <div className="print-sales">
+    <h3>SALES TRANSACTIONS</h3>
+
+    <table>
+        <thead>
+            <tr>
+                <th>Invoice</th>
+                <th>Customer</th>
+                <th>Products Sold</th>
+                <th className="amount-column">Amount (TZS)</th>
+            </tr>
+        </thead>
+
+        <tbody>
+            {sales.map((sale) => (
+                <tr key={sale.id}>
+                    <td>{sale.invoice_number}</td>
+
+                    <td>
+                        {sale.customer || "Walk-in Customer"}
+                    </td>
+
+                    <td>
+                        <div className="print-product-list">
+                            {(sale.items || []).map((item, index) => (
+                                <div
+                                    className="print-product-item"
+                                    key={item.id || `${sale.id}-${index}`}
+                                >
+                                    <span>
+                                        {item.product_name}
+                                    </span>
+
+                                    <strong>
+                                        × {item.quantity}
+                                    </strong>
+                                </div>
+                            ))}
+                        </div>
+                    </td>
+
+                    <td className="amount-column">
+                        {formatMoney(sale.total)}
+                    </td>
+                </tr>
+            ))}
+
+            {sales.length === 0 && (
+                <tr>
+                    <td colSpan="4" className="empty-sales">
+                        No sales found for this date.
+                    </td>
+                </tr>
+            )}
+        </tbody>
+    </table>
+</div>
 
     <div className="print-financial-summary">
         <div className="print-grand-total">
