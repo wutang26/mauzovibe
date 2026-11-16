@@ -1,7 +1,7 @@
 
 import React, { useEffect, useMemo, useRef, useState } from "react";
 import AdminLayout from "@/Layouts/AdminLayout";
-import { Head, useForm } from "@inertiajs/react";
+import { Head, Link, useForm } from "@inertiajs/react";
 import { Html5Qrcode } from "html5-qrcode";
 import "./Sales.css";
 
@@ -73,6 +73,11 @@ export default function Create({ products = [] }) {
     const total = Math.max(0, subtotal - discount);
     const paidAmount = Number(data.paid_amount) || 0;
     const changeAmount = Math.max(0, paidAmount - total);
+
+    const totalItems = cart.reduce(
+        (sum, item) => sum + item.quantity,
+        0
+    );
 
     /*
     |--------------------------------------------------------------------------
@@ -179,6 +184,7 @@ export default function Create({ products = [] }) {
 
     const focusUsbScanner = () => {
         searchInputRef.current?.focus();
+
         setScannerFeedback({
             type: "success",
             message: "USB scanner is ready. Scan a product barcode.",
@@ -242,7 +248,7 @@ export default function Create({ products = [] }) {
                         handleBarcode(decodedText);
                     },
                     () => {
-                        // Normal scanning frame; no action is needed.
+                        // Normal scanning frame.
                     }
                 );
 
@@ -250,6 +256,7 @@ export default function Create({ products = [] }) {
                     if (scanner.isScanning) {
                         await scanner.stop();
                     }
+
                     scanner.clear();
                     return;
                 }
@@ -486,6 +493,7 @@ export default function Create({ products = [] }) {
 
     return (
         <AdminLayout>
+            {/* SALE SUCCESS MODAL */}
             {saleSuccess && (
                 <div className="sale-success-overlay">
                     <div className="sale-success-modal">
@@ -494,7 +502,9 @@ export default function Create({ products = [] }) {
 
                         <h2>Sale Completed Successfully!</h2>
 
-                        <p className="success-congratulation">Hongera! 🎉</p>
+                        <p className="success-congratulation">
+                            Hongera! 🎉
+                        </p>
 
                         <p className="success-message">
                             Your sale has been completed successfully.
@@ -519,14 +529,16 @@ export default function Create({ products = [] }) {
                 </div>
             )}
 
-            {/* Camera Scanner Modal */}
+            {/* CAMERA SCANNER MODAL */}
             {cameraOpen && (
                 <div className="barcode-camera-overlay">
                     <div className="barcode-camera-modal">
                         <div className="barcode-camera-header">
                             <div>
                                 <h2>Scan Product Barcode</h2>
-                                <p>Point your camera at the product barcode.</p>
+                                <p>
+                                    Point your camera at the product barcode.
+                                </p>
                             </div>
 
                             <button
@@ -574,22 +586,32 @@ export default function Create({ products = [] }) {
             <Head title="New Sale" />
 
             <div className="sales-page">
-                {/* Header */}
+
+                {/* SALES HEADER */}
                 <div className="sales-header">
-                    <div>
+
+                    {/* LEFT: PAGE TITLE */}
+                    <div className="sales-header-title">
                         <h1>New Sale</h1>
                         <p>Create a new customer sale</p>
                     </div>
 
+                    {/* CENTER: VIEW ALL PRODUCTS */}
+                    <div className="sales-header-center">
+                        <Link
+                            href={route("admin.products.index")}
+                            className="view-all-products-button"
+                        >
+                            <span>▦</span>
+                            View All Products
+                        </Link>
+                    </div>
+
+                    {/* RIGHT: SALE ACTIONS */}
                     <div className="sales-header-actions">
                         <div className="cart-counter">
                             <span>Items</span>
-                            <strong>
-                                {cart.reduce(
-                                    (sum, item) => sum + item.quantity,
-                                    0
-                                )}
-                            </strong>
+                            <strong>{totalItems}</strong>
                         </div>
 
                         <button
@@ -604,6 +626,7 @@ export default function Create({ products = [] }) {
                 </div>
 
                 <div className="sales-layout">
+
                     {/* PRODUCTS SECTION */}
                     <section className="products-panel">
                         <div className="panel-header">
@@ -615,7 +638,7 @@ export default function Create({ products = [] }) {
                             </div>
                         </div>
 
-                        {/* Scanner Options */}
+                        {/* SCANNER OPTIONS */}
                         <div className="barcode-scanner-options">
                             <div className="barcode-scanner-title">
                                 <span className="barcode-scanner-icon">▥</span>
@@ -646,7 +669,7 @@ export default function Create({ products = [] }) {
                             </div>
                         </div>
 
-                        {/* Search and USB Barcode Input */}
+                        {/* PRODUCT SEARCH */}
                         <div className="product-search">
                             <span className="search-icon">🔍</span>
 
@@ -680,6 +703,7 @@ export default function Create({ products = [] }) {
                             )}
                         </div>
 
+                        {/* SCANNER FEEDBACK */}
                         {scannerFeedback && (
                             <div
                                 className={`scanner-feedback ${scannerFeedback.type}`}
@@ -690,7 +714,7 @@ export default function Create({ products = [] }) {
                             </div>
                         )}
 
-                        {/* Products */}
+                        {/* PRODUCTS GRID */}
                         {showProducts && (
                             <div className="products-grid">
                                 {filteredProducts.length === 0 ? (
@@ -704,9 +728,11 @@ export default function Create({ products = [] }) {
                                 ) : (
                                     filteredProducts.map((product) => {
                                         const stock = Number(product.quantity) || 0;
+
                                         const inCart = cart.find(
                                             (item) => item.id === product.id
                                         );
+
                                         const cartQuantity = inCart?.quantity || 0;
                                         const remainingStock = stock - cartQuantity;
                                         const outOfStock = stock <= 0;
@@ -736,7 +762,9 @@ export default function Create({ products = [] }) {
                                                     <h3>{product.name}</h3>
 
                                                     {product.sku && (
-                                                        <small>SKU: {product.sku}</small>
+                                                        <small>
+                                                            SKU: {product.sku}
+                                                        </small>
                                                     )}
 
                                                     {product.barcode && (
@@ -782,7 +810,7 @@ export default function Create({ products = [] }) {
                             </div>
                         </div>
 
-                        {/* Cart Items */}
+                        {/* CART ITEMS */}
                         <div className="cart-items">
                             {cart.length === 0 ? (
                                 <div className="empty-cart">
@@ -854,13 +882,14 @@ export default function Create({ products = [] }) {
                             )}
                         </div>
 
-                        {/* Sale Summary */}
+                        {/* SALE SUMMARY */}
                         <form onSubmit={submitSale} className="sale-summary">
                             <div className="summary-row">
                                 <span>Subtotal</span>
                                 <strong>TZS {formatMoney(subtotal)}</strong>
                             </div>
 
+                            {/* DISCOUNT */}
                             <div className="discount-field">
                                 <label>Discount</label>
 
@@ -883,7 +912,7 @@ export default function Create({ products = [] }) {
                                 <strong>TZS {formatMoney(total)}</strong>
                             </div>
 
-                            {/* Payment */}
+                            {/* PAYMENT METHOD */}
                             <div className="payment-section">
                                 <h3>Payment Method</h3>
 
@@ -905,9 +934,7 @@ export default function Create({ products = [] }) {
                                                 ? "active"
                                                 : ""
                                         }
-                                        onClick={() =>
-                                            handlePaymentMethod("mobile_money")
-                                        }
+                                        onClick={() => handlePaymentMethod("mobile_money")}
                                     >
                                         📱 <span>Mobile</span>
                                     </button>
@@ -934,7 +961,7 @@ export default function Create({ products = [] }) {
                                 </div>
                             </div>
 
-                            {/* Paid Amount */}
+                            {/* PAID AMOUNT */}
                             {data.payment_method !== "credit" && (
                                 <div className="paid-field">
                                     <label>Amount Paid</label>
@@ -955,15 +982,17 @@ export default function Create({ products = [] }) {
                                 </div>
                             )}
 
-                            {/* Change */}
+                            {/* CHANGE */}
                             {data.payment_method !== "credit" && (
                                 <div className="change-row">
                                     <span>Change</span>
-                                    <strong>TZS {formatMoney(changeAmount)}</strong>
+                                    <strong>
+                                        TZS {formatMoney(changeAmount)}
+                                    </strong>
                                 </div>
                             )}
 
-                            {/* Errors */}
+                            {/* ERRORS */}
                             {Object.keys(errors).length > 0 && (
                                 <div className="sale-errors">
                                     {Object.values(errors).map((error, index) => (
@@ -972,13 +1001,15 @@ export default function Create({ products = [] }) {
                                 </div>
                             )}
 
-                            {/* Complete Sale */}
+                            {/* COMPLETE SALE */}
                             <button
                                 type="submit"
                                 className="complete-sale-button"
                                 disabled={processing || cart.length === 0}
                             >
-                                {processing ? "Processing Sale..." : "✓ Complete Sale"}
+                                {processing
+                                    ? "Processing Sale..."
+                                    : "✓ Complete Sale"}
                             </button>
                         </form>
                     </section>

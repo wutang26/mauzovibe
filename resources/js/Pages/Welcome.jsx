@@ -406,10 +406,9 @@ export default function Welcome({
                                                         aria-hidden={index !== currentPost}
                                                         className={`
                                                             transition-all duration-700 ease-in-out
-                                                            ${
-                                                                index === currentPost
-                                                                    ? "relative opacity-100 translate-x-0"
-                                                                    : "absolute inset-0 opacity-0 translate-x-8 pointer-events-none"
+                                                            ${index === currentPost
+                                                                ? "relative opacity-100 translate-x-0"
+                                                                : "absolute inset-0 opacity-0 translate-x-8 pointer-events-none"
                                                             }
                                                         `}
                                                     >
@@ -533,10 +532,9 @@ export default function Welcome({
                                                                 aria-current={index === currentPost}
                                                                 className={`
                                                                     h-2 rounded-full transition-all duration-300
-                                                                    ${
-                                                                        index === currentPost
-                                                                            ? "w-7 bg-emerald-400"
-                                                                            : "w-2 bg-white/80"
+                                                                    ${index === currentPost
+                                                                        ? "w-7 bg-emerald-400"
+                                                                        : "w-2 bg-white/80"
                                                                     }
                                                                 `}
                                                             />
@@ -587,13 +585,13 @@ export default function Welcome({
                                 </section>
 
                                 {/* LOGIN CARD */}
-                             
-{/* LOGIN CARD */}
-<section
-    id="login"
-    className="lg:col-span-5 order-1 lg:order-2 scroll-mt-28"
->
-    <div className="
+
+                                {/* LOGIN CARD */}
+                                <section
+                                    id="login"
+                                    className="lg:col-span-5 order-1 lg:order-2 scroll-mt-28"
+                                >
+                                    <div className="
         w-full max-w-lg mx-auto
         rounded-3xl bg-white
         border border-slate-200/80
@@ -601,264 +599,262 @@ export default function Welcome({
         p-7 sm:p-9 lg:p-10
     ">
 
-        {/* LOGIN ICON */}
-        <div className="flex justify-center mb-6">
-            <div className="
+                                        {/* LOGIN ICON */}
+                                        <div className="flex justify-center mb-6">
+                                            <div className="
                 w-20 h-20 rounded-2xl
                 bg-emerald-50 border border-emerald-100
                 flex items-center justify-center
                 shadow-sm
             ">
-                <svg
-                    className="w-10 h-10 text-emerald-600"
-                    fill="none"
-                    viewBox="0 0 24 24"
-                    stroke="currentColor"
-                    strokeWidth="1.8"
-                >
-                    <path
-                        strokeLinecap="round"
-                        strokeLinejoin="round"
-                        d="M15.75 7.5a3.75 3.75 0 11-7.5 0 3.75 3.75 0 017.5 0z"
-                    />
-                    <path
-                        strokeLinecap="round"
-                        strokeLinejoin="round"
-                        d="M4.5 21a7.5 7.5 0 0115 0"
-                    />
-                </svg>
-            </div>
-        </div>
+                                                <svg
+                                                    className="w-10 h-10 text-emerald-600"
+                                                    fill="none"
+                                                    viewBox="0 0 24 24"
+                                                    stroke="currentColor"
+                                                    strokeWidth="1.8"
+                                                >
+                                                    <path
+                                                        strokeLinecap="round"
+                                                        strokeLinejoin="round"
+                                                        d="M15.75 7.5a3.75 3.75 0 11-7.5 0 3.75 3.75 0 017.5 0z"
+                                                    />
+                                                    <path
+                                                        strokeLinecap="round"
+                                                        strokeLinejoin="round"
+                                                        d="M4.5 21a7.5 7.5 0 0115 0"
+                                                    />
+                                                </svg>
+                                            </div>
+                                        </div>
 
-        {/* LOGIN HEADER */}
-        <div className="text-center mb-8">
-            <h2 className="
+                                        {/* LOGIN HEADER */}
+                                        <div className="text-center mb-8">
+                                            <h2 className="
                 text-3xl sm:text-4xl
                 font-extrabold text-slate-900
             ">
-                Welcome Back!
-            </h2>
+                                                Welcome Back!
+                                            </h2>
 
-            <p className="mt-3 text-base text-slate-500">
-                Sign in to access your MauzoVibe account.
-            </p>
-        </div>
+                                            <p className="mt-3 text-base text-slate-500">
+                                                Sign in to access your MauzoVibe account.
+                                            </p>
+                                        </div>
 
-        {/* LOGIN FORM */}
-        <form
-            onSubmit={submit}
-            className="space-y-6"
-        >
+                                        {/* LOGIN FORM */}
+                                        <form
+                                            onSubmit={submit}
+                                            className="space-y-6"
+                                        >
 
-            {/* EMAIL */}
-            <div>
-                <label
-                    htmlFor="email"
-                    className="
+                                            {/* EMAIL */}
+                                            <div>
+                                                <label
+                                                    htmlFor="email"
+                                                    className="
                         block text-base font-semibold
                         text-slate-700 mb-3
                     "
-                >
-                    Email Address
-                </label>
+                                                >
+                                                    Email Address
+                                                </label>
 
-                <div className="relative">
-                    <div className="
+                                                <div className="relative">
+                                                    <div className="
                         absolute inset-y-0 left-0
                         flex items-center pl-5
                         pointer-events-none
                     ">
-                        <svg
-                            className="w-6 h-6 text-slate-400"
-                            fill="none"
-                            viewBox="0 0 24 24"
-                            stroke="currentColor"
-                            strokeWidth="1.8"
-                        >
-                            <path
-                                strokeLinecap="round"
-                                strokeLinejoin="round"
-                                d="M3 7l9 6 9-6"
-                            />
-                            <rect
-                                x="3"
-                                y="5"
-                                width="18"
-                                height="14"
-                                rx="2"
-                            />
-                        </svg>
-                    </div>
+                                                        <svg
+                                                            className="w-6 h-6 text-slate-400"
+                                                            fill="none"
+                                                            viewBox="0 0 24 24"
+                                                            stroke="currentColor"
+                                                            strokeWidth="1.8"
+                                                        >
+                                                            <path
+                                                                strokeLinecap="round"
+                                                                strokeLinejoin="round"
+                                                                d="M3 7l9 6 9-6"
+                                                            />
+                                                            <rect
+                                                                x="3"
+                                                                y="5"
+                                                                width="18"
+                                                                height="14"
+                                                                rx="2"
+                                                            />
+                                                        </svg>
+                                                    </div>
 
-                    <input
-                        id="email"
-                        name="email"
-                        type="email"
-                        value={form.data.email}
-                        autoComplete="username"
-                        autoFocus
-                        required
-                        placeholder="Enter your email address"
-                        onChange={(e) =>
-                            form.setData("email", e.target.value)
-                        }
-                        className={`
+                                                    <input
+                                                        id="email"
+                                                        name="email"
+                                                        type="email"
+                                                        value={form.data.email}
+                                                        autoComplete="username"
+                                                        autoFocus
+                                                        required
+                                                        placeholder="Enter your email address"
+                                                        onChange={(e) =>
+                                                            form.setData("email", e.target.value)
+                                                        }
+                                                        className={`
                             w-full h-14 sm:h-16
                             pl-14 pr-5 rounded-xl border
                             text-base sm:text-lg
-                            ${
-                                form.errors.email
-                                    ? "border-red-400 focus:border-red-500 focus:ring-red-500/10"
-                                    : "border-slate-200 focus:border-emerald-500 focus:ring-4 focus:ring-emerald-500/10"
-                            }
+                            ${form.errors.email
+                                                                ? "border-red-400 focus:border-red-500 focus:ring-red-500/10"
+                                                                : "border-slate-200 focus:border-emerald-500 focus:ring-4 focus:ring-emerald-500/10"
+                                                            }
                             bg-slate-50 text-slate-900
                             placeholder-slate-400
                             outline-none transition-all
                         `}
-                    />
-                </div>
+                                                    />
+                                                </div>
 
-                {form.errors.email && (
-                    <p className="mt-2 text-sm text-red-600">
-                        {form.errors.email}
-                    </p>
-                )}
-            </div>
+                                                {form.errors.email && (
+                                                    <p className="mt-2 text-sm text-red-600">
+                                                        {form.errors.email}
+                                                    </p>
+                                                )}
+                                            </div>
 
-            {/* PASSWORD */}
-            <div>
-                <div className="
+                                            {/* PASSWORD */}
+                                            <div>
+                                                <div className="
                     flex items-center justify-between mb-3
                 ">
-                    <label
-                        htmlFor="password"
-                        className="text-base font-semibold text-slate-700"
-                    >
-                        Password
-                    </label>
+                                                    <label
+                                                        htmlFor="password"
+                                                        className="text-base font-semibold text-slate-700"
+                                                    >
+                                                        Password
+                                                    </label>
 
-                    <span className="text-xs text-slate-400">
-                        Secure Login
-                    </span>
-                </div>
+                                                    <span className="text-xs text-slate-400">
+                                                        Secure Login
+                                                    </span>
+                                                </div>
 
-                <div className="relative">
-                    <div className="
+                                                <div className="relative">
+                                                    <div className="
                         absolute inset-y-0 left-0
                         flex items-center pl-5
                         pointer-events-none
                     ">
-                        <svg
-                            className="w-6 h-6 text-slate-400"
-                            fill="none"
-                            viewBox="0 0 24 24"
-                            stroke="currentColor"
-                            strokeWidth="1.8"
-                        >
-                            <path
-                                strokeLinecap="round"
-                                strokeLinejoin="round"
-                                d="M16.5 10.5V7a4.5 4.5 0 00-9 0v3.5"
-                            />
-                            <rect
-                                x="4.5"
-                                y="10.5"
-                                width="15"
-                                height="10"
-                                rx="2"
-                            />
-                        </svg>
-                    </div>
+                                                        <svg
+                                                            className="w-6 h-6 text-slate-400"
+                                                            fill="none"
+                                                            viewBox="0 0 24 24"
+                                                            stroke="currentColor"
+                                                            strokeWidth="1.8"
+                                                        >
+                                                            <path
+                                                                strokeLinecap="round"
+                                                                strokeLinejoin="round"
+                                                                d="M16.5 10.5V7a4.5 4.5 0 00-9 0v3.5"
+                                                            />
+                                                            <rect
+                                                                x="4.5"
+                                                                y="10.5"
+                                                                width="15"
+                                                                height="10"
+                                                                rx="2"
+                                                            />
+                                                        </svg>
+                                                    </div>
 
-                    <input
-                        id="password"
-                        name="password"
-                        type={showPassword ? "text" : "password"}
-                        value={form.data.password}
-                        autoComplete="current-password"
-                        required
-                        placeholder="Enter your password"
-                        onChange={(e) =>
-                            form.setData("password", e.target.value)
-                        }
-                        className={`
+                                                    <input
+                                                        id="password"
+                                                        name="password"
+                                                        type={showPassword ? "text" : "password"}
+                                                        value={form.data.password}
+                                                        autoComplete="current-password"
+                                                        required
+                                                        placeholder="Enter your password"
+                                                        onChange={(e) =>
+                                                            form.setData("password", e.target.value)
+                                                        }
+                                                        className={`
                             w-full h-14 sm:h-16
                             pl-14 pr-14 rounded-xl border
                             text-base sm:text-lg
-                            ${
-                                form.errors.password
-                                    ? "border-red-400 focus:border-red-500 focus:ring-red-500/10"
-                                    : "border-slate-200 focus:border-emerald-500 focus:ring-4 focus:ring-emerald-500/10"
-                            }
+                            ${form.errors.password
+                                                                ? "border-red-400 focus:border-red-500 focus:ring-red-500/10"
+                                                                : "border-slate-200 focus:border-emerald-500 focus:ring-4 focus:ring-emerald-500/10"
+                                                            }
                             bg-slate-50 text-slate-900
                             placeholder-slate-400
                             outline-none transition-all
                         `}
-                    />
+                                                    />
 
-                    <button
-                        type="button"
-                        onClick={() =>
-                            setShowPassword((previous) => !previous)
-                        }
-                        aria-label={
-                            showPassword
-                                ? "Hide password"
-                                : "Show password"
-                        }
-                        className="
+                                                    <button
+                                                        type="button"
+                                                        onClick={() =>
+                                                            setShowPassword((previous) => !previous)
+                                                        }
+                                                        aria-label={
+                                                            showPassword
+                                                                ? "Hide password"
+                                                                : "Show password"
+                                                        }
+                                                        className="
                             absolute inset-y-0 right-0
                             flex items-center px-5
                             text-slate-400 hover:text-emerald-600
                         "
-                    >
-                        {showPassword ? "🙈" : "👁"}
-                    </button>
-                </div>
+                                                    >
+                                                        {showPassword ? "🙈" : "👁"}
+                                                    </button>
+                                                </div>
 
-                {form.errors.password && (
-                    <p className="mt-2 text-sm text-red-600">
-                        {form.errors.password}
-                    </p>
-                )}
-            </div>
+                                                {form.errors.password && (
+                                                    <p className="mt-2 text-sm text-red-600">
+                                                        {form.errors.password}
+                                                    </p>
+                                                )}
+                                            </div>
 
-            {/* REMEMBER ME */}
-            <div className="
+                                            {/* REMEMBER ME */}
+                                            <div className="
                 flex items-center justify-between
                 pt-1
             ">
-                <label className="
+                                                <label className="
                     inline-flex items-center
                     cursor-pointer select-none
                 ">
-                    <input
-                        type="checkbox"
-                        checked={form.data.remember}
-                        onChange={(e) =>
-                            form.setData("remember", e.target.checked)
-                        }
-                        className="
+                                                    <input
+                                                        type="checkbox"
+                                                        checked={form.data.remember}
+                                                        onChange={(e) =>
+                                                            form.setData("remember", e.target.checked)
+                                                        }
+                                                        className="
                             w-5 h-5 rounded border-slate-300
                             text-emerald-600 focus:ring-emerald-500
                         "
-                    />
+                                                    />
 
-                    <span className="ml-3 text-sm text-slate-600">
-                        Remember me
-                    </span>
-                </label>
+                                                    <span className="ml-3 text-sm text-slate-600">
+                                                        Remember me
+                                                    </span>
+                                                </label>
 
-                <span className="text-xs text-slate-400">
-                    Secure &amp; protected
-                </span>
-            </div>
+                                                <span className="text-xs text-slate-400">
+                                                    Secure &amp; protected
+                                                </span>
+                                            </div>
 
-            {/* LOGIN BUTTON */}
-            <button
-                type="submit"
-                disabled={form.processing}
-                className="
+                                            {/* LOGIN BUTTON */}
+                                            <button
+                                                type="submit"
+                                                disabled={form.processing}
+                                                className="
                     w-full h-14 sm:h-16 rounded-xl
                     bg-emerald-600 hover:bg-emerald-700
                     text-white font-bold text-lg
@@ -868,70 +864,70 @@ export default function Welcome({
                     disabled:cursor-not-allowed
                     flex items-center justify-center gap-2
                 "
-            >
-                {form.processing ? (
-                    <>
-                        <svg
-                            className="w-5 h-5 animate-spin"
-                            viewBox="0 0 24 24"
-                            fill="none"
-                        >
-                            <circle
-                                className="opacity-25"
-                                cx="12"
-                                cy="12"
-                                r="10"
-                                stroke="currentColor"
-                                strokeWidth="4"
-                            />
-                            <path
-                                className="opacity-75"
-                                fill="currentColor"
-                                d="M4 12a8 8 0 018-8v4a4 4 0 00-4 4H4z"
-                            />
-                        </svg>
-                        Signing in...
-                    </>
-                ) : (
-                    <>
-                        Sign In to Your Account
-                        <ChevronRightIcon className="w-5 h-5" />
-                    </>
-                )}
-            </button>
-        </form>
+                                            >
+                                                {form.processing ? (
+                                                    <>
+                                                        <svg
+                                                            className="w-5 h-5 animate-spin"
+                                                            viewBox="0 0 24 24"
+                                                            fill="none"
+                                                        >
+                                                            <circle
+                                                                className="opacity-25"
+                                                                cx="12"
+                                                                cy="12"
+                                                                r="10"
+                                                                stroke="currentColor"
+                                                                strokeWidth="4"
+                                                            />
+                                                            <path
+                                                                className="opacity-75"
+                                                                fill="currentColor"
+                                                                d="M4 12a8 8 0 018-8v4a4 4 0 00-4 4H4z"
+                                                            />
+                                                        </svg>
+                                                        Signing in...
+                                                    </>
+                                                ) : (
+                                                    <>
+                                                        Sign In to Your Account
+                                                        <ChevronRightIcon className="w-5 h-5" />
+                                                    </>
+                                                )}
+                                            </button>
+                                        </form>
 
-        {/* SIGN UP */}
-        {canRegister && (
-            <div className="
+                                        {/* SIGN UP */}
+                                        {canRegister && (
+                                            <div className="
                 mt-7 pt-7 border-t border-slate-100
                 text-center
             ">
-                <p className="text-sm sm:text-base text-slate-500">
-                    Don't have an account?
+                                                <p className="text-sm sm:text-base text-slate-500">
+                                                    Don't have an account?
 
-                    <Link
-                        href={route("register")}
-                        className="
+                                                    <Link
+                                                        href={route("register")}
+                                                        className="
                             ml-1 font-bold text-emerald-600
                             hover:text-emerald-700
                         "
-                    >
-                        Create an Account
-                    </Link>
-                </p>
-            </div>
-        )}
+                                                    >
+                                                        Create an Account
+                                                    </Link>
+                                                </p>
+                                            </div>
+                                        )}
 
-        <p className="
+                                        <p className="
             mt-5 text-center text-xs
             leading-5 text-slate-400
         ">
-            Your business information is protected.
-            Sign in securely to access your workspace.
-        </p>
-    </div>
-</section>
+                                            Your business information is protected.
+                                            Sign in securely to access your workspace.
+                                        </p>
+                                    </div>
+                                </section>
 
                             </div>
                         </div>
