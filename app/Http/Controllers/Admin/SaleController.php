@@ -14,78 +14,83 @@ use Inertia\Inertia;
 
 class SaleController extends Controller
 {
+    /**
+     * Display sales history.
+     */
+    public function index(Request $request)
+    {
+        $branchId = session('branch_id');
 
-/**
- * Display sales history.
- */
-public function index(Request $request)
-{
-    $user = auth()->user();
+        if (!$branchId) {
+            abort(403, 'No active branch selected.');
+        }
 
-    // $branchId = $user->branch_id ?? session('branch_id');
-    $branchId = session('branch_id');
+        $sales = Sale::with([
+                'user:id,name',
+                'items.product:id,name,sku',
+            ])
+            ->where('branch_id', $branchId)
+            ->latest()
+            ->paginate(20)
+            ->withQueryString();
 
-    if (!$branchId) {
-        abort(403, 'No active branch selected.');
-    }
-
-    $sales = Sale::with([
-            'user:id,name',
-            'items.product:id,name,sku',
-        ])
-        ->where('branch_id', $branchId)
-        ->latest()
-        ->paginate(20)
-        ->withQueryString();
-
-    return Inertia::render('Admin/Sales/Index', [
-        'sales' => $sales,
-    ]);
-}
-
-/**
- * Display the POS screen.
- */
-public function create()
-{
-    $user = auth()->user();
-
-    // $branchId = $user->branch_id ?? session('branch_id');
-    $branchId = session('branch_id');
-
-    if (!$branchId) {
-        abort(403, 'No active branch selected.');
-    }
-
-    $products = Product::where('branch_id', $branchId)
-        ->where('status', 'active')
-        ->orderBy('name')
-        ->get([
-            'id',
-            'name',
-            'sku',
-            'barcode',
-            'selling_price',
-            'quantity',
-            'unit',
-            'image',
+        return Inertia::render('Admin/Sales/Index', [
+            'sales' => $sales,
         ]);
+    }
 
-    return Inertia::render('Admin/Sales/Create', [
-        'products' => $products,
-    ]);
-}
+    /**
+     * Display the POS screen.
+     */
+    public function create()
+    {
+        $branchId = session('branch_id');
+
+        if (!$branchId) {
+            abort(403, 'No active branch selected.');
+        }
+
+        $products = Product::where('branch_id', $branchId)
+            ->where('status', 'active')
+            ->orderBy('name')
+            ->get([
+                'id',
+                'name',
+                'sku',
+                'barcode',
+                'selling_price',
+                'quantity',
+                'unit',
+                'image',
+            ]);
+
+        return Inertia::render('Admin/Sales/Create', [
+            'products' => $products,
+        ]);
+    }
+
     /**
      * Store a new sale.
      */
     public function store(Request $request)
     {
+        /*
+        |--------------------------------------------------------------------------
+        | Validate Request
+        |--------------------------------------------------------------------------
+        */
+
         $validated = $request->validate([
-            'items' => ['required', 'array', 'min:1'],
+            'items' => [
+                'required',
+                'array',
+                'min:1',
+            ],
 
             'items.*.product_id' => [
                 'required',
                 'integer',
+                'min:1',
             ],
 
             'items.*.quantity' => [
@@ -114,6 +119,7 @@ public function create()
             'customer_id' => [
                 'nullable',
                 'integer',
+                'min:1',
             ],
         ]);
 
@@ -123,19 +129,38 @@ public function create()
         |--------------------------------------------------------------------------
         | Get Active Branch
         |--------------------------------------------------------------------------
-        |
-        | MauzoVibe system uses branch_id on the user/session.
-        | We first use the authenticated user's branch.
-        |
         */
 
-        // $branchId = $user->branch_id ?? session('branch_id');
         $branchId = session('branch_id');
 
         if (!$branchId) {
             throw ValidationException::withMessages([
                 'branch_id' => 'No active branch has been selected.',
             ]);
+        }
+
+        /*
+        |--------------------------------------------------------------------------
+        | Combine Repeated Products
+        |--------------------------------------------------------------------------
+        |
+        | If the same product appears more than once in the request,
+        | combine its quantities before checking available stock.
+        |
+        */
+
+        $requestedItems = [];
+
+        foreach ($validated['items'] as $item) {
+            $productId = (int) $item['product_id'];
+
+            $quantity = (float) $item['quantity'];
+
+            if (!isset($requestedItems[$productId])) {
+                $requestedItems[$productId] = 0;
+            }
+
+            $requestedItems[$productId] += $quantity;
         }
 
         /*
@@ -147,32 +172,31 @@ public function create()
         $sale = DB::transaction(function () use (
             $validated,
             $user,
-            $branchId
+            $branchId,
+            $requestedItems
         ) {
-
             $subtotal = 0;
 
             $saleItems = [];
 
             /*
             |--------------------------------------------------------------------------
-            | Process Each Product
+            | Lock Products and Check Stock
             |--------------------------------------------------------------------------
             */
 
-            foreach ($validated['items'] as $item) {
+            // Sort IDs to reduce the risk of deadlocks between cashiers.
+            ksort($requestedItems);
+
+            foreach ($requestedItems as $productId => $requestedQuantity) {
 
                 /*
                 |--------------------------------------------------------------------------
                 | Lock Product Row
                 |--------------------------------------------------------------------------
-                |
-                | This prevents two cashiers from selling the same remaining
-                | stock at exactly the same time.
-                |
                 */
 
-                $product = Product::where('id', $item['product_id'])
+                $product = Product::where('id', $productId)
                     ->where('branch_id', $branchId)
                     ->where('status', 'active')
                     ->lockForUpdate()
@@ -180,19 +204,19 @@ public function create()
 
                 if (!$product) {
                     throw ValidationException::withMessages([
-                        'items' => "Product ID {$item['product_id']} was not found in this branch.",
+                        'items' => "Product ID {$productId} was not found in this branch or is inactive.",
                     ]);
                 }
 
                 /*
                 |--------------------------------------------------------------------------
-                | Check Stock
+                | Check Available Stock
                 |--------------------------------------------------------------------------
                 */
 
-                if ($product->quantity < $item['quantity']) {
+                if ((float) $product->quantity < $requestedQuantity) {
                     throw ValidationException::withMessages([
-                        'items' => "Insufficient stock for {$product->name}. Available stock: {$product->quantity}.",
+                        'items' => "Insufficient stock for {$product->name}. Available stock: {$product->quantity}. Requested quantity: {$requestedQuantity}.",
                     ]);
                 }
 
@@ -202,7 +226,7 @@ public function create()
                 |--------------------------------------------------------------------------
                 */
 
-                $quantity = (float) $item['quantity'];
+                $quantity = $requestedQuantity;
 
                 $unitPrice = (float) $product->selling_price;
 
@@ -223,7 +247,7 @@ public function create()
 
             /*
             |--------------------------------------------------------------------------
-            | Sale Discount
+            | Calculate Discount
             |--------------------------------------------------------------------------
             */
 
@@ -235,7 +259,7 @@ public function create()
                 ]);
             }
 
-            $total = $subtotal - $discount;
+            $total = max(0, $subtotal - $discount);
 
             /*
             |--------------------------------------------------------------------------
@@ -251,14 +275,12 @@ public function create()
             |--------------------------------------------------------------------------
             | Credit Sale
             |--------------------------------------------------------------------------
-            |
-            | Customers module is not yet implemented.
-            | We therefore prepare the structure but require customer_id
-            | for credit sales.
-            |
             */
 
-            if ($paymentMethod === 'credit' && empty($validated['customer_id'])) {
+            if (
+                $paymentMethod === 'credit' &&
+                empty($validated['customer_id'])
+            ) {
                 throw ValidationException::withMessages([
                     'customer_id' => 'A customer is required for credit sales.',
                 ]);
@@ -334,7 +356,7 @@ public function create()
 
             /*
             |--------------------------------------------------------------------------
-            | Create Sale Items + Reduce Stock
+            | Create Sale Items and Reduce Stock
             |--------------------------------------------------------------------------
             */
 
@@ -356,9 +378,7 @@ public function create()
 
                     'unit_price' => $item['unit_price'],
 
-                    /*
-                    | Snapshot cost price at time of sale.
-                    */
+                    // Snapshot cost price at time of sale.
                     'cost_price' => $item['cost_price'],
 
                     'discount' => 0,
@@ -400,7 +420,7 @@ public function create()
             }
 
             return $sale;
-        });
+        }, 3);
 
         /*
         |--------------------------------------------------------------------------
@@ -410,46 +430,34 @@ public function create()
 
         return redirect()
             ->route('admin.sales.create')
-            ->with('success', "Sale {$sale->invoice_number} completed successfully.");
+            ->with(
+                'success',
+                "Sale {$sale->invoice_number} completed successfully."
+            );
     }
 
-    //Sales Details
+    /**
+     * Display sale details.
+     */
     public function show(Sale $sale)
-{
-    $branchId = session('branch_id');
+    {
+        $branchId = session('branch_id');
 
-    if (!$branchId) {
-        abort(403, 'No active branch selected.');
+        if (!$branchId) {
+            abort(403, 'No active branch selected.');
+        }
+
+        if ((int) $sale->branch_id !== (int) $branchId) {
+            abort(403, 'This sale does not belong to the active branch.');
+        }
+
+        $sale->load([
+            'items.product',
+            'user',
+        ]);
+
+        return Inertia::render('Admin/Sales/Show', [
+            'sale' => $sale,
+        ]);
     }
-
-    if ($sale->branch_id != $branchId) {
-        abort(403, 'This sale does not belong to the active branch.');
-    }
-
-    $sale->load([
-        'items.product',
-        'user',
-    ]);
-
-    return Inertia::render('Admin/Sales/Show', [
-        'sale' => $sale,
-    ]);
-}
-//   public function show(Sale $sale)
-// {
-//     // Only allow users to view sales from their own branch
-//     if ($sale->branch_id != auth()->user()->branch_id) {
-//         abort(403);
-//     }
-
-//     $sale->load([
-//         'items.product',
-//         'user',
-//     ]);
-
-//     return Inertia::render('Admin/Sales/Show', [
-//         'sale' => $sale,
-//     ]);
-// }
-
 }
