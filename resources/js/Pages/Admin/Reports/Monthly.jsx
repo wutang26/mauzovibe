@@ -1,8 +1,6 @@
 
 import React from "react";
-
 import { Head, router } from "@inertiajs/react";
-
 import AdminLayout from "@/Layouts/AdminLayout";
 
 import {
@@ -28,6 +26,7 @@ export default function Monthly({
     summary = {},
     paymentMethods = {},
     dailySales = [],
+    sales = [],
 }) {
     /*
     |--------------------------------------------------------------------------
@@ -85,6 +84,16 @@ export default function Monthly({
 
     const safeDailySales = Array.isArray(dailySales)
         ? dailySales
+        : [];
+
+    /*
+    |--------------------------------------------------------------------------
+    | Safe Transactions
+    |--------------------------------------------------------------------------
+    */
+
+    const safeSales = Array.isArray(sales)
+        ? sales
         : [];
 
     /*
@@ -187,8 +196,8 @@ export default function Monthly({
         month && year
             ? `${month} ${year}`
             : monthStart && monthEnd
-            ? `${monthStart} — ${monthEnd}`
-            : "Monthly Report";
+                ? `${monthStart} — ${monthEnd}`
+                : "Monthly Report";
 
     /*
     |--------------------------------------------------------------------------
@@ -201,18 +210,20 @@ export default function Monthly({
             <Head title="Monthly Report" />
 
             <AdminLayout>
-                <div className="min-h-screen bg-slate-50 px-4 py-6 sm:px-6 lg:px-8 print:bg-white print:px-0 print:py-0">
+
+                <div className="min-h-screen bg-slate-50 px-4 py-6 sm:px-6 lg:px-8">
+
                     <div className="mx-auto max-w-7xl">
 
                         {/* =====================================================
                             HEADER
                         ====================================================== */}
 
-                        <div className="mb-6 flex flex-col gap-4 lg:flex-row lg:items-center lg:justify-between print:mb-4">
+                        <div className="mb-6 flex flex-col gap-4 lg:flex-row lg:items-center lg:justify-between">
 
                             <div className="flex items-center gap-3">
 
-                                <div className="flex h-12 w-12 shrink-0 items-center justify-center rounded-xl bg-green-600 shadow-sm print:hidden">
+                                <div className="flex h-12 w-12 shrink-0 items-center justify-center rounded-xl bg-green-600 shadow-sm">
                                     <ChartBarIcon className="h-6 w-6 text-white" />
                                 </div>
 
@@ -224,7 +235,7 @@ export default function Monthly({
                                             Monthly Report
                                         </h1>
 
-                                        <span className="rounded-full bg-green-50 px-2.5 py-1 text-xs font-semibold text-green-700 print:hidden">
+                                        <span className="rounded-full bg-green-50 px-2.5 py-1 text-xs font-semibold text-green-700">
                                             Monthly
                                         </span>
 
@@ -244,7 +255,7 @@ export default function Monthly({
 
                             {/* Controls */}
 
-                            <div className="flex flex-wrap items-center gap-2 print:hidden">
+                            <div className="flex flex-wrap items-center gap-2">
 
                                 <div className="flex items-center gap-2 rounded-xl border border-slate-200 bg-white p-2 shadow-sm">
 
@@ -291,18 +302,17 @@ export default function Monthly({
 
                         </div>
 
-
                         {/* =====================================================
                             PERIOD SUMMARY
                         ====================================================== */}
 
-                        <div className="mb-6 rounded-2xl border border-green-100 bg-gradient-to-r from-green-600 to-green-700 p-5 text-white shadow-sm print:border print:border-slate-200 print:bg-white print:text-slate-900">
+                        <div className="mb-6 rounded-2xl border border-green-100 bg-gradient-to-r from-green-600 to-green-700 p-5 text-white shadow-sm">
 
                             <div className="flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between">
 
                                 <div>
 
-                                    <p className="text-sm font-medium text-green-100 print:text-slate-500">
+                                    <p className="text-sm font-medium text-green-100">
                                         Reporting Period
                                     </p>
 
@@ -310,7 +320,7 @@ export default function Monthly({
                                         {displayMonth}
                                     </h2>
 
-                                    <p className="mt-1 text-xs text-green-100 print:text-slate-500">
+                                    <p className="mt-1 text-xs text-green-100">
                                         {monthStart || "—"} — {monthEnd || "—"}
                                     </p>
 
@@ -318,7 +328,7 @@ export default function Monthly({
 
                                 <div className="text-left sm:text-right">
 
-                                    <p className="text-sm text-green-100 print:text-slate-500">
+                                    <p className="text-sm text-green-100">
                                         Net Sales
                                     </p>
 
@@ -331,7 +341,6 @@ export default function Monthly({
                             </div>
 
                         </div>
-
 
                         {/* =====================================================
                             MAIN FINANCIAL CARDS
@@ -369,7 +378,6 @@ export default function Monthly({
 
                             </div>
 
-
                             {/* Net Sales */}
 
                             <div className="rounded-2xl border border-slate-200 bg-white p-5 shadow-sm transition hover:-translate-y-0.5 hover:shadow-md">
@@ -400,7 +408,6 @@ export default function Monthly({
 
                             </div>
 
-
                             {/* Gross Profit */}
 
                             <div className="rounded-2xl border border-slate-200 bg-white p-5 shadow-sm transition hover:-translate-y-0.5 hover:shadow-md">
@@ -430,7 +437,6 @@ export default function Monthly({
                                 </div>
 
                             </div>
-
 
                             {/* Transactions */}
 
@@ -464,7 +470,6 @@ export default function Monthly({
 
                         </div>
 
-
                         {/* =====================================================
                             OPERATIONS SUMMARY
                         ====================================================== */}
@@ -497,7 +502,6 @@ export default function Monthly({
 
                             </div>
 
-
                             {/* Collected */}
 
                             <div className="rounded-2xl border border-slate-200 bg-white p-5 shadow-sm">
@@ -524,7 +528,6 @@ export default function Monthly({
 
                             </div>
 
-
                             {/* Outstanding */}
 
                             <div className="rounded-2xl border border-slate-200 bg-white p-5 shadow-sm">
@@ -550,7 +553,6 @@ export default function Monthly({
                                 </div>
 
                             </div>
-
 
                             {/* Discounts */}
 
@@ -580,7 +582,6 @@ export default function Monthly({
 
                         </div>
 
-
                         {/* =====================================================
                             PAYMENT METHODS
                         ====================================================== */}
@@ -604,8 +605,7 @@ export default function Monthly({
                                 {Object.entries(safePaymentMethods).map(
                                     ([method, amount]) => {
 
-                                        const Icon =
-                                            getPaymentIcon(method);
+                                        const Icon = getPaymentIcon(method);
 
                                         return (
                                             <div
@@ -616,9 +616,7 @@ export default function Monthly({
                                                 <div className="flex items-center gap-3">
 
                                                     <div className="rounded-lg bg-white p-2 shadow-sm">
-
                                                         <Icon className="h-5 w-5 text-green-600" />
-
                                                     </div>
 
                                                     <span className="text-sm font-semibold text-slate-600">
@@ -639,7 +637,6 @@ export default function Monthly({
                             </div>
 
                         </div>
-
 
                         {/* =====================================================
                             DAILY PERFORMANCE
@@ -666,7 +663,6 @@ export default function Monthly({
                                 </div>
 
                             </div>
-
 
                             {safeDailySales.length > 0 ? (
 
@@ -708,91 +704,76 @@ export default function Monthly({
 
                                         <tbody className="divide-y divide-slate-100 bg-white">
 
-                                            {safeDailySales.map(
-                                                (day, index) => {
+                                            {safeDailySales.map((day, index) => {
 
-                                                    const margin = Number(
-                                                        day.margin || 0
-                                                    );
+                                                const margin = Number(
+                                                    day.margin || 0
+                                                );
 
-                                                    const hasSales =
-                                                        Number(
-                                                            day.transactions || 0
-                                                        ) > 0;
+                                                const hasSales =
+                                                    Number(day.transactions || 0) > 0;
 
-                                                    return (
-                                                        <tr
-                                                            key={
-                                                                day.date ||
-                                                                index
-                                                            }
-                                                            className={`transition hover:bg-slate-50 ${
-                                                                hasSales
-                                                                    ? ""
-                                                                    : "bg-slate-50/40"
-                                                            }`}
-                                                        >
+                                                return (
+                                                    <tr
+                                                        key={day.date || index}
+                                                        className={`transition hover:bg-slate-50 ${
+                                                            hasSales
+                                                                ? ""
+                                                                : "bg-slate-50/40"
+                                                        }`}
+                                                    >
 
-                                                            <td className="whitespace-nowrap px-5 py-4">
+                                                        <td className="whitespace-nowrap px-5 py-4">
 
-                                                                <div className="font-semibold text-slate-800">
-                                                                    {day.date}
+                                                            <div className="font-semibold text-slate-800">
+                                                                {day.date}
+                                                            </div>
+
+                                                            {day.day && (
+                                                                <div className="text-xs text-slate-400">
+                                                                    {day.day}
                                                                 </div>
+                                                            )}
 
-                                                                {day.day && (
-                                                                    <div className="text-xs text-slate-400">
-                                                                        {day.day}
-                                                                    </div>
-                                                                )}
+                                                        </td>
 
-                                                            </td>
+                                                        <td className="whitespace-nowrap px-5 py-4 text-sm text-slate-600">
+                                                            {day.transactions ?? 0}
+                                                        </td>
 
-                                                            <td className="whitespace-nowrap px-5 py-4 text-sm text-slate-600">
-                                                                {day.transactions ?? 0}
-                                                            </td>
+                                                        <td className="whitespace-nowrap px-5 py-4 text-sm text-slate-600">
+                                                            {day.itemsSold ?? 0}
+                                                        </td>
 
-                                                            <td className="whitespace-nowrap px-5 py-4 text-sm text-slate-600">
-                                                                {day.itemsSold ?? 0}
-                                                            </td>
+                                                        <td className="whitespace-nowrap px-5 py-4 text-sm font-semibold text-slate-800">
+                                                            TZS {formatMoney(
+                                                                day.netSales ??
+                                                                day.revenue ??
+                                                                0
+                                                            )}
+                                                        </td>
 
-                                                            <td className="whitespace-nowrap px-5 py-4 text-sm font-semibold text-slate-800">
-                                                                TZS{" "}
-                                                                {formatMoney(
-                                                                    day.netSales ??
-                                                                        day.revenue ??
-                                                                        0
-                                                                )}
-                                                            </td>
+                                                        <td className="whitespace-nowrap px-5 py-4 text-sm font-bold text-green-600">
+                                                            TZS {formatMoney(day.profit)}
+                                                        </td>
 
-                                                            <td className="whitespace-nowrap px-5 py-4 text-sm font-bold text-green-600">
-                                                                TZS{" "}
-                                                                {formatMoney(
-                                                                    day.profit
-                                                                )}
-                                                            </td>
+                                                        <td className="whitespace-nowrap px-5 py-4 text-right">
 
-                                                            <td className="whitespace-nowrap px-5 py-4 text-right">
+                                                            <span
+                                                                className={`inline-flex rounded-full px-3 py-1 text-xs font-semibold ${
+                                                                    margin > 0
+                                                                        ? "bg-green-50 text-green-700"
+                                                                        : "bg-slate-100 text-slate-500"
+                                                                }`}
+                                                            >
+                                                                {margin.toFixed(2)}%
+                                                            </span>
 
-                                                                <span
-                                                                    className={`inline-flex rounded-full px-3 py-1 text-xs font-semibold ${
-                                                                        margin >
-                                                                        0
-                                                                            ? "bg-green-50 text-green-700"
-                                                                            : "bg-slate-100 text-slate-500"
-                                                                    }`}
-                                                                >
-                                                                    {margin.toFixed(
-                                                                        2
-                                                                    )}
-                                                                    %
-                                                                </span>
+                                                        </td>
 
-                                                            </td>
-
-                                                        </tr>
-                                                    );
-                                                }
-                                            )}
+                                                    </tr>
+                                                );
+                                            })}
 
                                         </tbody>
 
@@ -805,9 +786,7 @@ export default function Monthly({
                                 <div className="flex flex-col items-center justify-center px-6 py-16 text-center">
 
                                     <div className="rounded-full bg-slate-100 p-4">
-
                                         <ChartBarIcon className="h-8 w-8 text-slate-400" />
-
                                     </div>
 
                                     <h3 className="mt-4 text-lg font-semibold text-slate-900">
@@ -824,7 +803,6 @@ export default function Monthly({
 
                         </div>
 
-
                         {/* =====================================================
                             FOOTER
                         ====================================================== */}
@@ -835,51 +813,561 @@ export default function Monthly({
 
                     </div>
                 </div>
+
             </AdminLayout>
 
+            {/* =============================================================
+                PRINT-ONLY MONTHLY RECEIPT
+            ============================================================== */}
+
+            <div className="monthly-print-report">
+
+                {/* HEADER */}
+
+                <div className="monthly-print-header">
+
+                    <h1>MAUZOVIBE</h1>
+
+                    <p className="monthly-print-subtitle">
+                        SALES MANAGEMENT REPORT
+                    </p>
+
+                    <h2>MONTHLY SALES REPORT</h2>
+
+                    <p className="monthly-print-period">
+                        {displayMonth}
+                    </p>
+
+                    <p className="monthly-print-date">
+                        Reporting Period: {monthStart} — {monthEnd}
+                    </p>
+
+                </div>
+
+                {/* TOTAL SALES */}
+
+                <div className="monthly-print-total">
+
+                    <p>TOTAL MONTHLY SALES</p>
+
+                    <h1>
+                        TZS {formatMoney(safeSummary.netSales)}
+                    </h1>
+
+                </div>
+
+                {/* STATISTICS */}
+
+                <div className="monthly-print-statistics">
+
+                    <div>
+                        <span>Transactions</span>
+                        <strong>{safeSummary.totalTransactions}</strong>
+                    </div>
+
+                    <div>
+                        <span>Items Sold</span>
+                        <strong>{safeSummary.totalItemsSold}</strong>
+                    </div>
+
+                    <div>
+                        <span>Discounts</span>
+                        <strong>
+                            TZS {formatMoney(safeSummary.totalDiscount)}
+                        </strong>
+                    </div>
+
+                    <div>
+                        <span>Gross Profit</span>
+                        <strong>
+                            TZS {formatMoney(safeSummary.totalProfit)}
+                        </strong>
+                    </div>
+
+                </div>
+
+                {/* DAILY SALES SUMMARY */}
+
+                <div className="monthly-print-section">
+
+                    <h3>DAILY SALES SUMMARY</h3>
+
+                    <table>
+
+                        <thead>
+                            <tr>
+                                <th>Date</th>
+                                <th>Transactions</th>
+                                <th>Items Sold</th>
+                                <th>Revenue (TZS)</th>
+                                <th>Profit (TZS)</th>
+                            </tr>
+                        </thead>
+
+                        <tbody>
+
+                            {safeDailySales.map((day, index) => (
+
+                                <tr key={day.date || index}>
+
+                                    <td>
+                                        {day.date}
+                                        {day.day ? ` (${day.day})` : ""}
+                                    </td>
+
+                                    <td>{day.transactions ?? 0}</td>
+
+                                    <td>{day.itemsSold ?? 0}</td>
+
+                                    <td className="monthly-print-amount">
+                                        {formatMoney(
+                                            day.netSales ?? day.revenue ?? 0
+                                        )}
+                                    </td>
+
+                                    <td className="monthly-print-amount">
+                                        {formatMoney(day.profit)}
+                                    </td>
+
+                                </tr>
+
+                            ))}
+
+                            {safeDailySales.length === 0 && (
+                                <tr>
+                                    <td colSpan="5" className="monthly-print-empty">
+                                        No daily sales found.
+                                    </td>
+                                </tr>
+                            )}
+
+                        </tbody>
+
+                    </table>
+
+                </div>
+
+                {/* SALES TRANSACTIONS */}
+
+                <div className="monthly-print-section">
+
+                    <h3>SALES TRANSACTIONS</h3>
+
+                    <table>
+
+                        <thead>
+                            <tr>
+                                <th>Invoice</th>
+                                <th>Customer</th>
+                                <th>Products Sold</th>
+                                <th className="monthly-print-amount">
+                                    Amount (TZS)
+                                </th>
+                            </tr>
+                        </thead>
+
+                        <tbody>
+
+                            {safeSales.map((sale) => (
+
+                                <tr key={sale.id}>
+
+                                    <td>
+                                        {sale.invoice_number || "-"}
+                                        {sale.date && (
+                                            <div className="monthly-print-muted">
+                                                {sale.date} {sale.time || ""}
+                                            </div>
+                                        )}
+                                    </td>
+
+                                    <td>
+                                        {sale.customer || "Walk-in Customer"}
+                                    </td>
+
+                                    <td>
+
+                                        <div className="monthly-print-product-list">
+
+                                            {(Array.isArray(sale.items) ? sale.items : []).map(
+                                                (item, index) => (
+
+                                                    <div
+                                                        className="monthly-print-product-item"
+                                                        key={item.id || `${sale.id}-${index}`}
+                                                    >
+
+                                                        <span>
+                                                            {item.product_name || "Unknown Product"}
+                                                        </span>
+
+                                                        <strong>
+                                                            × {item.quantity}
+                                                        </strong>
+
+                                                    </div>
+
+                                                )
+                                            )}
+
+                                            {(!sale.items || sale.items.length === 0) && (
+                                                <span>-</span>
+                                            )}
+
+                                        </div>
+
+                                    </td>
+
+                                    <td className="monthly-print-amount">
+                                        {formatMoney(sale.total)}
+                                    </td>
+
+                                </tr>
+
+                            ))}
+
+                            {safeSales.length === 0 && (
+                                <tr>
+                                    <td colSpan="4" className="monthly-print-empty">
+                                        No sales found for this month.
+                                    </td>
+                                </tr>
+                            )}
+
+                        </tbody>
+
+                    </table>
+
+                </div>
+
+                {/* FINANCIAL SUMMARY */}
+
+                <div className="monthly-print-financial">
+
+                    <div className="monthly-print-grand-total">
+                        <span>TOTAL SALES</span>
+
+                        <strong>
+                            TZS {formatMoney(safeSummary.netSales)}
+                        </strong>
+                    </div>
+
+                    <div>
+                        <span>Gross Revenue</span>
+
+                        <strong>
+                            TZS {formatMoney(safeSummary.grossRevenue)}
+                        </strong>
+                    </div>
+
+                    <div>
+                        <span>Total Discounts</span>
+
+                        <strong>
+                            TZS {formatMoney(safeSummary.totalDiscount)}
+                        </strong>
+                    </div>
+
+                    <div>
+                        <span>Amount Collected</span>
+
+                        <strong>
+                            TZS {formatMoney(safeSummary.totalPaid)}
+                        </strong>
+                    </div>
+
+                    <div>
+                        <span>Outstanding</span>
+
+                        <strong>
+                            TZS {formatMoney(safeSummary.totalOutstanding)}
+                        </strong>
+                    </div>
+
+                    <div>
+                        <span>Cost of Goods</span>
+
+                        <strong>
+                            TZS {formatMoney(safeSummary.totalCost)}
+                        </strong>
+                    </div>
+
+                    <div>
+                        <span>Gross Profit</span>
+
+                        <strong>
+                            TZS {formatMoney(safeSummary.totalProfit)}
+                        </strong>
+                    </div>
+
+                </div>
+
+                {/* FOOTER */}
+
+                <div className="monthly-print-footer">
+
+                    <strong>Powered by NAC Technologies</strong>
+
+                    <p>Thank you for your business.</p>
+
+                </div>
+
+            </div>
 
             {/* =============================================================
                 PRINT STYLES
             ============================================================== */}
 
             <style>{`
+
+                .monthly-print-report {
+                    display: none;
+                }
+
+                @page {
+                    size: A4 portrait;
+                    margin: 10mm;
+                }
+
                 @media print {
 
-                    @page {
-                        size: A4;
-                        margin: 12mm;
-                    }
-
+                    html,
                     body {
-                        background: white !important;
+                        background: #ffffff !important;
+                        margin: 0 !important;
+                        padding: 0 !important;
+                        -webkit-print-color-adjust: exact !important;
+                        print-color-adjust: exact !important;
                     }
 
-                    nav,
-                    aside {
-                        display: none !important;
+                    body * {
+                        visibility: hidden !important;
                     }
 
-                    button,
-                    input {
-                        display: none !important;
+                    .monthly-print-report,
+                    .monthly-print-report * {
+                        visibility: visible !important;
                     }
 
-                    .shadow-sm,
-                    .shadow-md {
-                        box-shadow: none !important;
+                    .monthly-print-report {
+                        display: block !important;
+                        position: absolute !important;
+                        top: 0 !important;
+                        left: 0 !important;
+                        width: 100% !important;
+                        margin: 0 !important;
+                        padding: 0 !important;
+                        background: #ffffff !important;
+                        color: #111827 !important;
+                        font-family: Arial, Helvetica, sans-serif !important;
+                        font-size: 11px !important;
+                        line-height: 1.4 !important;
+                        z-index: 999999 !important;
                     }
 
-                    table {
-                        page-break-inside: auto;
+                    .monthly-print-header {
+                        text-align: center;
+                        border-bottom: 2px solid #111827;
+                        padding-bottom: 10px;
+                        margin-bottom: 14px;
                     }
 
-                    tr {
+                    .monthly-print-header h1 {
+                        font-size: 32px !important;
+                        font-weight: 900 !important;
+                        letter-spacing: 2px;
+                        margin: 0;
+                    }
+
+                    .monthly-print-subtitle {
+                        font-size: 12px !important;
+                        font-weight: 700;
+                        letter-spacing: 2px;
+                        margin: 2px 0 8px;
+                    }
+
+                    .monthly-print-header h2 {
+                        font-size: 20px !important;
+                        font-weight: 800;
+                        margin: 6px 0;
+                    }
+
+                    .monthly-print-period {
+                        font-size: 15px !important;
+                        font-weight: 700;
+                        margin: 5px 0;
+                    }
+
+                    .monthly-print-date {
+                        font-size: 12px !important;
+                        margin-top: 5px;
+                    }
+
+                    .monthly-print-total {
+                        text-align: center;
+                        border: 2px solid #111827;
+                        padding: 10px;
+                        margin-bottom: 12px;
+                    }
+
+                    .monthly-print-total p {
+                        font-size: 13px !important;
+                        font-weight: 700;
+                        margin: 0;
+                    }
+
+                    .monthly-print-total h1 {
+                        font-size: 30px !important;
+                        font-weight: 900;
+                        margin: 4px 0 0;
+                    }
+
+                    .monthly-print-statistics {
+                        display: grid;
+                        grid-template-columns: repeat(4, 1fr);
+                        gap: 8px;
+                        margin-bottom: 14px;
+                    }
+
+                    .monthly-print-statistics div {
+                        border: 1px solid #999;
+                        padding: 8px 5px;
+                        text-align: center;
+                    }
+
+                    .monthly-print-statistics span,
+                    .monthly-print-statistics strong {
+                        display: block;
+                    }
+
+                    .monthly-print-statistics span {
+                        font-size: 10px !important;
+                    }
+
+                    .monthly-print-statistics strong {
+                        font-size: 13px !important;
+                        margin-top: 3px;
+                    }
+
+                    .monthly-print-section {
+                        margin-top: 12px;
+                    }
+
+                    .monthly-print-section h3 {
+                        font-size: 14px !important;
+                        font-weight: 800;
+                        border-bottom: 1px solid #333;
+                        padding-bottom: 5px;
+                        margin-bottom: 6px;
+                    }
+
+                    .monthly-print-report table {
+                        width: 100%;
+                        border-collapse: collapse !important;
+                        table-layout: auto;
+                    }
+
+                    .monthly-print-report th {
+                        background: #eeeeee !important;
+                        font-size: 10px !important;
+                        font-weight: 800;
+                        text-align: left;
+                        padding: 6px 5px;
+                        border: 1px solid #777;
+                    }
+
+                    .monthly-print-report td {
+                        font-size: 10px !important;
+                        padding: 5px;
+                        border: 1px solid #999;
+                        vertical-align: top;
+                    }
+
+                    .monthly-print-amount {
+                        text-align: right !important;
+                        white-space: nowrap;
+                    }
+
+                    .monthly-print-muted {
+                        color: #666;
+                        font-size: 9px !important;
+                        margin-top: 2px;
+                    }
+
+                    .monthly-print-product-list {
+                        display: flex;
+                        flex-direction: column;
+                        gap: 2px;
+                    }
+
+                    .monthly-print-product-item {
+                        display: flex;
+                        justify-content: space-between;
+                        gap: 6px;
+                        font-size: 10px !important;
+                        line-height: 1.35;
+                    }
+
+                    .monthly-print-product-item span {
+                        flex: 1;
+                    }
+
+                    .monthly-print-product-item strong {
+                        white-space: nowrap;
+                    }
+
+                    .monthly-print-empty {
+                        text-align: center;
+                        padding: 12px !important;
+                    }
+
+                    .monthly-print-financial {
+                        width: 55%;
+                        margin: 14px 0 0 auto;
+                        border-top: 2px solid #111827;
+                        padding-top: 7px;
+                    }
+
+                    .monthly-print-financial div {
+                        display: flex;
+                        justify-content: space-between;
+                        gap: 12px;
+                        padding: 4px 0;
+                        font-size: 11px !important;
+                    }
+
+                    .monthly-print-financial .monthly-print-grand-total {
+                        font-size: 14px !important;
+                        font-weight: 900;
+                        border-bottom: 1px solid #777;
+                        padding-bottom: 7px;
+                        margin-bottom: 5px;
+                    }
+
+                    .monthly-print-footer {
+                        text-align: center;
+                        border-top: 1px solid #777;
+                        margin-top: 18px;
+                        padding-top: 9px;
                         page-break-inside: avoid;
-                        page-break-after: auto;
+                    }
+
+                    .monthly-print-footer strong {
+                        font-size: 12px !important;
+                    }
+
+                    .monthly-print-footer p {
+                        font-size: 10px !important;
+                        margin-top: 3px;
+                    }
+
+                    .monthly-print-report tr {
+                        page-break-inside: avoid;
                     }
                 }
+
             `}</style>
+
         </>
     );
 }
-
