@@ -19,6 +19,7 @@ import {
     DocumentMagnifyingGlassIcon,
     FlagIcon,
     NewspaperIcon,
+    BoltIcon,
 } from "@heroicons/react/24/outline";
 
 export default function Sidebar({ open }) {
@@ -76,6 +77,11 @@ export default function Sidebar({ open }) {
             name: "Mauzo (POS)",
             icon: ShoppingCartIcon,
             children: [
+                {
+                    name: "Quick Sale",
+                    icon: BoltIcon,
+                    link: route("admin.sales.quick-sale"),
+                },
                 {
                     name: "New Sale",
                     icon: ShoppingCartIcon,

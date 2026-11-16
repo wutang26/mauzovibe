@@ -472,43 +472,54 @@ Route::prefix('admin')
     |--------------------------------------------------------------------------
     */
 
-    Route::prefix('admin/sales')
-        ->name('admin.sales.')
-        ->middleware('branch')
-        ->group(function () {
+   /*
+|--------------------------------------------------------------------------
+| SALES / POS
+|--------------------------------------------------------------------------
+*/
 
-            // Sales History
-            Route::get(
-                '/',
-                [SaleController::class, 'index']
-            )->name('index');
+Route::prefix('admin/sales')
+    ->name('admin.sales.')
+    ->middleware('branch')
+    ->group(function () {
 
-            // New Sale / POS
-            Route::get(
-                '/create',
-                [SaleController::class, 'create']
-            )->name('create');
+        // Quick Sale POS
+        Route::get(
+            '/quick-sale',
+            [SaleController::class, 'quickSale']
+        )->name('quick-sale');
 
-            // Complete Sale
-            Route::post(
-                '/',
-                [SaleController::class, 'store']
-            )->name('store');
+        // Sales History
+        Route::get(
+            '/',
+            [SaleController::class, 'index']
+        )->name('index');
 
-            // View Sale
-            Route::get(
-                '/{sale}',
-                [SaleController::class, 'show']
-            )->name('show');
+        // New Sale / POS
+        Route::get(
+            '/create',
+            [SaleController::class, 'create']
+        )->name('create');
 
-            // Return Sale
-            Route::get(
-                '/{sale}/return',
-                [SaleReturnController::class, 'create']
-            )->name('return.create');
+        // Complete Sale
+        Route::post(
+            '/',
+            [SaleController::class, 'store']
+        )->name('store');
 
-        });
+        // View Sale
+        Route::get(
+            '/{sale}',
+            [SaleController::class, 'show']
+        )->name('show');
 
+        // Return Sale
+        Route::get(
+            '/{sale}/return',
+            [SaleReturnController::class, 'create']
+        )->name('return.create');
+
+    });
 
     /*
     |--------------------------------------------------------------------------

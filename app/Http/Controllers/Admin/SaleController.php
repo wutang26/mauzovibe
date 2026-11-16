@@ -10,6 +10,7 @@ use App\Models\StockMovement;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Validation\ValidationException;
+use App\Models\Customer;
 use Inertia\Inertia;
 
 class SaleController extends Controller
@@ -68,6 +69,62 @@ class SaleController extends Controller
             'products' => $products,
         ]);
     }
+
+
+
+/**
+ * Display the Quick Sale POS screen.
+ */
+public function quickSale()
+{
+    $branchId = session('branch_id');
+
+    if (!$branchId) {
+        abort(403, 'No active branch selected.');
+    }
+
+    $products = Product::with('category:id,name')
+        ->where('branch_id', $branchId)
+        ->where('status', 'active')
+        ->where('quantity', '>', 0)
+        ->orderBy('name')
+        ->get([
+            'id',
+            'category_id',
+            'name',
+            'sku',
+            'barcode',
+            'selling_price',
+            'quantity',
+            'unit',
+            'image',
+        ]);
+
+    $categories = $products
+        ->pluck('category')
+        ->filter()
+        ->unique('id')
+        ->values()
+        ->map(fn ($category) => [
+            'id' => $category->id,
+            'name' => $category->name,
+        ]);
+    
+    $customers = Customer::where('branch_id', $branchId)
+    ->orderBy('name')
+    ->get([
+        'id',
+        'name',
+        'phone',
+        'email',
+    ]);
+
+    return Inertia::render('Admin/QuickSale', [
+        'products' => $products,
+        'categories' => $categories,
+        'customers' => $customers,
+    ]);
+}
 
     /**
      * Store a new sale.
@@ -428,12 +485,37 @@ class SaleController extends Controller
         |--------------------------------------------------------------------------
         */
 
-        return redirect()
-            ->route('admin.sales.create')
-            ->with(
-                'success',
-                "Sale {$sale->invoice_number} completed successfully."
-            );
+        /*
+*/
+
+/*
+|--------------------------------------------------------------------------
+| Return Response
+|--------------------------------------------------------------------------
+*/
+
+if ($request->input('return_to') === 'quick-sale') {
+    return redirect()
+        ->route('admin.sales.quick-sale')
+        ->with(
+            'success',
+            "Sale {$sale->invoice_number} completed successfully."
+        );
+}
+
+return redirect()
+    ->route('admin.sales.create')
+    ->with(
+        'success',
+        "Sale {$sale->invoice_number} completed successfully."
+    );
+
+        // return redirect()
+        //     ->route('admin.sales.create')
+        //     ->with(
+        //         'success',
+        //         "Sale {$sale->invoice_number} completed successfully."
+        //     );
     }
 
     /**
