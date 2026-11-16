@@ -36,7 +36,7 @@ export default function AuthLayout({ children, title, subtitle }) {
                                     />
                                 </svg>
 
-                                mauzovibe@outlook.com
+                                elonnim@outlook.com
                             </span>
 
                             <span className="flex items-center gap-2">
