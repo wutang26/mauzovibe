@@ -863,8 +863,15 @@ return Inertia::render(
 /**
  * Monthly Sales Report
  */
+
 public function monthly(Request $request)
 {
+    /*
+    |--------------------------------------------------------------------------
+    | Active Branch
+    |--------------------------------------------------------------------------
+    */
+
     $branchId = session('branch_id');
 
     if (!$branchId) {
@@ -919,13 +926,10 @@ public function monthly(Request $request)
     |--------------------------------------------------------------------------
     */
 
-    // Sales before discounts
     $grossRevenue = $sales->sum('subtotal');
 
-    // Total discounts
     $totalDiscount = $sales->sum('discount');
 
-    // Sales after discounts
     $netSales = $sales->sum('total');
 
     /*
@@ -1075,9 +1079,9 @@ public function monthly(Request $request)
         $dayNetSales = $daySales->sum('total');
 
         /*
-        |----------------------------------------------------------------------
+        |--------------------------------------------------------------------------
         | Daily Paid
-        |----------------------------------------------------------------------
+        |--------------------------------------------------------------------------
         */
 
         $dayPaid = $daySales->sum(function ($sale) {
@@ -1089,23 +1093,22 @@ public function monthly(Request $request)
         });
 
         /*
-        |----------------------------------------------------------------------
+        |--------------------------------------------------------------------------
         | Daily Change
-        |----------------------------------------------------------------------
+        |--------------------------------------------------------------------------
         */
 
         $dayChange = $daySales->sum('change_amount');
 
         /*
-        |----------------------------------------------------------------------
+        |--------------------------------------------------------------------------
         | Daily Cost
-        |----------------------------------------------------------------------
+        |--------------------------------------------------------------------------
         */
 
         $dayCost = 0;
 
         foreach ($daySales as $sale) {
-
             foreach ($sale->items as $item) {
 
                 $dayCost +=
@@ -1115,28 +1118,27 @@ public function monthly(Request $request)
         }
 
         /*
-        |----------------------------------------------------------------------
+        |--------------------------------------------------------------------------
         | Daily Profit
-        |----------------------------------------------------------------------
+        |--------------------------------------------------------------------------
         */
 
         $dayProfit = $dayNetSales - $dayCost;
 
         /*
-        |----------------------------------------------------------------------
+        |--------------------------------------------------------------------------
         | Daily Items
-        |----------------------------------------------------------------------
+        |--------------------------------------------------------------------------
         */
 
         $dayItems = $daySales->sum(
-            fn ($sale) =>
-                $sale->items->sum('quantity')
+            fn ($sale) => $sale->items->sum('quantity')
         );
 
         /*
-        |----------------------------------------------------------------------
+        |--------------------------------------------------------------------------
         | Daily Margin
-        |----------------------------------------------------------------------
+        |--------------------------------------------------------------------------
         */
 
         $dayMargin = $dayNetSales > 0
@@ -1144,9 +1146,9 @@ public function monthly(Request $request)
             : 0;
 
         /*
-        |----------------------------------------------------------------------
+        |--------------------------------------------------------------------------
         | Push Daily Data
-        |----------------------------------------------------------------------
+        |--------------------------------------------------------------------------
         */
 
         $dailyBreakdown->push([
@@ -1161,51 +1163,27 @@ public function monthly(Request $request)
 
             'itemsSold' => $dayItems,
 
-            'grossRevenue' => round(
-                $dayRevenue,
-                2
-            ),
+            'grossRevenue' => round($dayRevenue, 2),
 
-            'discount' => round(
-                $dayDiscount,
-                2
-            ),
+            'discount' => round($dayDiscount, 2),
 
-            'netSales' => round(
-                $dayNetSales,
-                2
-            ),
+            'netSales' => round($dayNetSales, 2),
 
-            'cost' => round(
-                $dayCost,
-                2
-            ),
+            'cost' => round($dayCost, 2),
 
-            'profit' => round(
-                $dayProfit,
-                2
-            ),
+            'profit' => round($dayProfit, 2),
 
-            'paid' => round(
-                $dayPaid,
-                2
-            ),
+            'paid' => round($dayPaid, 2),
 
-            'change' => round(
-                $dayChange,
-                2
-            ),
+            'change' => round($dayChange, 2),
 
-            'margin' => round(
-                $dayMargin,
-                2
-            ),
+            'margin' => round($dayMargin, 2),
         ]);
     }
 
     /*
     |--------------------------------------------------------------------------
-    | Sales Data
+    | Sales Data With Products
     |--------------------------------------------------------------------------
     */
 
@@ -1247,10 +1225,27 @@ public function monthly(Request $request)
 
             'change_amount' => (float) $sale->change_amount,
 
-            'items_count' => $sale->items->sum(
-                'quantity'
-            ),
+            // Total quantity of products sold
+            'items_count' => $sale->items->sum('quantity'),
+
+            // Products sold in this invoice
+            'items' => $sale->items->map(function ($item) {
+
+                return [
+                    'id' => $item->id,
+
+                    'product_name' => $item->product?->name
+                        ?? 'Unknown Product',
+
+                    'sku' => $item->product?->sku
+                        ?? '-',
+
+                    'quantity' => (float) $item->quantity,
+                ];
+
+            })->values(),
         ];
+
     })->values();
 
     /*
@@ -1285,58 +1280,27 @@ public function monthly(Request $request)
 
             'summary' => [
 
-                'grossRevenue' => round(
-                    $grossRevenue,
-                    2
-                ),
+                'grossRevenue' => round($grossRevenue, 2),
 
-                'totalDiscount' => round(
-                    $totalDiscount,
-                    2
-                ),
+                'totalDiscount' => round($totalDiscount, 2),
 
-                'netSales' => round(
-                    $netSales,
-                    2
-                ),
+                'netSales' => round($netSales, 2),
 
-                'totalCost' => round(
-                    $totalCost,
-                    2
-                ),
+                'totalCost' => round($totalCost, 2),
 
-                'totalProfit' => round(
-                    $totalProfit,
-                    2
-                ),
+                'totalProfit' => round($totalProfit, 2),
 
-                'profitMargin' => round(
-                    $profitMargin,
-                    2
-                ),
+                'profitMargin' => round($profitMargin, 2),
 
-                'totalPaid' => round(
-                    $totalPaid,
-                    2
-                ),
+                'totalPaid' => round($totalPaid, 2),
 
-                'totalOutstanding' => round(
-                    $totalOutstanding,
-                    2
-                ),
+                'totalOutstanding' => round($totalOutstanding, 2),
 
-                'totalChange' => round(
-                    $totalChange,
-                    2
-                ),
+                'totalChange' => round($totalChange, 2),
 
-                'totalTransactions' =>
-                    $totalTransactions,
+                'totalTransactions' => $totalTransactions,
 
-                'totalItemsSold' => round(
-                    $totalItemsSold,
-                    2
-                ),
+                'totalItemsSold' => round($totalItemsSold, 2),
             ],
 
             /*
@@ -1347,25 +1311,13 @@ public function monthly(Request $request)
 
             'paymentMethods' => [
 
-                'cash' => round(
-                    $cashSales,
-                    2
-                ),
+                'cash' => round($cashSales, 2),
 
-                'mobileMoney' => round(
-                    $mobileMoneySales,
-                    2
-                ),
+                'mobileMoney' => round($mobileMoneySales, 2),
 
-                'bank' => round(
-                    $bankSales,
-                    2
-                ),
+                'bank' => round($bankSales, 2),
 
-                'credit' => round(
-                    $creditSales,
-                    2
-                ),
+                'credit' => round($creditSales, 2),
             ],
 
             /*
@@ -1374,28 +1326,26 @@ public function monthly(Request $request)
             |--------------------------------------------------------------------------
             */
 
-            'dailySales' => $dailyBreakdown
-                ->values(),
+            'dailySales' => $dailyBreakdown->values(),
 
             /*
             |--------------------------------------------------------------------------
-            | Sales
+            | Sales Transactions With Products
             |--------------------------------------------------------------------------
             */
 
             'sales' => $salesData,
         ]
     );
-
-    //Yearly Report
-    
 }
+
 
 //Yearly Report
 
 /**
  * Yearly Sales Report
  */
+
 public function yearly(Request $request)
 {
     /*
@@ -1465,13 +1415,10 @@ public function yearly(Request $request)
     |--------------------------------------------------------------------------
     */
 
-    // Sales before discounts
     $grossRevenue = $sales->sum('subtotal');
 
-    // Total discounts
     $totalDiscount = $sales->sum('discount');
 
-    // Sales after discounts
     $netSales = $sales->sum('total');
 
     /*
@@ -1524,9 +1471,7 @@ public function yearly(Request $request)
     $totalCost = 0;
 
     foreach ($sales as $sale) {
-
         foreach ($sale->items as $item) {
-
             $totalCost +=
                 (float) $item->quantity *
                 (float) $item->cost_price;
@@ -1568,7 +1513,6 @@ public function yearly(Request $request)
     */
 
     $paymentAmount = function ($sale) {
-
         return max(
             0,
             (float) $sale->paid_amount -
@@ -1619,7 +1563,6 @@ public function yearly(Request $request)
             $monthStart,
             $monthEnd
         ) {
-
             return $sale->created_at->between(
                 $monthStart,
                 $monthEnd
@@ -1632,17 +1575,11 @@ public function yearly(Request $request)
         |--------------------------------------------------------------------------
         */
 
-        $monthGrossRevenue = $monthSales->sum(
-            'subtotal'
-        );
+        $monthGrossRevenue = $monthSales->sum('subtotal');
 
-        $monthDiscount = $monthSales->sum(
-            'discount'
-        );
+        $monthDiscount = $monthSales->sum('discount');
 
-        $monthNetSales = $monthSales->sum(
-            'total'
-        );
+        $monthNetSales = $monthSales->sum('total');
 
         /*
         |--------------------------------------------------------------------------
@@ -1653,9 +1590,7 @@ public function yearly(Request $request)
         $monthCost = 0;
 
         foreach ($monthSales as $sale) {
-
             foreach ($sale->items as $item) {
-
                 $monthCost +=
                     (float) $item->quantity *
                     (float) $item->cost_price;
@@ -1668,9 +1603,7 @@ public function yearly(Request $request)
         |--------------------------------------------------------------------------
         */
 
-        $monthProfit =
-            $monthNetSales -
-            $monthCost;
+        $monthProfit = $monthNetSales - $monthCost;
 
         /*
         |--------------------------------------------------------------------------
@@ -1679,10 +1612,7 @@ public function yearly(Request $request)
         */
 
         $monthMargin = $monthNetSales > 0
-            ? (
-                $monthProfit /
-                $monthNetSales
-            ) * 100
+            ? ($monthProfit / $monthNetSales) * 100
             : 0;
 
         /*
@@ -1692,10 +1622,7 @@ public function yearly(Request $request)
         */
 
         $monthItems = $monthSales->sum(function ($sale) {
-
-            return $sale->items->sum(
-                'quantity'
-            );
+            return $sale->items->sum('quantity');
         });
 
         /*
@@ -1705,7 +1632,6 @@ public function yearly(Request $request)
         */
 
         $monthPaid = $monthSales->sum(function ($sale) {
-
             return max(
                 0,
                 (float) $sale->paid_amount -
@@ -1721,8 +1647,7 @@ public function yearly(Request $request)
 
         $monthOutstanding = max(
             0,
-            $monthNetSales -
-            $monthPaid
+            $monthNetSales - $monthPaid
         );
 
         /*
@@ -1735,69 +1660,92 @@ public function yearly(Request $request)
 
             'month' => $month,
 
-            'monthName' => $monthStart->format(
-                'F'
-            ),
+            'monthName' => $monthStart->format('F'),
 
-            'shortMonth' => $monthStart->format(
-                'M'
-            ),
+            'shortMonth' => $monthStart->format('M'),
 
-            'transactions' =>
-                $monthSales->count(),
+            'transactions' => $monthSales->count(),
 
-            'itemsSold' =>
-                $monthItems,
+            'itemsSold' => $monthItems,
 
-            'grossRevenue' =>
-                round(
-                    $monthGrossRevenue,
-                    2
-                ),
+            'grossRevenue' => round($monthGrossRevenue, 2),
 
-            'discount' =>
-                round(
-                    $monthDiscount,
-                    2
-                ),
+            'discount' => round($monthDiscount, 2),
 
-            'netSales' =>
-                round(
-                    $monthNetSales,
-                    2
-                ),
+            'netSales' => round($monthNetSales, 2),
 
-            'cost' =>
-                round(
-                    $monthCost,
-                    2
-                ),
+            'cost' => round($monthCost, 2),
 
-            'profit' =>
-                round(
-                    $monthProfit,
-                    2
-                ),
+            'profit' => round($monthProfit, 2),
 
-            'margin' =>
-                round(
-                    $monthMargin,
-                    2
-                ),
+            'margin' => round($monthMargin, 2),
 
-            'paid' =>
-                round(
-                    $monthPaid,
-                    2
-                ),
+            'paid' => round($monthPaid, 2),
 
-            'outstanding' =>
-                round(
-                    $monthOutstanding,
-                    2
-                ),
+            'outstanding' => round($monthOutstanding, 2),
         ]);
     }
+
+    /*
+    |--------------------------------------------------------------------------
+    | Sales Data
+    |--------------------------------------------------------------------------
+    */
+
+    $salesData = $sales->map(function ($sale) {
+        return [
+            'id' => $sale->id,
+
+            'invoice_number' => $sale->invoice_number,
+
+            'date' => $sale->created_at?->format('d M Y'),
+
+            'time' => $sale->created_at?->format('H:i'),
+
+            'customer' => $sale->customer?->name
+                ?? 'Walk-in Customer',
+
+            'cashier' => $sale->user?->name
+                ?? 'Unknown',
+
+            'subtotal' => (float) $sale->subtotal,
+
+            'discount' => (float) $sale->discount,
+
+            'total' => (float) $sale->total,
+
+            'payment_method' => $sale->payment_method,
+
+            'payment_status' => $sale->payment_status,
+
+            'paid_amount' => (float) $sale->paid_amount,
+
+            'outstanding' => max(
+                0,
+                (float) $sale->total - (float) $sale->paid_amount
+            ),
+
+            'change_amount' => (float) $sale->change_amount,
+
+            // Total quantity of products sold
+            'items_count' => $sale->items->sum('quantity'),
+
+            // Products sold in this invoice
+            'items' => $sale->items->map(function ($item) {
+                return [
+                    'id' => $item->id,
+
+                    'product_name' => $item->product?->name
+                        ?? 'Unknown Product',
+
+                    'sku' => $item->product?->sku
+                        ?? '-',
+
+                    'quantity' => (float) $item->quantity,
+                ];
+            })->values(),
+        ];
+    })->values();
 
     /*
     |--------------------------------------------------------------------------
@@ -1817,11 +1765,9 @@ public function yearly(Request $request)
 
             'year' => $year,
 
-            'startDate' =>
-                $startDate->toDateString(),
+            'startDate' => $startDate->toDateString(),
 
-            'endDate' =>
-                $endDate->toDateString(),
+            'endDate' => $endDate->toDateString(),
 
             /*
             |--------------------------------------------------------------------------
@@ -1831,68 +1777,27 @@ public function yearly(Request $request)
 
             'summary' => [
 
-                'grossRevenue' =>
-                    round(
-                        $grossRevenue,
-                        2
-                    ),
+                'grossRevenue' => round($grossRevenue, 2),
 
-                'totalDiscount' =>
-                    round(
-                        $totalDiscount,
-                        2
-                    ),
+                'totalDiscount' => round($totalDiscount, 2),
 
-                'netSales' =>
-                    round(
-                        $netSales,
-                        2
-                    ),
+                'netSales' => round($netSales, 2),
 
-                'totalCost' =>
-                    round(
-                        $totalCost,
-                        2
-                    ),
+                'totalCost' => round($totalCost, 2),
 
-                'totalProfit' =>
-                    round(
-                        $totalProfit,
-                        2
-                    ),
+                'totalProfit' => round($totalProfit, 2),
 
-                'profitMargin' =>
-                    round(
-                        $profitMargin,
-                        2
-                    ),
+                'profitMargin' => round($profitMargin, 2),
 
-                'totalPaid' =>
-                    round(
-                        $totalPaid,
-                        2
-                    ),
+                'totalPaid' => round($totalPaid, 2),
 
-                'totalOutstanding' =>
-                    round(
-                        $totalOutstanding,
-                        2
-                    ),
+                'totalOutstanding' => round($totalOutstanding, 2),
 
-                'totalChange' =>
-                    round(
-                        $totalChange,
-                        2
-                    ),
+                'totalChange' => round($totalChange, 2),
 
-                'totalTransactions' =>
-                    $totalTransactions,
+                'totalTransactions' => $totalTransactions,
 
-                'totalItemsSold' =>
-                    round(
-                        $totalItemsSold,
-                        2
-                    ),
+                'totalItemsSold' => round($totalItemsSold, 2),
             ],
 
             /*
@@ -1903,29 +1808,13 @@ public function yearly(Request $request)
 
             'paymentMethods' => [
 
-                'cash' =>
-                    round(
-                        $cashSales,
-                        2
-                    ),
+                'cash' => round($cashSales, 2),
 
-                'mobileMoney' =>
-                    round(
-                        $mobileMoneySales,
-                        2
-                    ),
+                'mobileMoney' => round($mobileMoneySales, 2),
 
-                'bank' =>
-                    round(
-                        $bankSales,
-                        2
-                    ),
+                'bank' => round($bankSales, 2),
 
-                'credit' =>
-                    round(
-                        $creditSales,
-                        2
-                    ),
+                'credit' => round($creditSales, 2),
             ],
 
             /*
@@ -1934,11 +1823,19 @@ public function yearly(Request $request)
             |--------------------------------------------------------------------------
             */
 
-            'monthlyPerformance' =>
-                $monthlyPerformance->values(),
+            'monthlyPerformance' => $monthlyPerformance->values(),
+
+            /*
+            |--------------------------------------------------------------------------
+            | Sales Transactions With Products
+            |--------------------------------------------------------------------------
+            */
+
+            'sales' => $salesData,
         ]
     );
 }
+
 
 /**
  * Profit Report
