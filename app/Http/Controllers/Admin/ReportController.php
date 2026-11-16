@@ -632,48 +632,65 @@ public function weekly(Request $request)
     |--------------------------------------------------------------------------
     */
 
-    $salesData = $sales->map(function ($sale) {
+   
+$salesData = $sales->map(function ($sale) {
 
-        return [
-            'id' => $sale->id,
+    return [
+        'id' => $sale->id,
 
-            'invoice_number' => $sale->invoice_number,
+        'invoice_number' => $sale->invoice_number,
 
-            'date' => $sale->created_at?->format('d M Y'),
+        'date' => $sale->created_at?->format('d M Y'),
 
-            'time' => $sale->created_at?->format('H:i'),
+        'time' => $sale->created_at?->format('H:i'),
 
-            'customer' => $sale->customer?->name
-                ?? 'Walk-in Customer',
+        'customer' => $sale->customer?->name
+            ?? 'Walk-in Customer',
 
-            'cashier' => $sale->user?->name
-                ?? 'Unknown',
+        'cashier' => $sale->user?->name
+            ?? 'Unknown',
 
-            'subtotal' => (float) $sale->subtotal,
+        'subtotal' => (float) $sale->subtotal,
 
-            'discount' => (float) $sale->discount,
+        'discount' => (float) $sale->discount,
 
-            'total' => (float) $sale->total,
+        'total' => (float) $sale->total,
 
-            'payment_method' => $sale->payment_method,
+        'payment_method' => $sale->payment_method,
 
-            'payment_status' => $sale->payment_status,
+        'payment_status' => $sale->payment_status,
 
-            'paid_amount' => (float) $sale->paid_amount,
+        'paid_amount' => (float) $sale->paid_amount,
 
-            'outstanding' => max(
-                0,
-                (float) $sale->total -
-                (float) $sale->paid_amount
-            ),
+        'outstanding' => max(
+            0,
+            (float) $sale->total -
+            (float) $sale->paid_amount
+        ),
 
-            'change_amount' => (float) $sale->change_amount,
+        'change_amount' => (float) $sale->change_amount,
 
-            'items_count' => $sale->items->sum(
-                'quantity'
-            ),
-        ];
-    })->values();
+        // Total quantity of products sold
+        'items_count' => $sale->items->sum('quantity'),
+
+        // Products sold in this invoice
+        'items' => $sale->items->map(function ($item) {
+            return [
+                'id' => $item->id,
+
+                'product_name' => $item->product?->name
+                    ?? 'Unknown Product',
+
+                'sku' => $item->product?->sku
+                    ?? '-',
+
+                'quantity' => (float) $item->quantity,
+            ];
+        })->values(),
+    ];
+
+})->values();
+
 
     /*
     |--------------------------------------------------------------------------
