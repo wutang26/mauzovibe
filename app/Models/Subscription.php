@@ -14,6 +14,8 @@ class Subscription extends Model
         'branch_id',
         'plan',
         'amount',
+        'pending_plan',
+        'pending_amount',
         'status',
         'trial_started_at',
         'trial_ends_at',
@@ -23,6 +25,7 @@ class Subscription extends Model
 
     protected $casts = [
         'amount' => 'decimal:2',
+        'pending_amount' => 'decimal:2',
         'trial_started_at' => 'datetime',
         'trial_ends_at' => 'datetime',
         'started_at' => 'datetime',

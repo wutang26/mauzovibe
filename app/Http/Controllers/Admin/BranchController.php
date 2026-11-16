@@ -371,14 +371,27 @@ public function storeRegisteredBranch(Request $request)
             ]
         );
 
-        // Create 30-day free trial for the NEW branch
+        // // Create 30-day free trial for the NEW branch
+        // $trialStartedAt = now();
+
+        // $trialEndsAt = now()->addDays(30);
+
+        // $branch->subscription()->create([
+        //     'plan' => 'monthly',
+        //     'amount' => 10000,
+        //     'status' => 'trial',
+        //     'trial_started_at' => $trialStartedAt,
+        //     'trial_ends_at' => $trialEndsAt,
+        // ]);
+
+        // Create 14-day free trial for the NEW branch
         $trialStartedAt = now();
 
-        $trialEndsAt = now()->addDays(30);
+        $trialEndsAt = $trialStartedAt->copy()->addDays(14);
 
         $branch->subscription()->create([
-            'plan' => 'monthly',
-            'amount' => 10000,
+            'plan' => 'trial',
+            'amount' => 0,
             'status' => 'trial',
             'trial_started_at' => $trialStartedAt,
             'trial_ends_at' => $trialEndsAt,
@@ -392,6 +405,6 @@ public function storeRegisteredBranch(Request $request)
 
     return redirect()
         ->route('dashboard')
-        ->with('success', 'Branch imeongezwa na trial ya siku 30 imeanza.');
+        ->with('success', 'Branch imeongezwa na trial ya siku 14 imeanza.');
 }
 }

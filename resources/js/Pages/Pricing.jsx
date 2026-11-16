@@ -1,3 +1,4 @@
+
 import { Head, Link } from "@inertiajs/react";
 import AuthLayout from "@/Layouts/AuthLayout";
 
@@ -12,9 +13,9 @@ export default function Pricing() {
     const plans = [
         {
             name: "Free Trial",
-            description: "Jaribu MauzoVibe bila malipo.",
+            description: "Jaribu MauzoVibe bila malipo kabla ya kuchagua mpango.",
             price: "BURE",
-            period: "kwa siku 30",
+            period: "kwa siku 14",
             icon: RocketLaunchIcon,
 
             features: [
@@ -25,17 +26,19 @@ export default function Pricing() {
                 "Customer Management",
                 "Basic Reports",
                 "Branch 1",
+                "Access to core features",
             ],
 
             button: "Anza Free Trial",
             popular: false,
+            type: "trial",
         },
 
         {
             name: "Starter",
-            description: "Kwa biashara ndogo zinazoanza kukua.",
-            price: "10,000",
-            period: "kwa mwezi",
+            description: "Kwa biashara ndogo zinazohitaji kusimamia mauzo na bidhaa.",
+            price: "15,000",
+            period: "kwa mwezi / kwa kila tawi",
             icon: BuildingStorefrontIcon,
 
             features: [
@@ -46,17 +49,18 @@ export default function Pricing() {
                 "Stock Reports",
                 "User Management",
                 "Branch 1",
-                "Support",
+                "Regular Support",
             ],
 
-            button: "Chagua Starter",
+            button: "Anza na Starter",
             popular: false,
+            type: "paid",
         },
 
         {
             name: "Business",
-            description: "Kwa biashara zinazokua na matawi.",
-            price: "15,000",
+            description: "Kwa biashara zinazokua na kusimamia matawi mengi.",
+            price: "20,000",
             period: "kwa mwezi / kwa kila tawi",
             icon: SparklesIcon,
 
@@ -72,21 +76,21 @@ export default function Pricing() {
                 "Priority Support",
             ],
 
-            button: "Chagua Business",
+            button: "Anza na Business",
             popular: true,
+            type: "paid",
         },
 
         {
             name: "Enterprise",
-            description: "Kwa biashara kubwa na mahitaji maalum.",
+            description: "Kwa biashara kubwa zenye mahitaji maalumu.",
             price: "Wasiliana Nasi",
-            period: "kwa bei maalum",
+            period: "kwa bei maalumu",
             icon: BuildingStorefrontIcon,
 
             features: [
                 "Kila kitu kwenye Business",
-                "Unlimited Branches",
-                "Unlimited Users",
+                "Custom Branch Management",
                 "Advanced Business Reports",
                 "Custom Business Setup",
                 "Dedicated Support",
@@ -96,6 +100,7 @@ export default function Pricing() {
 
             button: "Wasiliana Nasi",
             popular: false,
+            type: "enterprise",
         },
     ];
 
@@ -107,122 +112,86 @@ export default function Pricing() {
                 title="Bei za MauzoVibe 💚"
                 subtitle="Chagua mpango unaofaa kwa biashara yako."
             >
-                <div className="w-full max-w-6xl mx-auto">
+                <div className="mx-auto w-full max-w-6xl">
 
-                    {/* =====================================================
-                        INTRO
-                    ====================================================== */}
+                    {/* INTRO */}
+                    <div className="mx-auto mb-8 max-w-xl text-center">
 
-                    <div className="text-center max-w-xl mx-auto mb-8">
+                        <div className="inline-flex items-center gap-2 rounded-full border border-emerald-100 bg-emerald-50 px-3 py-1.5 text-xs font-bold text-emerald-700">
 
-                        <div className="inline-flex items-center gap-2 px-3 py-1.5 rounded-full bg-emerald-50 border border-emerald-100 text-emerald-700 text-xs font-bold">
-
-                            <span className="w-2 h-2 rounded-full bg-emerald-600 animate-pulse"></span>
+                            <span className="h-2 w-2 animate-pulse rounded-full bg-emerald-600" />
 
                             Simple & Transparent Pricing
 
                         </div>
 
-                        <h2 className="mt-4 text-2xl sm:text-3xl font-extrabold text-slate-900">
+                        <h2 className="mt-4 text-2xl font-extrabold text-slate-900 sm:text-3xl">
                             Chagua mpango wako
                         </h2>
 
-                        <p className="mt-2 text-sm text-slate-500 leading-6">
-                            Anza na Free Trial ya siku 30 bila malipo.
-                            Badilisha mpango wako kulingana na mahitaji ya biashara yako.
+                        <p className="mt-2 text-sm leading-6 text-slate-500">
+                            Anza na Free Trial ya siku 14 bila malipo.
+                            Baada ya hapo, chagua mpango unaolingana
+                            na mahitaji ya biashara yako.
                         </p>
 
                     </div>
 
+                    {/* PRICING CARDS */}
+                    <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-4">
 
-                    {/* =====================================================
-                        PRICING CARDS
-                    ====================================================== */}
-
-                    <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
-
-                        {plans.map((plan, index) => {
+                        {plans.map((plan) => {
                             const Icon = plan.icon;
 
                             return (
                                 <div
-                                    key={index}
+                                    key={plan.name}
                                     className={
                                         plan.popular
-                                            ? "relative flex flex-col bg-white rounded-2xl border-2 border-emerald-500 shadow-xl shadow-emerald-600/10 overflow-hidden transition-all duration-200 hover:-translate-y-1 hover:shadow-2xl"
-                                            : "relative flex flex-col bg-white rounded-2xl border border-slate-200 shadow-md shadow-slate-900/5 overflow-hidden transition-all duration-200 hover:-translate-y-1 hover:shadow-xl"
+                                            ? "relative flex flex-col overflow-hidden rounded-2xl border-2 border-emerald-500 bg-white shadow-xl shadow-emerald-600/10 transition-all duration-200 hover:-translate-y-1 hover:shadow-2xl"
+                                            : "relative flex flex-col overflow-hidden rounded-2xl border border-slate-200 bg-white shadow-md shadow-slate-900/5 transition-all duration-200 hover:-translate-y-1 hover:shadow-xl"
                                     }
                                 >
 
-                                    {/* =====================================================
-                                        POPULAR BADGE
-                                    ====================================================== */}
-
+                                    {/* POPULAR BADGE */}
                                     {plan.popular && (
-                                        <div className="absolute top-0 left-0 right-0 bg-emerald-600 text-white text-[10px] font-extrabold tracking-wide text-center py-1.5">
+                                        <div className="absolute left-0 right-0 top-0 bg-emerald-600 py-1.5 text-center text-[10px] font-extrabold tracking-wide text-white">
                                             ★ MOST POPULAR
                                         </div>
                                     )}
 
+                                    <div className={plan.popular ? "p-5 pt-10" : "p-5"}>
 
-                                    <div
-                                        className={
-                                            plan.popular
-                                                ? "p-5 pt-10"
-                                                : "p-5"
-                                        }
-                                    >
-
-                                        {/* =====================================================
-                                            ICON
-                                        ====================================================== */}
-
-                                        <div className="w-10 h-10 rounded-xl bg-emerald-50 border border-emerald-100 text-emerald-600 flex items-center justify-center">
-
-                                            <Icon className="w-5 h-5" />
-
+                                        {/* ICON */}
+                                        <div className="flex h-10 w-10 items-center justify-center rounded-xl border border-emerald-100 bg-emerald-50 text-emerald-600">
+                                            <Icon className="h-5 w-5" />
                                         </div>
 
-
-                                        {/* =====================================================
-                                            PLAN NAME
-                                        ====================================================== */}
-
+                                        {/* PLAN NAME */}
                                         <h3 className="mt-4 text-lg font-extrabold text-slate-900">
                                             {plan.name}
                                         </h3>
 
-
                                         {/* DESCRIPTION */}
-
-                                        <p className="mt-1.5 text-xs text-slate-500 leading-5 min-h-[40px]">
+                                        <p className="mt-1.5 min-h-[60px] text-xs leading-5 text-slate-500">
                                             {plan.description}
                                         </p>
 
-
-                                        {/* =====================================================
-                                            PRICE
-                                        ====================================================== */}
-
+                                        {/* PRICE */}
                                         <div className="mt-5">
 
-                                            {plan.price === "Wasiliana Nasi" ? (
-
+                                            {plan.type === "enterprise" ? (
                                                 <h4 className="text-xl font-extrabold text-slate-900">
                                                     {plan.price}
                                                 </h4>
-
-                                            ) : plan.price === "BURE" ? (
-
+                                            ) : plan.type === "trial" ? (
                                                 <h4 className="text-3xl font-extrabold text-emerald-600">
                                                     {plan.price}
                                                 </h4>
-
                                             ) : (
-
                                                 <div className="flex items-end gap-1">
 
-                                                    <span className="text-xs font-semibold text-slate-500 pb-1">
+                                                    <span className="pb-1 text-xs font-semibold text-slate-500">
                                                         TZS
                                                     </span>
 
@@ -231,89 +200,86 @@ export default function Pricing() {
                                                     </span>
 
                                                 </div>
-
                                             )}
 
-                                            <p className="mt-0.5 text-[11px] text-slate-400">
+                                            <p className="mt-1 text-[11px] text-slate-400">
                                                 {plan.period}
                                             </p>
 
                                         </div>
 
-
-                                        {/* =====================================================
-                                            BUTTON
-                                        ====================================================== */}
-
-                                        <Link
-                                            href={route("register")}
-                                            className={
-                                                plan.popular
-                                                    ? "mt-5 w-full h-10 rounded-lg flex items-center justify-center gap-1.5 font-bold text-xs bg-emerald-600 hover:bg-emerald-700 text-white shadow-md shadow-emerald-600/20 transition-all"
-                                                    : "mt-5 w-full h-10 rounded-lg flex items-center justify-center gap-1.5 font-bold text-xs bg-slate-100 hover:bg-emerald-600 hover:text-white text-slate-800 transition-all"
-                                            }
-                                        >
-                                            {plan.button}
-
-                                            <svg
-                                                className="w-3.5 h-3.5"
-                                                fill="none"
-                                                viewBox="0 0 24 24"
-                                                stroke="currentColor"
-                                                strokeWidth="2"
+                                        {/* BUTTON */}
+                                        {plan.type === "enterprise" ? (
+                                            <a
+                                                href="mailto:mauzovibe@outlook.com?subject=MauzoVibe%20Enterprise%20Inquiry"
+                                                className="mt-5 flex h-10 w-full items-center justify-center gap-1.5 rounded-lg bg-slate-100 text-xs font-bold text-slate-800 transition-all hover:bg-emerald-600 hover:text-white"
                                             >
-                                                <path
-                                                    strokeLinecap="round"
-                                                    strokeLinejoin="round"
-                                                    d="M5 12h14M13 6l6 6-6 6"
-                                                />
-                                            </svg>
+                                                {plan.button}
 
-                                        </Link>
+                                                <svg
+                                                    className="h-3.5 w-3.5"
+                                                    fill="none"
+                                                    viewBox="0 0 24 24"
+                                                    stroke="currentColor"
+                                                    strokeWidth="2"
+                                                >
+                                                    <path
+                                                        strokeLinecap="round"
+                                                        strokeLinejoin="round"
+                                                        d="M5 12h14M13 6l6 6-6 6"
+                                                    />
+                                                </svg>
+                                            </a>
+                                        ) : (
+                                            <Link
+                                                href={route("register")}
+                                                className={
+                                                    plan.popular
+                                                        ? "mt-5 flex h-10 w-full items-center justify-center gap-1.5 rounded-lg bg-emerald-600 text-xs font-bold text-white shadow-md shadow-emerald-600/20 transition-all hover:bg-emerald-700"
+                                                        : "mt-5 flex h-10 w-full items-center justify-center gap-1.5 rounded-lg bg-slate-100 text-xs font-bold text-slate-800 transition-all hover:bg-emerald-600 hover:text-white"
+                                                }
+                                            >
+                                                {plan.button}
 
+                                                <svg
+                                                    className="h-3.5 w-3.5"
+                                                    fill="none"
+                                                    viewBox="0 0 24 24"
+                                                    stroke="currentColor"
+                                                    strokeWidth="2"
+                                                >
+                                                    <path
+                                                        strokeLinecap="round"
+                                                        strokeLinejoin="round"
+                                                        d="M5 12h14M13 6l6 6-6 6"
+                                                    />
+                                                </svg>
+                                            </Link>
+                                        )}
 
-                                        {/* =====================================================
-                                            DIVIDER
-                                        ====================================================== */}
+                                        {/* DIVIDER */}
+                                        <div className="my-5 border-t border-slate-100" />
 
-                                        <div className="my-5 border-t border-slate-100"></div>
-
-
-                                        {/* =====================================================
-                                            FEATURES TITLE
-                                        ====================================================== */}
-
-                                        <p className="text-[10px] uppercase tracking-wider font-extrabold text-slate-400 mb-3">
+                                        {/* FEATURES TITLE */}
+                                        <p className="mb-3 text-[10px] font-extrabold uppercase tracking-wider text-slate-400">
                                             Kinachopatikana
                                         </p>
 
-
-                                        {/* =====================================================
-                                            FEATURES
-                                        ====================================================== */}
-
+                                        {/* FEATURES */}
                                         <div className="space-y-2.5">
 
-                                            {plan.features.map(
-                                                (feature, featureIndex) => (
+                                            {plan.features.map((feature) => (
+                                                <div
+                                                    key={feature}
+                                                    className="flex items-start gap-2"
+                                                >
+                                                    <CheckCircleIcon className="mt-0.5 h-4 w-4 shrink-0 text-emerald-500" />
 
-                                                    <div
-                                                        key={featureIndex}
-                                                        className="flex items-start gap-2"
-                                                    >
-
-                                                        <CheckCircleIcon
-                                                            className="w-4 h-4 text-emerald-500 shrink-0 mt-0.5"
-                                                        />
-
-                                                        <span className="text-xs text-slate-600 leading-4">
-                                                            {feature}
-                                                        </span>
-
-                                                    </div>
-
-                                                )
-                                            )}
+                                                    <span className="text-xs leading-4 text-slate-600">
+                                                        {feature}
+                                                    </span>
+                                                </div>
+                                            ))}
 
                                         </div>
 
@@ -325,60 +291,49 @@ export default function Pricing() {
 
                     </div>
 
+                    {/* CTA BANNER */}
+                    <div className="relative mt-8 overflow-hidden rounded-2xl bg-emerald-600 shadow-xl shadow-emerald-600/15">
 
-                    {/* =====================================================
-                        CTA BANNER
-                    ====================================================== */}
+                        <div className="absolute -right-16 -top-16 h-48 w-48 rounded-full bg-white/10 blur-2xl" />
 
-                    <div className="relative overflow-hidden mt-8 rounded-2xl bg-emerald-600 shadow-xl shadow-emerald-600/15">
+                        <div className="absolute -bottom-20 -left-20 h-56 w-56 rounded-full bg-white/5 blur-3xl" />
 
-                        <div className="absolute -top-16 -right-16 w-48 h-48 rounded-full bg-white/10 blur-2xl"></div>
+                        <div className="relative z-10 p-6 text-center sm:p-8">
 
-                        <div className="absolute -bottom-20 -left-20 w-56 h-56 rounded-full bg-white/5 blur-3xl"></div>
-
-
-                        <div className="relative z-10 p-6 sm:p-8 text-center">
-
-                            <div className="inline-flex items-center justify-center w-11 h-11 rounded-xl bg-white/10 border border-white/20 mb-3">
-
-                                <RocketLaunchIcon className="w-5 h-5 text-white" />
-
+                            <div className="mb-3 inline-flex h-11 w-11 items-center justify-center rounded-xl border border-white/20 bg-white/10">
+                                <RocketLaunchIcon className="h-5 w-5 text-white" />
                             </div>
 
-
-                            <h2 className="text-xl sm:text-2xl font-extrabold text-white">
+                            <h2 className="text-xl font-extrabold text-white sm:text-2xl">
                                 Tayari kuanza?
                             </h2>
 
-
-                            <p className="mt-1.5 text-sm text-emerald-50 max-w-lg mx-auto leading-6">
-                                Anza kutumia MauzoVibe kwa siku 30 bila
+                            <p className="mx-auto mt-1.5 max-w-lg text-sm leading-6 text-emerald-50">
+                                Anza kutumia MauzoVibe kwa siku 14 bila
                                 malipo na ujionee jinsi inavyoweza
                                 kurahisisha biashara yako.
                             </p>
 
-
                             <Link
                                 href={route("register")}
-                                className="inline-flex items-center gap-2 mt-4 px-6 py-2.5 rounded-lg bg-white text-emerald-700 text-sm font-bold shadow-md hover:-translate-y-0.5 hover:shadow-lg transition-all"
+                                className="mt-4 inline-flex items-center gap-2 rounded-lg bg-white px-6 py-2.5 text-sm font-bold text-emerald-700 shadow-md transition-all hover:-translate-y-0.5 hover:shadow-lg"
                             >
                                 Anza Free Trial
 
-                                <RocketLaunchIcon className="w-4 h-4" />
-
+                                <RocketLaunchIcon className="h-4 w-4" />
                             </Link>
 
                         </div>
 
                     </div>
 
+                    {/* NOTE */}
+                    <p className="mb-2 mt-4 text-center text-[11px] text-slate-400">
+                        Free Trial ni ya siku 14. Hakuna malipo yanayohitajika kuanza.
+                    </p>
 
-                    {/* =====================================================
-                        NOTE
-                    ====================================================== */}
-
-                    <p className="text-center text-[11px] text-slate-400 mt-4 mb-2">
-                        Hakuna kadi ya benki inayohitajika kuanza Free Trial.
+                    <p className="mb-6 text-center text-[11px] text-slate-400">
+                        Bei za Starter na Business zinatozwa kwa mwezi kwa kila branch.
                     </p>
 
                 </div>

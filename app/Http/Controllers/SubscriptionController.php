@@ -416,82 +416,164 @@ class SubscriptionController extends Controller
     /**
      * Start subscription process for current branch.
      */
+
     public function subscribe(Request $request)
-    {
-        /*
-        |--------------------------------------------------------------------------
-        | Get active branch
-        |--------------------------------------------------------------------------
-        */
+{
+    /*
+    |--------------------------------------------------------------------------
+    | Validate selected plan
+    |--------------------------------------------------------------------------
+    */
 
-        $branch = $this->getActiveBranch($request);
+    $validated = $request->validate([
+        'plan' => 'required|in:starter,business',
+    ]);
 
-        if (!$branch) {
-            return redirect()
-                ->route('admin.branches.index')
-                ->with(
-                    'error',
-                    'No branch is available for your account.'
-                );
-        }
+    /*
+    |--------------------------------------------------------------------------
+    | Official plan prices
+    |--------------------------------------------------------------------------
+    */
 
-        /*
-        |--------------------------------------------------------------------------
-        | Get subscription
-        |--------------------------------------------------------------------------
-        */
+    $plans = [
+        'starter' => 15000,
+        'business' => 20000,
+    ];
 
-        $subscription = $branch->subscription;
+    $selectedPlan = $validated['plan'];
+    $amount = $plans[$selectedPlan];
 
-        if (!$subscription) {
-            return redirect()
-                ->route('subscription.index')
-                ->with(
-                    'error',
-                    'This branch does not have a subscription record.'
-                );
-        }
+    /*
+    |--------------------------------------------------------------------------
+    | Get active branch
+    |--------------------------------------------------------------------------
+    */
 
-        /*
-        |--------------------------------------------------------------------------
-        | Prevent duplicate active subscription
-        |--------------------------------------------------------------------------
-        */
+    $branch = $this->getActiveBranch($request);
 
-        if (
-            $subscription->status === 'active' &&
-            $subscription->ends_at &&
-            now()->lessThan($subscription->ends_at)
-        ) {
-            return redirect()
-                ->route('subscription.index')
-                ->with(
-                    'error',
-                    'This branch already has an active subscription.'
-                );
-        }
+    if (!$branch) {
+        return redirect()
+            ->route('admin.branches.index')
+            ->with('error', 'No branch is available for your account.');
+    }
 
-        /*
-        |--------------------------------------------------------------------------
-        | Create pending payment
-        |--------------------------------------------------------------------------
-        |
-        | This is the existing temporary payment flow.
-        | Replace it with the real payment gateway later.
-        |
-        */
+    /*
+    |--------------------------------------------------------------------------
+    | Get subscription
+    |--------------------------------------------------------------------------
+    */
 
-        $subscription->update([
-            'status' => 'pending',
-        ]);
+    $subscription = $branch->subscription;
 
+    if (!$subscription) {
         return redirect()
             ->route('subscription.index')
-            ->with(
-                'success',
-                'Subscription payment has been initiated.'
-            );
+            ->with('error', 'Subscription record not found.');
     }
+
+    /*
+    |--------------------------------------------------------------------------
+    | Save pending payment details
+    |--------------------------------------------------------------------------
+    */
+
+    $subscription->update([
+        'pending_plan' => $selectedPlan,
+        'pending_amount' => $amount,
+    ]);
+
+    /*
+    |--------------------------------------------------------------------------
+    | Return response
+    |--------------------------------------------------------------------------
+    */
+
+    return redirect()
+        ->route('subscription.index')
+        ->with(
+            'success',
+            'Ombi la malipo ya mpango wa ' .
+            ucfirst($selectedPlan) .
+            ' limeanzishwa. Kiasi ni TZS ' .
+            number_format($amount) . '.'
+        );
+}
+    // public function subscribe(Request $request)
+    // {
+    //     /*
+    //     |--------------------------------------------------------------------------
+    //     | Get active branch
+    //     |--------------------------------------------------------------------------
+    //     */
+
+    //     $branch = $this->getActiveBranch($request);
+
+    //     if (!$branch) {
+    //         return redirect()
+    //             ->route('admin.branches.index')
+    //             ->with(
+    //                 'error',
+    //                 'No branch is available for your account.'
+    //             );
+    //     }
+
+    //     /*
+    //     |--------------------------------------------------------------------------
+    //     | Get subscription
+    //     |--------------------------------------------------------------------------
+    //     */
+
+    //     $subscription = $branch->subscription;
+
+    //     if (!$subscription) {
+    //         return redirect()
+    //             ->route('subscription.index')
+    //             ->with(
+    //                 'error',
+    //                 'This branch does not have a subscription record.'
+    //             );
+    //     }
+
+    //     /*
+    //     |--------------------------------------------------------------------------
+    //     | Prevent duplicate active subscription
+    //     |--------------------------------------------------------------------------
+    //     */
+
+    //     if (
+    //         $subscription->status === 'active' &&
+    //         $subscription->ends_at &&
+    //         now()->lessThan($subscription->ends_at)
+    //     ) {
+    //         return redirect()
+    //             ->route('subscription.index')
+    //             ->with(
+    //                 'error',
+    //                 'This branch already has an active subscription.'
+    //             );
+    //     }
+
+    //     /*
+    //     |--------------------------------------------------------------------------
+    //     | Create pending payment
+    //     |--------------------------------------------------------------------------
+    //     |
+    //     | This is the existing temporary payment flow.
+    //     | Replace it with the real payment gateway later.
+    //     |
+    //     */
+
+    //     $subscription->update([
+    //         'status' => 'pending',
+    //     ]);
+
+    //     return redirect()
+    //         ->route('subscription.index')
+    //         ->with(
+    //             'success',
+    //             'Subscription payment has been initiated.'
+    //         );
+    // }
 
 
     /**

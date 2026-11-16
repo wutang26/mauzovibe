@@ -92,18 +92,18 @@ class RegisterController extends Controller
 
             /*
             |--------------------------------------------------------------------------
-            | 5. Create 30-Day Free Trial
+            | 5. Create 12 -Days Free Trial
             |--------------------------------------------------------------------------
             */
 
             $trialStartedAt = now();
 
-            $trialEndsAt = now()->addDays(30);
+            $trialEndsAt = $trialStartedAt->copy()->addDays(14);
 
             $branch->subscription()->create([
                 'plan' => 'monthly',
 
-                'amount' => 10000,
+                'amount' => 0,
 
                 'status' => 'trial',
 
