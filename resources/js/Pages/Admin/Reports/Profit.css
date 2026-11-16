@@ -1,0 +1,457 @@
+
+/*
+|--------------------------------------------------------------------------
+| MAUZOVIBE PROFIT REPORT - PRINT STYLES
+|--------------------------------------------------------------------------
+*/
+
+/* Hidden on normal screen */
+.profit-print-area {
+    display: none;
+}
+
+/* Print page configuration */
+@page {
+    size: A4 portrait;
+    margin: 12mm 10mm;
+}
+
+@media print {
+
+    html,
+    body {
+        width: 100% !important;
+        min-width: 0 !important;
+        margin: 0 !important;
+        padding: 0 !important;
+        background: #ffffff !important;
+        color: #17211b !important;
+        font-family: Arial, Helvetica, sans-serif !important;
+        font-size: 9px !important;
+        -webkit-print-color-adjust: exact !important;
+        print-color-adjust: exact !important;
+    }
+
+    /* Hide the entire normal application */
+    body * {
+        visibility: hidden !important;
+    }
+
+    /* Display only the print report */
+    .profit-print-area,
+    .profit-print-area * {
+        visibility: visible !important;
+    }
+
+    .profit-print-area {
+        display: block !important;
+        position: absolute !important;
+        top: 0 !important;
+        left: 0 !important;
+        width: 100% !important;
+        max-width: none !important;
+        min-height: 0 !important;
+        margin: 0 !important;
+        padding: 0 !important;
+        overflow: visible !important;
+        background: #ffffff !important;
+        color: #17211b !important;
+        font-size: 9px !important;
+        line-height: 1.4 !important;
+    }
+
+    /* Report header */
+    .print-report-header {
+        width: 100%;
+        margin-bottom: 17px;
+    }
+
+    .print-brand-row {
+        display: flex !important;
+        align-items: center !important;
+        gap: 9px !important;
+        margin-bottom: 15px !important;
+    }
+
+    .print-brand-mark {
+        display: flex !important;
+        align-items: center !important;
+        justify-content: center !important;
+        width: 36px !important;
+        height: 36px !important;
+        flex: 0 0 36px !important;
+        border-radius: 8px !important;
+        background: #16834a !important;
+        color: #ffffff !important;
+        font-size: 14px !important;
+        font-weight: 900 !important;
+        letter-spacing: -1px !important;
+    }
+
+    .print-brand-details h1 {
+        margin: 0 !important;
+        color: #126b3b !important;
+        font-size: 19px !important;
+        font-weight: 900 !important;
+        letter-spacing: 1.5px !important;
+        line-height: 1.1 !important;
+    }
+
+    .print-brand-details p {
+        margin: 3px 0 0 !important;
+        color: #718078 !important;
+        font-size: 7px !important;
+        font-weight: 700 !important;
+        letter-spacing: 1.3px !important;
+    }
+
+    .print-report-title {
+        margin: 12px 0 10px !important;
+        text-align: center !important;
+    }
+
+    .print-report-title h2 {
+        margin: 0 !important;
+        color: #17211b !important;
+        font-size: 16px !important;
+        font-weight: 900 !important;
+        letter-spacing: 0.8px !important;
+    }
+
+    .print-report-title p {
+        margin: 4px 0 0 !important;
+        color: #b45309 !important;
+        font-size: 7px !important;
+        font-weight: 800 !important;
+        letter-spacing: 1.4px !important;
+    }
+
+    .print-header-line {
+        height: 2px !important;
+        margin: 12px 0 !important;
+        background: #16834a !important;
+    }
+
+    /* Report metadata */
+    .print-report-meta {
+        display: grid !important;
+        grid-template-columns: 1.3fr 1.2fr 0.9fr 1fr !important;
+        gap: 8px !important;
+        padding: 9px 10px !important;
+        border: 1px solid #e1e9e3 !important;
+        border-radius: 5px !important;
+        background: #f7faf8 !important;
+    }
+
+    .print-report-meta > div {
+        display: flex !important;
+        flex-direction: column !important;
+        min-width: 0 !important;
+        gap: 3px !important;
+    }
+
+    .print-meta-label {
+        color: #718078 !important;
+        font-size: 6.5px !important;
+        font-weight: 800 !important;
+        letter-spacing: 0.6px !important;
+    }
+
+    .print-report-meta strong {
+        color: #26352c !important;
+        font-size: 8px !important;
+        font-weight: 700 !important;
+        overflow-wrap: anywhere !important;
+    }
+
+    /* Sections */
+    .print-report-section {
+        width: 100% !important;
+        margin-top: 17px !important;
+    }
+
+    .print-section-heading {
+        display: flex !important;
+        align-items: center !important;
+        justify-content: space-between !important;
+        gap: 10px !important;
+        margin-bottom: 8px !important;
+        padding-bottom: 6px !important;
+        border-bottom: 1px solid #dce6df !important;
+    }
+
+    .print-section-heading h3 {
+        margin: 0 !important;
+        color: #176c3e !important;
+        font-size: 9px !important;
+        font-weight: 900 !important;
+        letter-spacing: 0.5px !important;
+    }
+
+    .print-section-heading span {
+        color: #718078 !important;
+        font-size: 7px !important;
+        font-weight: 700 !important;
+        white-space: nowrap !important;
+    }
+
+    /* Financial summary */
+    .print-summary-grid {
+        display: grid !important;
+        grid-template-columns: repeat(4, minmax(0, 1fr)) !important;
+        gap: 7px !important;
+    }
+
+    .print-summary-item {
+        display: flex !important;
+        flex-direction: column !important;
+        justify-content: center !important;
+        min-height: 48px !important;
+        padding: 8px !important;
+        border: 1px solid #e3eae5 !important;
+        border-radius: 4px !important;
+        background: #fbfdfb !important;
+        break-inside: avoid !important;
+    }
+
+    .print-summary-item span {
+        margin-bottom: 5px !important;
+        color: #718078 !important;
+        font-size: 7px !important;
+        font-weight: 700 !important;
+    }
+
+    .print-summary-item strong {
+        color: #25372b !important;
+        font-size: 9px !important;
+        font-weight: 800 !important;
+        overflow-wrap: anywhere !important;
+    }
+
+    .print-summary-highlight {
+        border-color: #a8d9b9 !important;
+        background: #effaf2 !important;
+    }
+
+    .print-summary-highlight span,
+    .print-summary-highlight strong {
+        color: #13733c !important;
+    }
+
+    /* Tables */
+    .print-report-table {
+        width: 100% !important;
+        border-collapse: collapse !important;
+        table-layout: auto !important;
+        font-size: 7.5px !important;
+    }
+
+    .print-report-table thead {
+        display: table-header-group !important;
+    }
+
+    .print-report-table tfoot {
+        display: table-row-group !important;
+    }
+
+    .print-report-table tr {
+        break-inside: avoid !important;
+        page-break-inside: avoid !important;
+    }
+
+    .print-report-table th {
+        padding: 7px 5px !important;
+        border-top: 1px solid #dce6df !important;
+        border-bottom: 1px solid #cbd8ce !important;
+        background: #edf5ef !important;
+        color: #365542 !important;
+        font-size: 6.5px !important;
+        font-weight: 900 !important;
+        text-align: left !important;
+        white-space: nowrap !important;
+    }
+
+    .print-report-table td {
+        padding: 7px 5px !important;
+        border-bottom: 1px solid #e8eee9 !important;
+        color: #35433a !important;
+        vertical-align: middle !important;
+        overflow-wrap: anywhere !important;
+    }
+
+    .print-report-table tbody tr:nth-child(even) {
+        background: #fafcfb !important;
+    }
+
+    .print-report-table td strong {
+        display: block !important;
+        color: #26352c !important;
+        font-size: 7.5px !important;
+        font-weight: 800 !important;
+    }
+
+    .print-report-table td small {
+        display: block !important;
+        margin-top: 2px !important;
+        color: #839087 !important;
+        font-size: 6.5px !important;
+    }
+
+    .print-report-table tfoot td {
+        padding: 8px 5px !important;
+        border-top: 1.5px solid #9caf9f !important;
+        border-bottom: 1px solid #dce6df !important;
+        background: #f0f5f1 !important;
+        color: #26352c !important;
+        font-weight: 900 !important;
+    }
+
+    .print-report-table .print-col-number {
+        width: 22px !important;
+    }
+
+    .print-report-table .text-right {
+        text-align: right !important;
+        white-space: nowrap !important;
+    }
+
+    .print-report-table .print-profit-value {
+        color: #13733c !important;
+        font-weight: 900 !important;
+    }
+
+    .print-report-table .print-empty {
+        padding: 16px 8px !important;
+        color: #7b887f !important;
+        text-align: center !important;
+        font-style: italic !important;
+    }
+
+    /* Sales table needs compact columns */
+    .print-sales-table {
+        font-size: 6.8px !important;
+    }
+
+    .print-sales-table th {
+        padding: 6px 3px !important;
+        font-size: 6px !important;
+    }
+
+    .print-sales-table td {
+        padding: 6px 3px !important;
+        font-size: 6.5px !important;
+    }
+
+    .print-sales-table td strong {
+        font-size: 6.5px !important;
+    }
+
+    /* Final result */
+    .print-final-result {
+        display: grid !important;
+        grid-template-columns: 1.5fr 1fr !important;
+        gap: 9px !important;
+        margin-top: 16px !important;
+        padding: 12px !important;
+        border: 1px solid #b6d9c0 !important;
+        border-left: 4px solid #16834a !important;
+        border-radius: 4px !important;
+        background: #f0f8f2 !important;
+        break-inside: avoid !important;
+    }
+
+    .print-final-result > div {
+        display: flex !important;
+        flex-direction: column !important;
+        gap: 4px !important;
+    }
+
+    .print-final-result span {
+        color: #54715e !important;
+        font-size: 7px !important;
+        font-weight: 800 !important;
+        letter-spacing: 0.5px !important;
+    }
+
+    .print-final-result strong {
+        color: #116b38 !important;
+        font-size: 13px !important;
+        font-weight: 900 !important;
+    }
+
+    /* Footer */
+    .print-report-footer {
+        margin-top: 20px !important;
+        padding-top: 10px !important;
+        border-top: 1px solid #dce6df !important;
+        break-inside: avoid !important;
+    }
+
+    .print-footer-note {
+        margin-bottom: 12px !important;
+    }
+
+    .print-footer-note strong {
+        color: #8b5a15 !important;
+        font-size: 7px !important;
+        font-weight: 900 !important;
+        letter-spacing: 0.5px !important;
+    }
+
+    .print-footer-note p {
+        max-width: 520px !important;
+        margin: 3px 0 0 !important;
+        color: #718078 !important;
+        font-size: 7px !important;
+    }
+
+    .print-footer-bottom {
+        display: flex !important;
+        align-items: center !important;
+        justify-content: space-between !important;
+        gap: 10px !important;
+        padding-top: 8px !important;
+        border-top: 1px solid #edf1ee !important;
+    }
+
+    .print-footer-bottom span {
+        color: #718078 !important;
+        font-size: 6.5px !important;
+        font-weight: 700 !important;
+        letter-spacing: 0.4px !important;
+    }
+
+    .print-footer-bottom strong {
+        color: #16834a !important;
+        font-size: 7px !important;
+        font-weight: 900 !important;
+    }
+
+    .print-generated-note {
+        margin: 7px 0 0 !important;
+        color: #9aa59d !important;
+        font-size: 6.5px !important;
+        text-align: center !important;
+    }
+
+    /* Avoid unwanted application layout effects */
+    .profit-print-area,
+    .profit-print-area * {
+        box-sizing: border-box !important;
+        box-shadow: none !important;
+        text-shadow: none !important;
+    }
+
+    button,
+    input,
+    select,
+    textarea {
+        display: none !important;
+    }
+
+    /* Browser print settings */
+    a {
+        color: inherit !important;
+        text-decoration: none !important;
+    }
+}

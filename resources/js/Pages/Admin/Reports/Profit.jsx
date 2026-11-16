@@ -1,3 +1,4 @@
+
 import React from "react";
 import { Head, router } from "@inertiajs/react";
 
@@ -14,10 +15,12 @@ import {
     MagnifyingGlassIcon,
 } from "@heroicons/react/24/outline";
 
+import "./Profit.css";
+
 export default function Profit({
     startDate,
     endDate,
-    summary,
+    summary = {},
     products = [],
     sales = [],
 }) {
@@ -25,6 +28,9 @@ export default function Profit({
         start_date: startDate || "",
         end_date: endDate || "",
     });
+
+    const safeProducts = Array.isArray(products) ? products : [];
+    const safeSales = Array.isArray(sales) ? sales : [];
 
     const formatMoney = (amount) => {
         return new Intl.NumberFormat("en-TZ", {
@@ -57,9 +63,448 @@ export default function Profit({
         window.print();
     };
 
+    // Product totals
+    const productTotals = safeProducts.reduce(
+        (totals, product) => {
+            totals.quantity += Number(product.quantity || 0);
+            totals.revenue += Number(product.revenue || 0);
+            totals.cost += Number(product.cost || 0);
+            totals.profit += Number(product.profit || 0);
+
+            return totals;
+        },
+        {
+            quantity: 0,
+            revenue: 0,
+            cost: 0,
+            profit: 0,
+        }
+    );
+
+    // Sales totals
+    const salesTotals = safeSales.reduce(
+        (totals, sale) => {
+            totals.sales += Number(sale.sales || 0);
+            totals.cost += Number(sale.cost || 0);
+            totals.profit += Number(sale.profit || 0);
+
+            return totals;
+        },
+        {
+            sales: 0,
+            cost: 0,
+            profit: 0,
+        }
+    );
+
+    const generatedAt = new Date().toLocaleString("en-GB", {
+        day: "2-digit",
+        month: "short",
+        year: "numeric",
+        hour: "2-digit",
+        minute: "2-digit",
+    });
+
     return (
         <AdminLayout>
             <Head title="Profit Report" />
+
+            {/* =====================================================
+                PRINT-ONLY FINANCIAL REPORT
+            ====================================================== */}
+
+            <div className="profit-print-area">
+
+                {/* Report Header */}
+                <div className="print-report-header">
+
+                    <div className="print-brand-row">
+
+                        <div className="print-brand-mark">
+                            MV
+                        </div>
+
+                        <div className="print-brand-details">
+                            <h1>MAUZOVIBE</h1>
+                            <p>BUSINESS MANAGEMENT SYSTEM</p>
+                        </div>
+
+                    </div>
+
+                    <div className="print-report-title">
+                        <h2>PROFIT &amp; FINANCIAL REPORT</h2>
+                        <p>CONFIDENTIAL BUSINESS REPORT</p>
+                    </div>
+
+                    <div className="print-header-line"></div>
+
+                    <div className="print-report-meta">
+
+                        <div>
+                            <span className="print-meta-label">
+                                REPORT PERIOD
+                            </span>
+
+                            <strong>
+                                {startDate || "Not specified"} — {endDate || "Not specified"}
+                            </strong>
+                        </div>
+
+                        <div>
+                            <span className="print-meta-label">
+                                GENERATED ON
+                            </span>
+
+                            <strong>{generatedAt}</strong>
+                        </div>
+
+                        <div>
+                            <span className="print-meta-label">
+                                TOTAL TRANSACTIONS
+                            </span>
+
+                            <strong>
+                                {formatNumber(summary.totalTransactions ?? safeSales.length)}
+                            </strong>
+                        </div>
+
+                        <div>
+                            <span className="print-meta-label">
+                                CURRENCY
+                            </span>
+
+                            <strong>Tanzanian Shilling (TZS)</strong>
+                        </div>
+
+                    </div>
+                </div>
+
+                {/* Financial Summary */}
+                <section className="print-report-section">
+
+                    <div className="print-section-heading">
+                        <h3>01. FINANCIAL SUMMARY</h3>
+                        <span>BUSINESS PERFORMANCE OVERVIEW</span>
+                    </div>
+
+                    <div className="print-summary-grid">
+
+                        <div className="print-summary-item">
+                            <span>Gross Revenue</span>
+                            <strong>
+                                TZS {formatMoney(summary.grossRevenue)}
+                            </strong>
+                        </div>
+
+                        <div className="print-summary-item">
+                            <span>Total Discounts</span>
+                            <strong>
+                                TZS {formatMoney(summary.totalDiscount)}
+                            </strong>
+                        </div>
+
+                        <div className="print-summary-item">
+                            <span>Net Sales</span>
+                            <strong>
+                                TZS {formatMoney(summary.netSales)}
+                            </strong>
+                        </div>
+
+                        <div className="print-summary-item">
+                            <span>Cost of Goods</span>
+                            <strong>
+                                TZS {formatMoney(summary.totalCost)}
+                            </strong>
+                        </div>
+
+                        <div className="print-summary-item print-summary-highlight">
+                            <span>Total Profit</span>
+                            <strong>
+                                TZS {formatMoney(summary.totalProfit)}
+                            </strong>
+                        </div>
+
+                        <div className="print-summary-item">
+                            <span>Profit Margin</span>
+                            <strong>
+                                {formatNumber(summary.profitMargin)}%
+                            </strong>
+                        </div>
+
+                        <div className="print-summary-item">
+                            <span>Amount Paid</span>
+                            <strong>
+                                TZS {formatMoney(summary.totalPaid)}
+                            </strong>
+                        </div>
+
+                        <div className="print-summary-item">
+                            <span>Outstanding</span>
+                            <strong>
+                                TZS {formatMoney(summary.totalOutstanding)}
+                            </strong>
+                        </div>
+
+                    </div>
+                </section>
+
+                {/* Product Profitability */}
+                <section className="print-report-section">
+
+                    <div className="print-section-heading">
+                        <h3>02. PRODUCT PROFITABILITY</h3>
+
+                        <span>
+                            {safeProducts.length} PRODUCTS
+                        </span>
+                    </div>
+
+                    <table className="print-report-table">
+
+                        <thead>
+                            <tr>
+                                <th className="print-col-number">#</th>
+                                <th>PRODUCT / SKU</th>
+                                <th className="text-right">QTY SOLD</th>
+                                <th className="text-right">REVENUE</th>
+                                <th className="text-right">COST</th>
+                                <th className="text-right">PROFIT</th>
+                                <th className="text-right">MARGIN</th>
+                            </tr>
+                        </thead>
+
+                        <tbody>
+                            {safeProducts.length > 0 ? (
+                                safeProducts.map((product, index) => (
+                                    <tr key={product.product_id ?? index}>
+                                        <td>{index + 1}</td>
+
+                                        <td>
+                                            <strong>
+                                                {product.product || "Unknown Product"}
+                                            </strong>
+
+                                            <small>
+                                                SKU: {product.sku || "-"}
+                                            </small>
+                                        </td>
+
+                                        <td className="text-right">
+                                            {formatNumber(product.quantity)}
+                                        </td>
+
+                                        <td className="text-right">
+                                            {formatMoney(product.revenue)}
+                                        </td>
+
+                                        <td className="text-right">
+                                            {formatMoney(product.cost)}
+                                        </td>
+
+                                        <td className="text-right print-profit-value">
+                                            {formatMoney(product.profit)}
+                                        </td>
+
+                                        <td className="text-right">
+                                            {formatNumber(product.margin)}%
+                                        </td>
+                                    </tr>
+                                ))
+                            ) : (
+                                <tr>
+                                    <td colSpan="7" className="print-empty">
+                                        No product profitability data found for this period.
+                                    </td>
+                                </tr>
+                            )}
+                        </tbody>
+
+                        {safeProducts.length > 0 && (
+                            <tfoot>
+                                <tr>
+                                    <td colSpan="2">
+                                        TOTAL
+                                    </td>
+
+                                    <td className="text-right">
+                                        {formatNumber(productTotals.quantity)}
+                                    </td>
+
+                                    <td className="text-right">
+                                        {formatMoney(productTotals.revenue)}
+                                    </td>
+
+                                    <td className="text-right">
+                                        {formatMoney(productTotals.cost)}
+                                    </td>
+
+                                    <td className="text-right print-profit-value">
+                                        {formatMoney(productTotals.profit)}
+                                    </td>
+
+                                    <td className="text-right">—</td>
+                                </tr>
+                            </tfoot>
+                        )}
+
+                    </table>
+                </section>
+
+                {/* Sales Profit */}
+                <section className="print-report-section">
+
+                    <div className="print-section-heading">
+                        <h3>03. SALES PROFIT ANALYSIS</h3>
+
+                        <span>
+                            {safeSales.length} TRANSACTIONS
+                        </span>
+                    </div>
+
+                    <table className="print-report-table print-sales-table">
+
+                        <thead>
+                            <tr>
+                                <th className="print-col-number">#</th>
+                                <th>INVOICE</th>
+                                <th>DATE</th>
+                                <th>CUSTOMER</th>
+                                <th className="text-right">SALES</th>
+                                <th className="text-right">COST</th>
+                                <th className="text-right">PROFIT</th>
+                                <th className="text-right">MARGIN</th>
+                            </tr>
+                        </thead>
+
+                        <tbody>
+                            {safeSales.length > 0 ? (
+                                safeSales.map((sale, index) => (
+                                    <tr key={sale.id ?? index}>
+                                        <td>{index + 1}</td>
+
+                                        <td>
+                                            <strong>
+                                                {sale.invoice_number || "-"}
+                                            </strong>
+                                        </td>
+
+                                        <td>
+                                            {sale.date || "-"}
+                                            {sale.time && (
+                                                <small>{sale.time}</small>
+                                            )}
+                                        </td>
+
+                                        <td>
+                                            {sale.customer || "Walk-in Customer"}
+                                        </td>
+
+                                        <td className="text-right">
+                                            {formatMoney(sale.sales)}
+                                        </td>
+
+                                        <td className="text-right">
+                                            {formatMoney(sale.cost)}
+                                        </td>
+
+                                        <td className="text-right print-profit-value">
+                                            {formatMoney(sale.profit)}
+                                        </td>
+
+                                        <td className="text-right">
+                                            {formatNumber(sale.margin)}%
+                                        </td>
+                                    </tr>
+                                ))
+                            ) : (
+                                <tr>
+                                    <td colSpan="8" className="print-empty">
+                                        No completed sales found for this period.
+                                    </td>
+                                </tr>
+                            )}
+                        </tbody>
+
+                        {safeSales.length > 0 && (
+                            <tfoot>
+                                <tr>
+                                    <td colSpan="4">
+                                        TOTAL
+                                    </td>
+
+                                    <td className="text-right">
+                                        {formatMoney(salesTotals.sales)}
+                                    </td>
+
+                                    <td className="text-right">
+                                        {formatMoney(salesTotals.cost)}
+                                    </td>
+
+                                    <td className="text-right print-profit-value">
+                                        {formatMoney(salesTotals.profit)}
+                                    </td>
+
+                                    <td className="text-right">—</td>
+                                </tr>
+                            </tfoot>
+                        )}
+
+                    </table>
+                </section>
+
+                {/* Final Financial Result */}
+                <section className="print-final-result">
+
+                    <div>
+                        <span>NET BUSINESS PROFIT</span>
+                        <strong>
+                            TZS {formatMoney(summary.totalProfit)}
+                        </strong>
+                    </div>
+
+                    <div>
+                        <span>PROFIT MARGIN</span>
+                        <strong>
+                            {formatNumber(summary.profitMargin)}%
+                        </strong>
+                    </div>
+
+                </section>
+
+                {/* Report Footer */}
+                <footer className="print-report-footer">
+
+                    <div className="print-footer-note">
+                        <strong>IMPORTANT NOTICE</strong>
+
+                        <p>
+                            This report contains confidential business and
+                            financial information. It is intended for
+                            authorised management use only.
+                        </p>
+                    </div>
+
+                    <div className="print-footer-bottom">
+                        <span>
+                            MAUZOVIBE | BUSINESS MANAGEMENT &amp; REPORTING
+                        </span>
+
+                        <strong>
+                            Powered by NAC Technologies
+                        </strong>
+                    </div>
+
+                    <p className="print-generated-note">
+                        This is a computer-generated financial report.
+                    </p>
+
+                </footer>
+
+            </div>
+
+            {/* =====================================================
+                NORMAL SCREEN DASHBOARD
+            ====================================================== */}
 
             <div className="min-h-screen bg-gray-50 p-4 sm:p-6">
 
@@ -156,7 +601,7 @@ export default function Profit({
                         </div>
 
                         <div className="text-sm text-gray-600">
-                            {summary.totalTransactions} completed transactions
+                            {summary.totalTransactions ?? safeSales.length} completed transactions
                         </div>
 
                     </div>
@@ -165,7 +610,6 @@ export default function Profit({
                 {/* Summary Cards */}
                 <div className="mb-6 grid grid-cols-1 gap-4 sm:grid-cols-2 xl:grid-cols-4">
 
-                    {/* Net Sales */}
                     <SummaryCard
                         title="Net Sales"
                         value={`TZS ${formatMoney(summary.netSales)}`}
@@ -173,7 +617,6 @@ export default function Profit({
                         icon={CurrencyDollarIcon}
                     />
 
-                    {/* Cost */}
                     <SummaryCard
                         title="Cost of Goods"
                         value={`TZS ${formatMoney(summary.totalCost)}`}
@@ -181,7 +624,6 @@ export default function Profit({
                         icon={CubeIcon}
                     />
 
-                    {/* Profit */}
                     <SummaryCard
                         title="Total Profit"
                         value={`TZS ${formatMoney(summary.totalProfit)}`}
@@ -190,7 +632,6 @@ export default function Profit({
                         highlight
                     />
 
-                    {/* Margin */}
                     <SummaryCard
                         title="Profit Margin"
                         value={`${formatNumber(summary.profitMargin)}%`}
@@ -247,7 +688,7 @@ export default function Profit({
                             </div>
 
                             <div className="rounded-lg bg-green-50 px-3 py-1.5 text-xs font-semibold text-green-700">
-                                {products.length} Products
+                                {safeProducts.length} Products
                             </div>
 
                         </div>
@@ -258,9 +699,7 @@ export default function Profit({
                         <table className="min-w-full divide-y divide-gray-100">
 
                             <thead className="bg-gray-50">
-
                                 <tr>
-
                                     <th className="px-5 py-3 text-left text-xs font-semibold uppercase tracking-wide text-gray-500">
                                         Product
                                     </th>
@@ -284,23 +723,18 @@ export default function Profit({
                                     <th className="px-5 py-3 text-right text-xs font-semibold uppercase tracking-wide text-gray-500">
                                         Margin
                                     </th>
-
                                 </tr>
-
                             </thead>
 
                             <tbody className="divide-y divide-gray-100 bg-white">
 
-                                {products.length > 0 ? (
-                                    products.map((product) => (
-
+                                {safeProducts.length > 0 ? (
+                                    safeProducts.map((product, index) => (
                                         <tr
-                                            key={product.product_id}
+                                            key={product.product_id ?? index}
                                             className="transition hover:bg-green-50/40"
                                         >
-
                                             <td className="px-5 py-4">
-
                                                 <div className="font-semibold text-gray-900">
                                                     {product.product}
                                                 </div>
@@ -308,7 +742,6 @@ export default function Profit({
                                                 <div className="text-xs text-gray-500">
                                                     SKU: {product.sku}
                                                 </div>
-
                                             </td>
 
                                             <td className="px-5 py-4 text-right text-sm text-gray-700">
@@ -324,41 +757,29 @@ export default function Profit({
                                             </td>
 
                                             <td className="px-5 py-4 text-right">
-
                                                 <span className="font-bold text-green-600">
                                                     TZS {formatMoney(product.profit)}
                                                 </span>
-
                                             </td>
 
                                             <td className="px-5 py-4 text-right">
-
                                                 <span
                                                     className={`inline-flex rounded-full px-2.5 py-1 text-xs font-semibold ${
-                                                        product.margin >= 30
+                                                        Number(product.margin) >= 30
                                                             ? "bg-green-100 text-green-700"
-                                                            : product.margin >= 15
+                                                            : Number(product.margin) >= 15
                                                             ? "bg-yellow-100 text-yellow-700"
                                                             : "bg-red-100 text-red-700"
                                                     }`}
                                                 >
                                                     {formatNumber(product.margin)}%
                                                 </span>
-
                                             </td>
-
                                         </tr>
-
                                     ))
                                 ) : (
-
                                     <tr>
-
-                                        <td
-                                            colSpan="6"
-                                            className="px-5 py-12 text-center"
-                                        >
-
+                                        <td colSpan="6" className="px-5 py-12 text-center">
                                             <CubeIcon className="mx-auto h-10 w-10 text-gray-300" />
 
                                             <p className="mt-3 text-sm font-medium text-gray-500">
@@ -368,82 +789,41 @@ export default function Profit({
                                             <p className="mt-1 text-xs text-gray-400">
                                                 Try selecting another date range.
                                             </p>
-
                                         </td>
-
                                     </tr>
-
                                 )}
 
                             </tbody>
 
-                            {products.length > 0 && (
+                            {safeProducts.length > 0 && (
                                 <tfoot className="border-t-2 border-gray-200 bg-gray-50">
-
                                     <tr>
-
                                         <td className="px-5 py-4 text-sm font-bold text-gray-900">
                                             Total
                                         </td>
 
                                         <td className="px-5 py-4 text-right text-sm font-bold text-gray-900">
-                                            {formatNumber(
-                                                products.reduce(
-                                                    (sum, item) =>
-                                                        sum +
-                                                        Number(item.quantity || 0),
-                                                    0
-                                                )
-                                            )}
+                                            {formatNumber(productTotals.quantity)}
                                         </td>
 
                                         <td className="px-5 py-4 text-right text-sm font-bold text-gray-900">
-                                            TZS{" "}
-                                            {formatMoney(
-                                                products.reduce(
-                                                    (sum, item) =>
-                                                        sum +
-                                                        Number(item.revenue || 0),
-                                                    0
-                                                )
-                                            )}
+                                            TZS {formatMoney(productTotals.revenue)}
                                         </td>
 
                                         <td className="px-5 py-4 text-right text-sm font-bold text-gray-900">
-                                            TZS{" "}
-                                            {formatMoney(
-                                                products.reduce(
-                                                    (sum, item) =>
-                                                        sum +
-                                                        Number(item.cost || 0),
-                                                    0
-                                                )
-                                            )}
+                                            TZS {formatMoney(productTotals.cost)}
                                         </td>
 
                                         <td className="px-5 py-4 text-right text-sm font-bold text-green-600">
-                                            TZS{" "}
-                                            {formatMoney(
-                                                products.reduce(
-                                                    (sum, item) =>
-                                                        sum +
-                                                        Number(item.profit || 0),
-                                                    0
-                                                )
-                                            )}
+                                            TZS {formatMoney(productTotals.profit)}
                                         </td>
 
-                                        <td className="px-5 py-4 text-right">
-                                            —
-                                        </td>
-
+                                        <td className="px-5 py-4 text-right">—</td>
                                     </tr>
-
                                 </tfoot>
                             )}
 
                         </table>
-
                     </div>
                 </div>
 
@@ -451,7 +831,6 @@ export default function Profit({
                 <div className="rounded-2xl border border-gray-100 bg-white shadow-sm">
 
                     <div className="border-b border-gray-100 px-5 py-4 sm:px-6">
-
                         <h2 className="text-lg font-bold text-gray-900">
                             Sales Profit
                         </h2>
@@ -459,7 +838,6 @@ export default function Profit({
                         <p className="text-sm text-gray-500">
                             Profit generated from individual transactions.
                         </p>
-
                     </div>
 
                     <div className="overflow-x-auto">
@@ -467,9 +845,7 @@ export default function Profit({
                         <table className="min-w-full divide-y divide-gray-100">
 
                             <thead className="bg-gray-50">
-
                                 <tr>
-
                                     <th className="px-5 py-3 text-left text-xs font-semibold uppercase tracking-wide text-gray-500">
                                         Invoice
                                     </th>
@@ -497,27 +873,24 @@ export default function Profit({
                                     <th className="px-5 py-3 text-right text-xs font-semibold uppercase tracking-wide text-gray-500">
                                         Margin
                                     </th>
-
                                 </tr>
-
                             </thead>
 
                             <tbody className="divide-y divide-gray-100">
 
-                                {sales.length > 0 ? (
-                                    sales.map((sale) => (
-
+                                {safeSales.length > 0 ? (
+                                    safeSales.map((sale, index) => (
                                         <tr
-                                            key={sale.id}
+                                            key={sale.id ?? index}
                                             className="transition hover:bg-gray-50"
                                         >
-
                                             <td className="px-5 py-4 text-sm font-semibold text-gray-900">
                                                 {sale.invoice_number}
                                             </td>
 
                                             <td className="px-5 py-4 text-sm text-gray-600">
                                                 <div>{sale.date}</div>
+
                                                 <div className="text-xs text-gray-400">
                                                     {sale.time}
                                                 </div>
@@ -540,43 +913,34 @@ export default function Profit({
                                             </td>
 
                                             <td className="px-5 py-4 text-right">
-
                                                 <span
                                                     className={`text-sm font-semibold ${
-                                                        sale.margin >= 30
+                                                        Number(sale.margin) >= 30
                                                             ? "text-green-600"
-                                                            : sale.margin >= 15
+                                                            : Number(sale.margin) >= 15
                                                             ? "text-yellow-600"
                                                             : "text-red-600"
                                                     }`}
                                                 >
                                                     {formatNumber(sale.margin)}%
                                                 </span>
-
                                             </td>
-
                                         </tr>
-
                                     ))
                                 ) : (
-
                                     <tr>
-
                                         <td
                                             colSpan="7"
                                             className="px-5 py-12 text-center text-sm text-gray-500"
                                         >
                                             No completed sales found for this period.
                                         </td>
-
                                     </tr>
-
                                 )}
 
                             </tbody>
 
                         </table>
-
                     </div>
                 </div>
 
@@ -584,7 +948,6 @@ export default function Profit({
         </AdminLayout>
     );
 }
-
 
 /*
 |--------------------------------------------------------------------------
@@ -607,20 +970,15 @@ function SummaryCard({
                     : "border-gray-100"
             }`}
         >
-
             <div className="flex items-start justify-between">
-
                 <div>
-
                     <p className="text-sm font-medium text-gray-500">
                         {title}
                     </p>
 
                     <p
                         className={`mt-2 text-xl font-bold ${
-                            highlight
-                                ? "text-green-600"
-                                : "text-gray-900"
+                            highlight ? "text-green-600" : "text-gray-900"
                         }`}
                     >
                         {value}
@@ -629,19 +987,15 @@ function SummaryCard({
                     <p className="mt-1 text-xs text-gray-400">
                         {subtitle}
                     </p>
-
                 </div>
 
                 <div className="rounded-xl bg-green-50 p-3">
                     <Icon className="h-6 w-6 text-green-600" />
                 </div>
-
             </div>
-
         </div>
     );
 }
-
 
 /*
 |--------------------------------------------------------------------------
@@ -656,13 +1010,11 @@ function MiniStat({
 }) {
     return (
         <div className="flex items-center gap-4 rounded-2xl border border-gray-100 bg-white p-4 shadow-sm">
-
             <div className="rounded-xl bg-gray-100 p-3">
                 <Icon className="h-5 w-5 text-gray-600" />
             </div>
 
             <div className="min-w-0">
-
                 <p className="text-xs font-medium text-gray-500">
                     {title}
                 </p>
@@ -670,9 +1022,7 @@ function MiniStat({
                 <p className="mt-1 truncate text-sm font-bold text-gray-900">
                     {value}
                 </p>
-
             </div>
-
         </div>
     );
 }
