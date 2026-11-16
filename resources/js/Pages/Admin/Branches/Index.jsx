@@ -1,3 +1,4 @@
+
 import { Link } from "@inertiajs/react";
 import AdminLayout from "@/Layouts/AdminLayout";
 
@@ -11,43 +12,31 @@ import {
     CreditCardIcon,
 } from "@heroicons/react/24/outline";
 
-function Index({ branches }) {
+function formatDays(days) {
+    if (days === null || days === undefined) {
+        return "Days unavailable";
+    }
+
+    return `${days} day${days !== 1 ? "s" : ""} left`;
+}
+
+function Index({ branches = [] }) {
     return (
         <div className="min-h-screen bg-slate-50">
 
-            {/* =====================================================
-                PAGE HEADER
-            ====================================================== */}
+            {/* PAGE HEADER */}
             <div className="mb-6">
-
                 <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
 
                     <div>
                         <div className="flex items-center gap-3">
 
-                            <div className="
-                                w-12
-                                h-12
-                                rounded-2xl
-                                bg-emerald-50
-                                border
-                                border-emerald-100
-                                flex
-                                items-center
-                                justify-center
-                            ">
-                                <BuildingStorefrontIcon
-                                    className="w-6 h-6 text-emerald-600"
-                                />
+                            <div className="w-12 h-12 rounded-2xl bg-emerald-50 border border-emerald-100 flex items-center justify-center">
+                                <BuildingStorefrontIcon className="w-6 h-6 text-emerald-600" />
                             </div>
 
                             <div>
-                                <h1 className="
-                                    text-2xl
-                                    sm:text-3xl
-                                    font-bold
-                                    text-slate-900
-                                ">
+                                <h1 className="text-2xl sm:text-3xl font-bold text-slate-900">
                                     Branch Management
                                 </h1>
 
@@ -59,68 +48,26 @@ function Index({ branches }) {
                         </div>
                     </div>
 
-
                     {/* ADD BRANCH */}
                     <Link
                         href="/admin/branches/create"
-                        className="
-                            inline-flex
-                            items-center
-                            justify-center
-                            gap-2
-                            bg-emerald-600
-                            hover:bg-emerald-700
-                            active:bg-emerald-800
-                            text-white
-                            px-5
-                            py-3
-                            rounded-xl
-                            font-semibold
-                            shadow-lg
-                            shadow-emerald-600/20
-                            transition-all
-                        "
+                        className="inline-flex items-center justify-center gap-2 bg-emerald-600 hover:bg-emerald-700 active:bg-emerald-800 text-white px-5 py-3 rounded-xl font-semibold shadow-lg shadow-emerald-600/20 transition-all"
                     >
-                        <span className="text-xl leading-none">
-                            +
-                        </span>
-
+                        <span className="text-xl leading-none">+</span>
                         Add Branch
                     </Link>
 
                 </div>
-
             </div>
 
-
-            {/* =====================================================
-                SUMMARY
-            ====================================================== */}
+            {/* SUMMARY */}
             <div className="mb-6">
-
-                <div className="
-                    bg-white
-                    border
-                    border-slate-100
-                    rounded-2xl
-                    shadow-sm
-                    p-5
-                ">
+                <div className="bg-white border border-slate-100 rounded-2xl shadow-sm p-5">
 
                     <div className="flex items-center gap-3">
 
-                        <div className="
-                            w-10
-                            h-10
-                            rounded-xl
-                            bg-emerald-50
-                            flex
-                            items-center
-                            justify-center
-                        ">
-                            <BuildingStorefrontIcon
-                                className="w-5 h-5 text-emerald-600"
-                            />
+                        <div className="w-10 h-10 rounded-xl bg-emerald-50 flex items-center justify-center">
+                            <BuildingStorefrontIcon className="w-5 h-5 text-emerald-600" />
                         </div>
 
                         <div>
@@ -128,50 +75,24 @@ function Index({ branches }) {
                                 Total Branches
                             </p>
 
-                            <p className="
-                                text-xl
-                                font-bold
-                                text-slate-900
-                            ">
+                            <p className="text-xl font-bold text-slate-900">
                                 {branches.length}
                             </p>
                         </div>
 
                     </div>
-
                 </div>
-
             </div>
 
+            {/* BRANCHES TABLE */}
+            <div className="bg-white rounded-2xl shadow-sm border border-slate-100 overflow-hidden">
 
-            {/* =====================================================
-                BRANCHES TABLE
-            ====================================================== */}
-            <div className="
-                bg-white
-                rounded-2xl
-                shadow-sm
-                border
-                border-slate-100
-                overflow-hidden
-            ">
-
-                {/* Desktop Table */}
                 <div className="overflow-x-auto">
 
-                    <table className="w-full min-w-[900px]">
+                    <table className="w-full min-w-[1000px]">
 
                         <thead>
-
-                            <tr className="
-                                bg-slate-50
-                                border-b
-                                border-slate-100
-                                text-slate-500
-                                text-xs
-                                uppercase
-                                tracking-wide
-                            ">
+                            <tr className="bg-slate-50 border-b border-slate-100 text-slate-500 text-xs uppercase tracking-wide">
 
                                 <th className="p-4 text-left font-semibold">
                                     Branch
@@ -198,545 +119,281 @@ function Index({ branches }) {
                                 </th>
 
                             </tr>
-
                         </thead>
-
 
                         <tbody>
 
                             {branches.length > 0 ? (
 
-                                branches.map((branch) => (
+                                branches.map((branch) => {
 
-                                    <tr
-                                        key={branch.id}
-                                        className="
-                                            border-b
-                                            border-slate-100
-                                            last:border-0
-                                            hover:bg-emerald-50/30
-                                            transition
-                                        "
-                                    >
+                                    const subscription = branch.subscription;
+                                    const info = branch.subscription_info;
 
-                                        {/* =================================================
-                                            BRANCH
-                                        ================================================== */}
-                                        <td className="p-4">
+                                    const status = info?.status ?? subscription?.status;
 
-                                            <div className="flex items-center gap-3">
+                                    return (
+                                        <tr
+                                            key={branch.id}
+                                            className="border-b border-slate-100 last:border-0 hover:bg-emerald-50/30 transition"
+                                        >
 
-                                                <div className="
-                                                    w-11
-                                                    h-11
-                                                    rounded-xl
-                                                    bg-emerald-50
-                                                    border
-                                                    border-emerald-100
-                                                    flex
-                                                    items-center
-                                                    justify-center
-                                                    shrink-0
-                                                ">
+                                            {/* BRANCH */}
+                                            <td className="p-4">
+                                                <div className="flex items-center gap-3">
 
-                                                    <BuildingStorefrontIcon
-                                                        className="
-                                                            w-6
-                                                            h-6
-                                                            text-emerald-600
-                                                        "
-                                                    />
+                                                    <div className="w-11 h-11 rounded-xl bg-emerald-50 border border-emerald-100 flex items-center justify-center shrink-0">
+                                                        <BuildingStorefrontIcon className="w-6 h-6 text-emerald-600" />
+                                                    </div>
+
+                                                    <div>
+                                                        <p className="font-semibold text-slate-800">
+                                                            {branch.name}
+                                                        </p>
+
+                                                        <p className="text-xs text-slate-400 mt-0.5">
+                                                            Branch ID #{branch.id}
+                                                        </p>
+                                                    </div>
 
                                                 </div>
+                                            </td>
 
+                                            {/* LOCATION */}
+                                            <td className="p-4">
+                                                <div className="flex items-center gap-2 text-sm text-slate-600">
 
-                                                <div>
+                                                    <MapPinIcon className="w-5 h-5 text-emerald-600" />
 
-                                                    <p className="
-                                                        font-semibold
-                                                        text-slate-800
-                                                    ">
-                                                        {branch.name}
-                                                    </p>
-
-                                                    <p className="
-                                                        text-xs
-                                                        text-slate-400
-                                                        mt-0.5
-                                                    ">
-                                                        Branch ID #{branch.id}
-                                                    </p>
+                                                    <span>
+                                                        {branch.location || "No Location"}
+                                                    </span>
 
                                                 </div>
+                                            </td>
 
-                                            </div>
+                                            {/* USERS */}
+                                            <td className="p-4 text-center">
+                                                <span className="inline-flex items-center gap-2 bg-emerald-50 border border-emerald-100 text-emerald-700 px-3 py-1.5 rounded-full text-xs font-semibold">
 
-                                        </td>
+                                                    <UsersIcon className="w-4 h-4" />
 
+                                                    {branch.users_count ?? 0}
 
-                                        {/* =================================================
-                                            LOCATION
-                                        ================================================== */}
-                                        <td className="p-4">
+                                                    <span className="hidden sm:inline">
+                                                        Users
+                                                    </span>
 
-                                            <div className="
-                                                flex
-                                                items-center
-                                                gap-2
-                                                text-sm
-                                                text-slate-600
-                                            ">
-
-                                                <MapPinIcon
-                                                    className="
-                                                        w-5
-                                                        h-5
-                                                        text-emerald-600
-                                                    "
-                                                />
-
-                                                <span>
-                                                    {branch.location || "No Location"}
                                                 </span>
+                                            </td>
 
-                                            </div>
+                                            {/* SUBSCRIPTION */}
+                                            <td className="p-4 text-center">
 
-                                        </td>
+                                                {!subscription ? (
 
+                                                    <div className="flex flex-col items-center gap-1">
 
-                                        {/* =================================================
-                                            USERS
-                                        ================================================== */}
-                                        <td className="p-4 text-center">
+                                                        <span className="inline-flex items-center gap-2 bg-slate-50 border border-slate-200 text-slate-500 px-3 py-1.5 rounded-full text-xs font-semibold">
+                                                            <CreditCardIcon className="w-4 h-4" />
+                                                            No Subscription
+                                                        </span>
 
-                                            <span className="
-                                                inline-flex
-                                                items-center
-                                                gap-2
-                                                bg-emerald-50
-                                                border
-                                                border-emerald-100
-                                                text-emerald-700
-                                                px-3
-                                                py-1.5
-                                                rounded-full
-                                                text-xs
-                                                font-semibold
-                                            ">
+                                                        <span className="text-[11px] text-slate-400">
+                                                            Not subscribed
+                                                        </span>
 
-                                                <UsersIcon className="w-4 h-4" />
+                                                    </div>
 
-                                                {branch.users_count ?? 0}
+                                                ) : (
 
-                                                <span className="hidden sm:inline">
-                                                    Users
-                                                </span>
+                                                    <div className="flex flex-col items-center gap-1">
 
-                                            </span>
+                                                        {/* FREE TRIAL */}
+                                                        {subscription.status === "trial" &&
+                                                            status === "trial" && (
+                                                                <>
+                                                                    <span className="inline-flex items-center gap-2 bg-emerald-50 border border-emerald-100 text-emerald-700 px-3 py-1.5 rounded-full text-xs font-semibold">
+                                                                        <span className="w-2 h-2 rounded-full bg-emerald-500" />
+                                                                        Free Trial
+                                                                    </span>
 
-                                        </td>
+                                                                    <span className="text-[11px] text-emerald-700 font-medium">
+                                                                        {formatDays(info?.days_left)}
+                                                                    </span>
+                                                                </>
+                                                            )}
 
-{/* =================================================
-    SUBSCRIPTION
-================================================== */}
-{/* =================================================
-    SUBSCRIPTION
-================================================== */}
-<td className="p-4 text-center">
+                                                        {/* TRIAL EXPIRED */}
+                                                        {subscription.status === "trial" &&
+                                                            status === "expired" && (
+                                                                <>
+                                                                    <span className="inline-flex items-center gap-2 bg-red-50 border border-red-100 text-red-700 px-3 py-1.5 rounded-full text-xs font-semibold">
+                                                                        <span className="w-2 h-2 rounded-full bg-red-500" />
+                                                                        Trial Expired
+                                                                    </span>
 
-    {/* FREE TRIAL */}
-    {branch.subscription?.status === "trial" && (
-        <div className="flex flex-col items-center gap-1">
+                                                                    <span className="text-[11px] text-red-400">
+                                                                        Subscribe to continue
+                                                                    </span>
+                                                                </>
+                                                            )}
 
-            <span
-                className="
-                    inline-flex
-                    items-center
-                    gap-2
-                    bg-emerald-50
-                    border
-                    border-emerald-100
-                    text-emerald-700
-                    px-3
-                    py-1.5
-                    rounded-full
-                    text-xs
-                    font-semibold
-                "
-            >
-                <span className="w-2 h-2 rounded-full bg-emerald-500" />
+                                                        {/* ACTIVE SUBSCRIPTION */}
+                                                        {subscription.status === "active" &&
+                                                            status === "active" &&
+                                                            !info?.in_grace_period && (
+                                                                <>
+                                                                    <span className="inline-flex items-center gap-2 bg-green-50 border border-green-100 text-green-700 px-3 py-1.5 rounded-full text-xs font-semibold">
+                                                                        <span className="w-2 h-2 rounded-full bg-green-500" />
+                                                                        Active
+                                                                    </span>
 
-                Free Trial
-            </span>
+                                                                    <span className="text-[11px] text-green-700 font-medium">
+                                                                        {formatDays(info?.days_left)}
+                                                                    </span>
+                                                                </>
+                                                            )}
 
-            {branch.subscription.trial_ends_at && (
-                <span className="text-[11px] text-slate-400">
+                                                        {/* GRACE PERIOD */}
+                                                        {subscription.status === "active" &&
+                                                            info?.in_grace_period && (
+                                                                <>
+                                                                    <span className="inline-flex items-center gap-2 bg-amber-50 border border-amber-200 text-amber-700 px-3 py-1.5 rounded-full text-xs font-semibold">
+                                                                        <span className="w-2 h-2 rounded-full bg-amber-500" />
+                                                                        Grace Period
+                                                                    </span>
 
-                    {(() => {
-                        const end = new Date(
-                            branch.subscription.trial_ends_at
-                        );
+                                                                    <span className="text-[11px] text-amber-700 font-semibold">
+                                                                        {formatDays(info?.grace_days_left)}
+                                                                    </span>
+                                                                </>
+                                                            )}
 
-                        const today = new Date();
+                                                        {/* PAID SUBSCRIPTION EXPIRED */}
+                                                        {subscription.status === "active" &&
+                                                            status === "expired" && (
+                                                                <>
+                                                                    <span className="inline-flex items-center gap-2 bg-red-50 border border-red-100 text-red-700 px-3 py-1.5 rounded-full text-xs font-semibold">
+                                                                        <span className="w-2 h-2 rounded-full bg-red-500" />
+                                                                        Expired
+                                                                    </span>
 
-                        const diff = Math.ceil(
-                            (end - today) / (1000 * 60 * 60 * 24)
-                        );
+                                                                    <span className="text-[11px] text-red-400">
+                                                                        Grace period ended
+                                                                    </span>
+                                                                </>
+                                                            )}
 
-                        return diff > 0
-                            ? `${diff} day${diff !== 1 ? "s" : ""} left`
-                            : "Trial Expired";
+                                                        {/* DATABASE EXPIRED */}
+                                                        {subscription.status === "expired" && (
+                                                            <>
+                                                                <span className="inline-flex items-center gap-2 bg-red-50 border border-red-100 text-red-700 px-3 py-1.5 rounded-full text-xs font-semibold">
+                                                                    <span className="w-2 h-2 rounded-full bg-red-500" />
+                                                                    Expired
+                                                                </span>
 
-                    })()}
+                                                                <span className="text-[11px] text-red-400">
+                                                                    Renewal required
+                                                                </span>
+                                                            </>
+                                                        )}
 
-                </span>
-            )}
+                                                        {/* PAYMENT PENDING */}
+                                                        {subscription.status === "pending" && (
+                                                            <>
+                                                                <span className="inline-flex items-center gap-2 bg-yellow-50 border border-yellow-100 text-yellow-700 px-3 py-1.5 rounded-full text-xs font-semibold">
+                                                                    <span className="w-2 h-2 rounded-full bg-yellow-500" />
+                                                                    Payment Pending
+                                                                </span>
 
-        </div>
-    )}
+                                                                <span className="text-[11px] text-slate-400">
+                                                                    Awaiting payment
+                                                                </span>
+                                                            </>
+                                                        )}
 
+                                                        {/* CANCELLED */}
+                                                        {subscription.status === "cancelled" && (
+                                                            <>
+                                                                <span className="inline-flex items-center gap-2 bg-slate-100 border border-slate-200 text-slate-600 px-3 py-1.5 rounded-full text-xs font-semibold">
+                                                                    Cancelled
+                                                                </span>
 
-    {/* ACTIVE */}
-    {branch.subscription?.status === "active" && (
-        <div className="flex flex-col items-center gap-1">
+                                                                <span className="text-[11px] text-slate-400">
+                                                                    Subscription cancelled
+                                                                </span>
+                                                            </>
+                                                        )}
 
-            <span
-                className="
-                    inline-flex
-                    items-center
-                    gap-2
-                    bg-green-50
-                    border
-                    border-green-100
-                    text-green-700
-                    px-3
-                    py-1.5
-                    rounded-full
-                    text-xs
-                    font-semibold
-                "
-            >
-                <span className="w-2 h-2 rounded-full bg-green-500" />
+                                                    </div>
+                                                )}
 
-                Active
-            </span>
+                                            </td>
 
-            {branch.subscription.ends_at && (
-                <span className="text-[11px] text-slate-400">
-
-                    {(() => {
-                        const end = new Date(
-                            branch.subscription.ends_at
-                        );
-
-                        const today = new Date();
-
-                        const diff = Math.ceil(
-                            (end - today) / (1000 * 60 * 60 * 24)
-                        );
-
-                        return diff > 0
-                            ? `${diff} day${diff !== 1 ? "s" : ""} left`
-                            : "Subscription Expired";
-
-                    })()}
-
-                </span>
-            )}
-
-        </div>
-    )}
-
-
-    {/* PENDING */}
-    {branch.subscription?.status === "pending" && (
-        <div className="flex flex-col items-center gap-1">
-
-            <span
-                className="
-                    inline-flex
-                    items-center
-                    gap-2
-                    bg-yellow-50
-                    border
-                    border-yellow-100
-                    text-yellow-700
-                    px-3
-                    py-1.5
-                    rounded-full
-                    text-xs
-                    font-semibold
-                "
-            >
-                <span className="w-2 h-2 rounded-full bg-yellow-500" />
-
-                Payment Pending
-            </span>
-
-            <span className="text-[11px] text-slate-400">
-                Awaiting payment
-            </span>
-
-        </div>
-    )}
-
-
-    {/* EXPIRED */}
-    {branch.subscription?.status === "expired" && (
-        <div className="flex flex-col items-center gap-1">
-
-            <span
-                className="
-                    inline-flex
-                    items-center
-                    gap-2
-                    bg-red-50
-                    border
-                    border-red-100
-                    text-red-700
-                    px-3
-                    py-1.5
-                    rounded-full
-                    text-xs
-                    font-semibold
-                "
-            >
-                <span className="w-2 h-2 rounded-full bg-red-500" />
-
-                Expired
-            </span>
-
-            <span className="text-[11px] text-red-400">
-                Renewal required
-            </span>
-
-        </div>
-    )}
-
-
-    {/* NO SUBSCRIPTION */}
-    {!branch.subscription && (
-        <div className="flex flex-col items-center gap-1">
-
-            <span
-                className="
-                    inline-flex
-                    items-center
-                    gap-2
-                    bg-slate-50
-                    border
-                    border-slate-200
-                    text-slate-500
-                    px-3
-                    py-1.5
-                    rounded-full
-                    text-xs
-                    font-semibold
-                "
-            >
-                <CreditCardIcon className="w-4 h-4" />
-
-                No Subscription
-            </span>
-
-            <span className="text-[11px] text-slate-400">
-                Not subscribed
-            </span>
-
-        </div>
-    )}
-
-</td>
-                                        {/* =================================================
-                                            ASSIGN USER
-                                        ================================================== */}
-                                        <td className="p-4 text-center">
-
-                                            <Link
-                                                href={`/admin/branches/${branch.id}/assign-user`}
-                                                className="
-                                                    inline-flex
-                                                    items-center
-                                                    justify-center
-                                                    gap-2
-                                                    bg-slate-100
-                                                    hover:bg-emerald-50
-                                                    text-slate-700
-                                                    hover:text-emerald-700
-                                                    border
-                                                    border-slate-200
-                                                    hover:border-emerald-200
-                                                    px-4
-                                                    py-2
-                                                    rounded-xl
-                                                    text-sm
-                                                    font-semibold
-                                                    transition
-                                                "
-                                            >
-
-                                                <UserPlusIcon className="w-5 h-5" />
-
-                                                Assign User
-
-                                            </Link>
-
-                                        </td>
-
-
-                                        {/* =================================================
-                                            ACTIONS
-                                        ================================================== */}
-                                        <td className="p-4">
-
-                                            <div className="
-                                                flex
-                                                justify-center
-                                                items-center
-                                                gap-2
-                                            ">
-
-                                                {/* VIEW */}
-
+                                            {/* ASSIGN USER */}
+                                            <td className="p-4 text-center">
                                                 <Link
-                                                    href={route(
-                                                        "branches.show",
-                                                        branch.id
-                                                    )}
-                                                    className="
-                                                        inline-flex
-                                                        items-center
-                                                        gap-2
-                                                        bg-emerald-600
-                                                        hover:bg-emerald-700
-                                                        text-white
-                                                        px-4
-                                                        py-2
-                                                        rounded-xl
-                                                        text-sm
-                                                        font-semibold
-                                                        shadow-sm
-                                                        transition
-                                                    "
+                                                    href={`/admin/branches/${branch.id}/assign-user`}
+                                                    className="inline-flex items-center justify-center gap-2 bg-slate-100 hover:bg-emerald-50 text-slate-700 hover:text-emerald-700 border border-slate-200 hover:border-emerald-200 px-4 py-2 rounded-xl text-sm font-semibold transition"
                                                 >
-
-                                                    <EyeIcon className="w-4 h-4" />
-
-                                                    View
-
+                                                    <UserPlusIcon className="w-5 h-5" />
+                                                    Assign User
                                                 </Link>
+                                            </td>
 
+                                            {/* ACTIONS */}
+                                            <td className="p-4">
+                                                <div className="flex justify-center items-center gap-2">
 
-                                                {/* MANAGE */}
+                                                    {/* VIEW */}
+                                                    <Link
+                                                        href={route("branches.show", branch.id)}
+                                                        className="inline-flex items-center gap-2 bg-emerald-600 hover:bg-emerald-700 text-white px-4 py-2 rounded-xl text-sm font-semibold shadow-sm transition"
+                                                    >
+                                                        <EyeIcon className="w-4 h-4" />
+                                                        View
+                                                    </Link>
 
-                                                <Link
-                                                    href={`/admin/branches/${branch.id}/edit`}
-                                                    className="
-                                                        inline-flex
-                                                        items-center
-                                                        gap-2
-                                                        bg-white
-                                                        hover:bg-slate-50
-                                                        text-slate-700
-                                                        border
-                                                        border-slate-200
-                                                        px-4
-                                                        py-2
-                                                        rounded-xl
-                                                        text-sm
-                                                        font-semibold
-                                                        transition
-                                                    "
-                                                >
+                                                    {/* MANAGE */}
+                                                    <Link
+                                                        href={`/admin/branches/${branch.id}/edit`}
+                                                        className="inline-flex items-center gap-2 bg-white hover:bg-slate-50 text-slate-700 border border-slate-200 px-4 py-2 rounded-xl text-sm font-semibold transition"
+                                                    >
+                                                        <PencilSquareIcon className="w-4 h-4" />
+                                                        Manage
+                                                    </Link>
 
-                                                    <PencilSquareIcon className="w-4 h-4" />
+                                                </div>
+                                            </td>
 
-                                                    Manage
-
-                                                </Link>
-
-                                            </div>
-
-                                        </td>
-
-                                    </tr>
-
-                                ))
+                                        </tr>
+                                    );
+                                })
 
                             ) : (
 
-                                /* =================================================
-                                    EMPTY STATE
-                                ================================================== */
-
+                                /* EMPTY STATE */
                                 <tr>
+                                    <td colSpan="6" className="p-12 text-center">
 
-                                    <td
-                                        colSpan="5"
-                                        className="p-12 text-center"
-                                    >
+                                        <div className="flex flex-col items-center justify-center">
 
-                                        <div className="
-                                            flex
-                                            flex-col
-                                            items-center
-                                            justify-center
-                                        ">
-
-                                            <div className="
-                                                w-16
-                                                h-16
-                                                rounded-2xl
-                                                bg-emerald-50
-                                                flex
-                                                items-center
-                                                justify-center
-                                                mb-4
-                                            ">
-
-                                                <BuildingStorefrontIcon
-                                                    className="
-                                                        w-8
-                                                        h-8
-                                                        text-emerald-600
-                                                    "
-                                                />
-
+                                            <div className="w-16 h-16 rounded-2xl bg-emerald-50 flex items-center justify-center mb-4">
+                                                <BuildingStorefrontIcon className="w-8 h-8 text-emerald-600" />
                                             </div>
 
-                                            <h3 className="
-                                                text-lg
-                                                font-bold
-                                                text-slate-800
-                                            ">
+                                            <h3 className="text-lg font-bold text-slate-800">
                                                 No branches yet
                                             </h3>
 
-                                            <p className="
-                                                text-sm
-                                                text-slate-500
-                                                mt-1
-                                                mb-5
-                                            ">
-                                                Add your first business branch
-                                                to get started.
+                                            <p className="text-sm text-slate-500 mt-1 mb-5">
+                                                Add your first business branch to get started.
                                             </p>
 
                                             <Link
                                                 href="/admin/branches/create"
-                                                className="
-                                                    inline-flex
-                                                    items-center
-                                                    gap-2
-                                                    bg-emerald-600
-                                                    hover:bg-emerald-700
-                                                    text-white
-                                                    px-5
-                                                    py-2.5
-                                                    rounded-xl
-                                                    font-semibold
-                                                    transition
-                                                "
+                                                className="inline-flex items-center gap-2 bg-emerald-600 hover:bg-emerald-700 text-white px-5 py-2.5 rounded-xl font-semibold transition"
                                             >
                                                 + Add Branch
                                             </Link>
@@ -744,28 +401,18 @@ function Index({ branches }) {
                                         </div>
 
                                     </td>
-
                                 </tr>
 
                             )}
 
                         </tbody>
-
                     </table>
 
                 </div>
-
             </div>
 
-
-            {/* =====================================================
-                FOOTER
-            ====================================================== */}
-            <div className="
-                text-center
-                mt-8
-                pb-4
-            ">
+            {/* FOOTER */}
+            <div className="text-center mt-8 pb-4">
 
                 <p className="text-xs text-slate-400">
                     © {new Date().getFullYear()}{" "}
@@ -784,13 +431,6 @@ function Index({ branches }) {
         </div>
     );
 }
-
-
-/*
-|--------------------------------------------------------------------------
-| ADMIN LAYOUT
-|--------------------------------------------------------------------------
-*/
 
 Index.layout = (page) => (
     <AdminLayout>

@@ -2,254 +2,371 @@
 
 namespace App\Http\Controllers\Admin;
 
+
 use App\Http\Controllers\Controller;
 use App\Models\Branch;
-use Illuminate\Http\Request;
 use App\Models\User;
-use Inertia\Inertia;
-use Spatie\Permission\Models\Role;
+use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
-use App\Models\Subscription;
-
+use Inertia\Inertia;
+use Spatie\Permission\Models\Role;
+use Carbon\Carbon;
 
 class BranchController extends Controller
 {
-
+    /**
+     * Display branches with subscription countdown information.
+     */
     public function index()
-{
-    $user = auth()->user();
+    {
+        $user = auth()->user();
 
-    // Super Admin anaweza kuona branches zote
-    if ($user->hasRole('Super Admin')) {
+        // Base query: load users, roles, subscription and users count.
+        $query = Branch::with([
+            'users.roles',
+            'subscription',
+        ])->withCount('users');
 
-        $branches = Branch::with('users.roles')
-            ->withCount('users')
-            ->latest()
-            ->get();
+        // Super Admin sees all branches.
+        if ($user->hasRole('Super Admin')) {
+            $branches = $query
+                ->latest('created_at')
+                ->get();
+        }
 
+        // Admin sees branches belonging to their business.
+        elseif ($user->hasRole('Admin') && $user->business_id) {
+            $branches = $query
+                ->where('business_id', $user->business_id)
+                ->latest('created_at')
+                ->get();
+        }
+
+        // Other users see only branches assigned to them.
+        else {
+            $branches = $user->branches()
+                ->with([
+                    'users.roles',
+                    'subscription',
+                ])
+                ->withCount('users')
+                ->latest('branches.created_at')
+                ->get();
+        }
+
+        $now = now();
+
+        // Calculate subscription information for every branch.
+        $branches->each(function ($branch) use ($now) {
+            $subscription = $branch->subscription;
+
+            if (!$subscription) {
+                $branch->setAttribute('subscription_info', null);
+                return;
+            }
+
+            $status = $subscription->status;
+            $plan = $subscription->plan;
+
+            $info = [
+                'status' => $status,
+                'plan' => $plan,
+                'days_left' => null,
+                'in_grace_period' => false,
+                'grace_days_left' => null,
+            ];
+
+            /*
+             * FREE TRIAL
+             * Trial has no grace period.
+             */
+            if ($status === 'trial') {
+                $info['is_trial'] = true;
+
+                if ($subscription->trial_ends_at) {
+                    $trialEndsAt = Carbon::parse(
+                        $subscription->trial_ends_at
+                    );
+
+                    if ($now->greaterThanOrEqualTo($trialEndsAt)) {
+                        $info['status'] = 'expired';
+                        $info['days_left'] = 0;
+                    } else {
+                        $info['days_left'] = $this->calculateDaysLeft(
+                            $now,
+                            $trialEndsAt
+                        );
+                    }
+                }
+
+                $branch->setAttribute('subscription_info', $info);
+                return;
+            }
+
+            /*
+             * PAID SUBSCRIPTION
+             * Active subscription receives a 7-day grace period.
+             */
+            if ($status === 'active') {
+                $info['is_trial'] = false;
+
+                if ($subscription->ends_at) {
+                    $endsAt = Carbon::parse($subscription->ends_at);
+
+                    // Subscription is still active.
+                    if ($now->lessThan($endsAt)) {
+                        $info['days_left'] = $this->calculateDaysLeft(
+                            $now,
+                            $endsAt
+                        );
+                    } else {
+                        // Subscription has ended. Check the 7-day grace period.
+                        $graceEndsAt = $endsAt->copy()->addDays(7);
+
+                        if ($now->lessThanOrEqualTo($graceEndsAt)) {
+                            $info['status'] = 'grace_period';
+                            $info['in_grace_period'] = true;
+
+                            $info['grace_days_left'] = $this->calculateDaysLeft(
+                                $now,
+                                $graceEndsAt
+                            );
+                        } else {
+                            $info['status'] = 'expired';
+                            $info['days_left'] = 0;
+                        }
+                    }
+                }
+
+                $branch->setAttribute('subscription_info', $info);
+                return;
+            }
+
+            /*
+             * Other statuses:
+             * pending, cancelled, expired, suspended, etc.
+             */
+            $info['is_trial'] = false;
+
+            if ($status === 'expired') {
+                $info['days_left'] = 0;
+            }
+
+            $branch->setAttribute('subscription_info', $info);
+        });
+
+        return Inertia::render('Admin/Branches/Index', [
+            'branches' => $branches,
+        ]);
     }
 
-    // Admin anaona branches za biashara yake tu
-    elseif ($user->hasRole('Admin') && $user->business_id) {
 
-        $branches = Branch::where('business_id', $user->business_id)
-            ->with('users.roles')
-            ->withCount('users')
-            ->latest()
-            ->get();
+    /**
+     * Calculate remaining days using server time.
+     * Uses ceil so even a partial remaining day counts as one day.
+     */
+    private function calculateDaysLeft(Carbon $now, Carbon $endDate): int
+    {
+        $secondsLeft = $endDate->getTimestamp() - $now->getTimestamp();
 
+        if ($secondsLeft <= 0) {
+            return 0;
+        }
+
+        return (int) ceil($secondsLeft / 86400);
     }
 
-    // Watumiaji wengine wanaona branches walizopangiwa tu
-    else {
 
-        $branches = $user->branches()
-            ->with('users.roles')
-            ->withCount('users')
-            ->latest('branches.created_at')
-            ->get();
-
-    }
-
-    return Inertia::render('Admin/Branches/Index', [
-        'branches' => $branches,
-    ]);
-}
-
-
-
+    /**
+     * Show create branch page.
+     */
     public function create()
     {
-
-        return inertia('Admin/Branches/Create');
-
+        return Inertia::render('Admin/Branches/Create');
     }
 
 
-
+    /**
+     * Store a new branch.
+     */
     public function store(Request $request)
     {
-
-        $request->validate([
-
-            'name'=>'required',
-            'location'=>'nullable',
-            'description'=>'nullable'
-
+        $validated = $request->validate([
+            'name' => 'required|string|max:255',
+            'location' => 'nullable|string|max:255',
+            'description' => 'nullable|string',
         ]);
 
+        $user = Auth::user();
 
         Branch::create([
-
-            'name'=>$request->name,
-            'location'=>$request->location,
-            'description'=>$request->description
-
+            'business_id' => $user->business_id,
+            'name' => $validated['name'],
+            'location' => $validated['location'] ?? null,
+            'description' => $validated['description'] ?? null,
         ]);
-
 
         return redirect()
             ->route('admin.branches.index')
-            ->with('success','Branch created successfully');
-
+            ->with('success', 'Branch created successfully.');
     }
 
+
+    /**
+     * Show edit branch page.
+     */
     public function edit(Branch $branch)
     {
-
-        return inertia('Admin/Branches/Edit',[
-
-            'branch'=>$branch
-
+        return Inertia::render('Admin/Branches/Edit', [
+            'branch' => $branch,
         ]);
-
     }
 
 
-
+    /**
+     * Update branch.
+     */
     public function update(Request $request, Branch $branch)
     {
-
-        $request->validate([
-
-            'name'=>'required'
-
+        $validated = $request->validate([
+            'name' => 'required|string|max:255',
+            'location' => 'nullable|string|max:255',
+            'description' => 'nullable|string',
         ]);
 
-
-        $branch->update($request->all());
-
+        $branch->update($validated);
 
         return redirect()
-            ->route('admin.branches.index');
-
+            ->route('admin.branches.index')
+            ->with('success', 'Branch updated successfully.');
     }
 
 
-
+    /**
+     * Delete branch.
+     */
     public function destroy(Branch $branch)
     {
-
         $branch->delete();
 
-
-        return back();
-
+        return back()->with('success', 'Branch deleted successfully.');
     }
 
-    //Assign user to Branch
-  
 
-public function assignUser(Branch $branch)
-{
+    /**
+     * Display users available for branch assignment.
+     */
+    public function assignUser(Branch $branch)
+    {
+        $users = User::whereDoesntHave('branches', function ($query) use ($branch) {
+            $query->where('branches.id', $branch->id);
+        })
+            ->with('roles')
+            ->get();
 
-    $users = User::whereDoesntHave('branches', function ($query) use ($branch) {
+        $roles = Role::all();
 
-        $query->where('branches.id', $branch->id);
-
-    })
-    ->with('roles')
-    ->get();
-
-
-    $roles = Role::all();
-
-
-    return Inertia::render(
-        'Admin/Branches/AssignUser',
-        [
+        return Inertia::render('Admin/Branches/AssignUser', [
             'branch' => $branch,
             'users' => $users,
-            'roles' => $roles
-        ]
-    );
-
-}
-
-//Store asigned Branch
-public function storeAssignedUser(Request $request, Branch $branch)
-{
-
-    $request->validate([
-
-        'user_id'=>'required|exists:users,id',
-
-        'role'=>'required|exists:roles,name'
-
-    ]);
-
-
-    $user = User::findOrFail($request->user_id);
-
-
-    // Assign branch using pivot table
-    $user->branches()->syncWithoutDetaching([
-
-        $branch->id => [
-            'is_default'=>false
-        ]
-
-    ]);
-
-
-
-    // Assign role
-    if(!$user->hasRole($request->role))
-    {
-
-        $user->assignRole($request->role);
-
+            'roles' => $roles,
+        ]);
     }
 
 
-
-    return redirect()
-        ->route('admin.branches.index')
-        ->with(
-            'success',
-            'User assigned successfully'
-        );
-
-}
-
-//Show Assigned in Branch
-public function show(Branch $branch)
-{
-    $branch->load([
-        'users.roles'
-    ]);
-
-    $branch->loadCount('users');
-
-
-    return Inertia::render(
-        'Admin/Branches/Show',
-        [
-            'branch'=>$branch
-        ]
-    );
-}
-
-//Switch Branches
-
-public function switchBranch(Branch $branch)
-{
-    $user = auth()->user();
-
-    // Super Admin anaweza kubadilisha kwenda branch yoyote
-    if ($user->hasRole('Super Admin')) {
-        session([
-            'branch_id' => $branch->id,
+    /**
+     * Assign user to branch and assign role.
+     */
+    public function storeAssignedUser(Request $request, Branch $branch)
+    {
+        $validated = $request->validate([
+            'user_id' => 'required|exists:users,id',
+            'role' => 'required|exists:roles,name',
         ]);
 
-        return back()->with('success', 'Branch imebadilishwa kikamilifu.');
+        $user = User::findOrFail($validated['user_id']);
+
+        // Attach branch without removing existing branch assignments.
+        $user->branches()->syncWithoutDetaching([
+            $branch->id => [
+                'is_default' => false,
+            ],
+        ]);
+
+        // Assign role if user does not already have it.
+        if (!$user->hasRole($validated['role'])) {
+            $user->assignRole($validated['role']);
+        }
+
+        return redirect()
+            ->route('admin.branches.index')
+            ->with('success', 'User assigned successfully.');
     }
 
-    // Admin anaweza kubadilisha kwenda branch ya biashara yake tu
-    if ($user->hasRole('Admin')) {
 
-        if (!$user->business_id || $branch->business_id != $user->business_id) {
+    /**
+     * Show branch and assigned users.
+     */
+    public function show(Branch $branch)
+    {
+        $branch->load([
+            'users.roles',
+            'subscription',
+        ]);
+
+        $branch->loadCount('users');
+
+        return Inertia::render('Admin/Branches/Show', [
+            'branch' => $branch,
+        ]);
+    }
+
+
+    /**
+     * Switch active branch.
+     */
+    public function switchBranch(Branch $branch)
+    {
+        $user = auth()->user();
+
+        // Super Admin can switch to any branch.
+        if ($user->hasRole('Super Admin')) {
+            session([
+                'branch_id' => $branch->id,
+            ]);
+
+            return back()->with(
+                'success',
+                'Branch imebadilishwa kikamilifu.'
+            );
+        }
+
+        // Admin can switch only to branches belonging to their business.
+        if ($user->hasRole('Admin')) {
+            if (
+                !$user->business_id ||
+                $branch->business_id != $user->business_id
+            ) {
+                abort(403, 'Huna ruhusa ya kutumia branch hii.');
+            }
+
+            session([
+                'branch_id' => $branch->id,
+            ]);
+
+            return back()->with(
+                'success',
+                'Branch imebadilishwa kikamilifu.'
+            );
+        }
+
+        // Other users must be assigned to the branch.
+        $belongsToBranch = $user->branches()
+            ->where('branches.id', $branch->id)
+            ->exists();
+
+        if (!$belongsToBranch) {
             abort(403, 'Huna ruhusa ya kutumia branch hii.');
         }
 
@@ -257,154 +374,83 @@ public function switchBranch(Branch $branch)
             'branch_id' => $branch->id,
         ]);
 
-        return back()->with('success', 'Branch imebadilishwa kikamilifu.');
+        return back()->with(
+            'success',
+            'Branch imebadilishwa kikamilifu.'
+        );
     }
 
-    // Watumiaji wengine lazima wawe wamepangiwa branch
-    $belongsToBranch = $user->branches()
-        ->where('branches.id', $branch->id)
-        ->exists();
 
-    if (!$belongsToBranch) {
-        abort(403, 'Huna ruhusa ya kutumia branch hii.');
+    /**
+     * Show register another branch page.
+     */
+    public function register()
+    {
+        return Inertia::render('Admin/Branches/Register');
     }
 
-    session([
-        'branch_id' => $branch->id,
-    ]);
 
-    return back()->with('success', 'Branch imebadilishwa kikamilifu.');
-}
-// public function switchBranch(Branch $branch)
-// {
-
-//     $user = auth()->user();
-
-//     // Check user belongs to branch
-
-//     if(!$user->branches->contains($branch->id))
-//     {
-//         abort(403);
-//     }
-
-//     session([
-//         'branch_id'=>$branch->id
-//     ]);
-
-//     return back();
-
-// }
-
-/**
- * Show register another branch page.
- */
-public function register()
-{
-    return Inertia::render('Admin/Branches/Register');
-}
-
-
-/**
- * Store another branch for logged-in user.
- */
-// public function storeRegisteredBranch(Request $request)
-// {
-//     $request->validate([
-//         'name' => 'required|string|max:255',
-//         'location' => 'nullable|string|max:255',
-//     ]);
-
-//     DB::transaction(function () use ($request) {
-
-//         $user = Auth::user();
-
-//         // Create new branch
-//         $branch = Branch::create([
-//             'name' => $request->name,
-//             'location' => $request->location,
-//         ]);
-
-//         // Attach branch to current user
-//         $user->branches()->attach(
-//             $branch->id,
-//             [
-//                 'is_default' => false,
-//             ]
-//         );
-//     });
-
-//     return redirect()
-//         ->route('dashboard')
-//         ->with('success', 'Branch imeongezwa kikamilifu.');
-// }
-
-public function storeRegisteredBranch(Request $request)
-{
-    $request->validate([
-        'name' => 'required|string|max:255',
-        'location' => 'nullable|string|max:255',
-    ]);
-
-    DB::transaction(function () use ($request) {
+    /**
+     * Register another branch under the user's existing business.
+     * Automatically creates a 14-day free trial.
+     */
+    public function storeRegisteredBranch(Request $request)
+    {
+        $validated = $request->validate([
+            'name' => 'required|string|max:255',
+            'location' => 'nullable|string|max:255',
+        ]);
 
         $user = Auth::user();
 
-        // Get current user's business through existing branch
-        $currentBranch = $user->branches()
-            ->with('business')
-            ->firstOrFail();
+        DB::transaction(function () use ($user, $validated) {
 
-        $business = $currentBranch->business;
+            // Find an existing branch belonging to this user.
+            $currentBranch = $user->branches()
+                ->with('business')
+                ->firstOrFail();
 
-        // Create new branch under the SAME business
-        $branch = Branch::create([
-            'business_id' => $business->id,
-            'name' => $request->name,
-            'location' => $request->location,
-        ]);
+            $business = $currentBranch->business;
 
-        // Attach new branch to current user
-        $user->branches()->attach(
-            $branch->id,
-            [
+            if (!$business) {
+                abort(422, 'Business haijapatikana kwa branch hii.');
+            }
+
+            // Create new branch under the same business.
+            $branch = Branch::create([
+                'business_id' => $business->id,
+                'name' => $validated['name'],
+                'location' => $validated['location'] ?? null,
+            ]);
+
+            // Assign the new branch to the logged-in user.
+            $user->branches()->attach($branch->id, [
                 'is_default' => false,
-            ]
-        );
+            ]);
 
-        // // Create 30-day free trial for the NEW branch
-        // $trialStartedAt = now();
+            // Start a 14-day free trial.
+            $trialStartedAt = now();
+            $trialEndsAt = $trialStartedAt->copy()->addDays(14);
 
-        // $trialEndsAt = now()->addDays(30);
+            $branch->subscription()->create([
+                'plan' => 'trial',
+                'amount' => 0,
+                'status' => 'trial',
+                'trial_started_at' => $trialStartedAt,
+                'trial_ends_at' => $trialEndsAt,
+            ]);
 
-        // $branch->subscription()->create([
-        //     'plan' => 'monthly',
-        //     'amount' => 10000,
-        //     'status' => 'trial',
-        //     'trial_started_at' => $trialStartedAt,
-        //     'trial_ends_at' => $trialEndsAt,
-        // ]);
+            // Make the newly registered branch active.
+            session([
+                'branch_id' => $branch->id,
+            ]);
+        });
 
-        // Create 14-day free trial for the NEW branch
-        $trialStartedAt = now();
-
-        $trialEndsAt = $trialStartedAt->copy()->addDays(14);
-
-        $branch->subscription()->create([
-            'plan' => 'trial',
-            'amount' => 0,
-            'status' => 'trial',
-            'trial_started_at' => $trialStartedAt,
-            'trial_ends_at' => $trialEndsAt,
-        ]);
-
-        // Make the newly created branch the active branch
-        session([
-            'branch_id' => $branch->id,
-        ]);
-    });
-
-    return redirect()
-        ->route('dashboard')
-        ->with('success', 'Branch imeongezwa na trial ya siku 14 imeanza.');
-}
+        return redirect()
+            ->route('dashboard')
+            ->with(
+                'success',
+                'Branch imeongezwa na trial ya siku 14 imeanza.'
+            );
+    }
 }
