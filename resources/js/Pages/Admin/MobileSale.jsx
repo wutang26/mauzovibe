@@ -43,6 +43,7 @@ export default function MobileSale({
     const [scanMessage, setScanMessage] = useState("");
     const [showCart, setShowCart] = useState(false);
     const [customerSearch, setCustomerSearch] = useState("");
+    const [successMessage, setSuccessMessage] = useState("");
 
     const scannerRef = useRef(null);
     const scanLockRef = useRef(false);
@@ -361,26 +362,37 @@ export default function MobileSale({
         form.post(route("admin.sales.store"), {
             preserveScroll: true,
 
-            onSuccess: () => {
-                setCart([]);
-                setSearch("");
-                setCategory("all");
-                setCustomerSearch("");
-                setStep("order");
-                setShowCart(false);
-                setScanMessage("");
+            onSuccess: (page) => {
+            const message =
+                page?.props?.flash?.success ||
+                "Mauzo yamehifadhiwa na malipo yamekamilika kikamilifu.";
 
-                form.reset();
+            setSuccessMessage(message);
 
-                form.setData({
-                    items: [],
-                    discount: 0,
-                    payment_method: "cash",
-                    paid_amount: 0,
-                    customer_id: "",
-                    return_to: "mobile-pos",
-                });
-            },
+            setCart([]);
+            setSearch("");
+            setCategory("all");
+            setCustomerSearch("");
+            setStep("order");
+            setShowCart(false);
+            setScanMessage("");
+
+            form.reset();
+
+            form.setData({
+                items: [],
+                discount: 0,
+                payment_method: "cash",
+                paid_amount: 0,
+                customer_id: "",
+                return_to: "mobile-pos",
+            });
+
+            window.scrollTo({
+                top: 0,
+                behavior: "smooth",
+            });
+        },
         });
     };
 
@@ -1000,6 +1012,56 @@ export default function MobileSale({
                         </div>
                     </section>
                 )}
+                {successMessage && (
+    <div className="mobile-pos-success-overlay">
+        <div
+            className="mobile-pos-success-modal"
+            role="dialog"
+            aria-modal="true"
+            aria-labelledby="mobile-pos-success-title"
+        >
+            <div className="mobile-pos-success-icon">
+                <CheckCircle2 size={48} />
+            </div>
+
+            <span className="mobile-pos-success-label">
+                MALIPO YAMEPOKELEWA
+            </span>
+
+            <h2 id="mobile-pos-success-title">
+                Mauzo Yamekamilika!
+            </h2>
+
+            <p>{successMessage}</p>
+
+            <div className="mobile-pos-success-status">
+                <CheckCircle2 size={17} />
+                TRANSACTION SUCCESSFUL
+            </div>
+
+            <button
+                type="button"
+                className="mobile-pos-success-again"
+                onClick={() => {
+                    setSuccessMessage("");
+                    setStep("order");
+                    setCart([]);
+                }}
+            >
+                <ShoppingCart size={19} />
+                UZA TENA
+            </button>
+
+            <button
+                type="button"
+                className="mobile-pos-success-close"
+                onClick={() => setSuccessMessage("")}
+            >
+                Funga
+            </button>
+        </div>
+    </div>
+)}
             </div>
         </AdminLayout>
     );
