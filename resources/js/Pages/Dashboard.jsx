@@ -152,7 +152,7 @@ export default function Dashboard({
                 </section>
 
                 {/* FOOTER */}
-                <footer className="dashboard-footer">
+                {/* <footer className="dashboard-footer">
                     <p>
                         <strong>MauzoVibe</strong>
                         {" "}• Smart Sales Management
@@ -163,7 +163,7 @@ export default function Dashboard({
                     <p>
                         © {new Date().getFullYear()} MauzoVibe. All rights reserved.
                     </p>
-                </footer>
+                </footer> */}
 
             </div>
         </AdminLayout>
