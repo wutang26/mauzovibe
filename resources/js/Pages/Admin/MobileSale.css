@@ -105,7 +105,7 @@
     font-size: 17px;
 }
 
-/* STEPS - LEFT ALIGNMENT */
+/* STEPS */
 
 .mobile-pos-steps {
     display: flex;
@@ -549,7 +549,7 @@
     font-size: 12px;
 }
 
-/* BOTTOM BAR - CART AND LIPA SAME ROW */
+/* ORDER BOTTOM BAR */
 
 .mobile-pos-bottom-bar {
     position: fixed;
@@ -557,17 +557,14 @@
     right: 0;
     bottom: 0;
     left: 0;
-
     display: flex;
     flex-direction: row;
     align-items: stretch;
     justify-content: flex-end;
     flex-wrap: nowrap;
-
     gap: 10px;
     padding: 12px 16px;
     padding-bottom: max(12px, env(safe-area-inset-bottom));
-
     background: white;
     border-top: 1px solid var(--mp-border);
     box-shadow: 0 -5px 20px rgba(0, 0, 0, 0.06);
@@ -680,7 +677,6 @@
         transform: translateY(40px);
         opacity: 0.7;
     }
-
     to {
         transform: translateY(0);
         opacity: 1;
@@ -830,14 +826,16 @@
 /* PAYMENT */
 
 .mobile-pos-payment {
+    width: 100%;
     max-width: 650px;
     margin: 0 auto;
-    padding-bottom: 100px;
+    padding-bottom: 20px;
 }
 
 .mobile-pos-back-button {
     display: inline-flex;
     align-items: center;
+    justify-content: center;
     gap: 7px;
     padding: 10px 13px;
     color: #4b5563;
@@ -1059,46 +1057,81 @@
     font-size: 11px;
 }
 
-/* PAYMENT ACTIONS - FIXED ON MOBILE */
+/* =========================================================
+   PAYMENT ACTIONS
+   JSX MOBILE PORTAL RENDERS THIS DIRECTLY UNDER BODY.
+========================================================= */
 
 .mobile-pos-payment-actions {
-    position: fixed;
-    z-index: 150;
-    right: 0;
-    bottom: 0;
-    left: 0;
-
+    width: 100%;
     display: flex;
     flex-direction: row;
     align-items: center;
-    flex-wrap: nowrap;
+    justify-content: space-between;
     gap: 10px;
-
-    margin: 0;
-    padding: 12px 16px;
-    padding-bottom: max(12px, env(safe-area-inset-bottom));
-
-    background: #ffffff;
-    border-top: 1px solid #e5e7eb;
-    box-shadow: 0 -5px 20px rgba(0, 0, 0, 0.08);
+    margin-top: 17px;
+    padding: 0;
+    background: transparent;
+    border: 0;
+    box-shadow: none;
 }
 
-.mobile-pos-payment-actions > button:first-child {
-    flex-shrink: 0;
+/* Portal footer must work outside .mobile-pos-page */
+body > .mobile-pos-payment-actions,
+body > div > .mobile-pos-payment-actions,
+.mobile-pos-payment-actions-portal {
+    box-sizing: border-box;
+}
+
+.mobile-pos-payment-actions *,
+.mobile-pos-payment-actions *::before,
+.mobile-pos-payment-actions *::after {
+    box-sizing: border-box;
 }
 
 .mobile-pos-payment-actions .mobile-pos-back-button {
+    flex: 0 0 auto;
+    min-width: 85px;
     min-height: 52px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 7px;
+    padding: 10px 13px;
+    color: #374151;
+    background: #ffffff;
+    border: 1px solid #d1d5db;
+    border-radius: 11px;
+    font-size: 12px;
+    font-weight: 800;
+    white-space: nowrap;
 }
 
-.mobile-pos-confirm-button {
-    flex: 1 1 0;
+.mobile-pos-payment-actions .mobile-pos-confirm-button {
+    flex: 1 1 auto;
     min-width: 0;
     min-height: 52px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+    padding: 0 12px;
+    color: #ffffff;
+    background: #047857;
+    border: 0;
+    border-radius: 11px;
+    font-size: 13px;
+    font-weight: 900;
+    white-space: nowrap;
 }
 
-.mobile-pos-confirm-button:disabled {
+.mobile-pos-payment-actions .mobile-pos-confirm-button:hover:not(:disabled) {
+    background: #065f46;
+}
+
+.mobile-pos-payment-actions .mobile-pos-confirm-button:disabled {
     opacity: 0.5;
+    cursor: not-allowed;
 }
 
 .mobile-pos-confirm-button .spin {
@@ -1111,7 +1144,9 @@
     }
 }
 
-/* SUCCESS NOTIFICATION */
+/* =========================================================
+   SUCCESS NOTIFICATION
+========================================================= */
 
 .mobile-pos-success-overlay {
     position: fixed;
@@ -1144,7 +1179,6 @@
         transform: translateY(25px) scale(0.95);
         opacity: 0;
     }
-
     to {
         transform: translateY(0) scale(1);
         opacity: 1;
@@ -1229,7 +1263,110 @@
     font-weight: 700;
 }
 
-/* TABLET AND DESKTOP */
+/* =========================================================
+   PROGRESS ROW
+========================================================= */
+
+.mobile-pos-progress-row {
+    width: 100%;
+    display: flex;
+    flex-direction: row;
+    align-items: center;
+    justify-content: space-between;
+    gap: 8px;
+    margin-bottom: 22px;
+}
+
+.mobile-pos-progress-row .mobile-pos-steps {
+    flex: 0 0 auto;
+    width: auto;
+    max-width: none;
+    margin: 0;
+    padding: 8px 0;
+    border: 0;
+    background: transparent;
+}
+
+.mobile-pos-progress-row .mobile-pos-step-line {
+    width: 22px;
+    margin: 0 7px;
+}
+
+.mobile-pos-progress-row .mobile-pos-steps > div:not(.mobile-pos-step-line) {
+    gap: 5px;
+    font-size: 11px;
+    white-space: nowrap;
+}
+
+.mobile-pos-progress-row .mobile-pos-steps > div:not(.mobile-pos-step-line) span {
+    width: 26px;
+    height: 26px;
+    flex-shrink: 0;
+}
+
+.mobile-pos-progress-row .mobile-pos-bottom-bar {
+    position: static;
+    z-index: auto;
+    flex: 1 1 auto;
+    min-width: 0;
+    width: auto;
+    display: flex;
+    flex-direction: row;
+    align-items: center;
+    justify-content: flex-end;
+    flex-wrap: nowrap;
+    gap: 6px;
+    margin: 0;
+    padding: 0;
+    background: transparent;
+    border: 0;
+    box-shadow: none;
+}
+
+.mobile-pos-progress-row .mobile-pos-cart-button {
+    flex: 1 1 0;
+    min-width: 0;
+    min-height: 43px;
+    gap: 5px;
+    padding: 5px 7px;
+    border-radius: 9px;
+}
+
+.mobile-pos-progress-row .mobile-pos-cart-count {
+    width: 29px;
+    height: 29px;
+    flex-shrink: 0;
+    border-radius: 8px;
+}
+
+.mobile-pos-progress-row .mobile-pos-cart-button > span:nth-child(2) {
+    min-width: 0;
+    gap: 2px;
+}
+
+.mobile-pos-progress-row .mobile-pos-cart-button small {
+    font-size: 9px;
+    white-space: nowrap;
+}
+
+.mobile-pos-progress-row .mobile-pos-cart-button strong {
+    font-size: 10px;
+    white-space: nowrap;
+}
+
+.mobile-pos-progress-row .mobile-pos-proceed-button {
+    flex: 0 0 auto;
+    min-height: 43px;
+    gap: 4px;
+    padding: 0 10px;
+    border-radius: 9px;
+    font-size: 11px;
+    white-space: nowrap;
+}
+
+/* =========================================================
+   TABLET AND DESKTOP
+========================================================= */
 
 @media (min-width: 768px) {
     .mobile-pos-page {
@@ -1268,13 +1405,37 @@
         padding-bottom: 0;
     }
 
-    .mobile-pos-payment-actions {
-        position: static;
-        padding: 0;
-        margin-top: 17px;
-        background: transparent;
-        border: 0;
-        box-shadow: none;
+    /* Desktop payment actions remain inside normal page flow */
+   
+/* =========================================================
+   PAYMENT ACTIONS - LEFT ALIGNED
+========================================================= */
+
+.mobile-pos-payment-actions {
+    width: 100%;
+    display: flex;
+    flex-direction: row;
+    align-items: center;
+    justify-content: flex-start !important;
+    flex-wrap: nowrap;
+    gap: 10px;
+    margin-top: 17px;
+}
+
+    .mobile-pos-payment-actions .mobile-pos-confirm-button {
+        flex: 0 1 260px;
+    }
+
+    .mobile-pos-progress-row {
+        justify-content: space-between;
+    }
+
+    .mobile-pos-progress-row .mobile-pos-steps {
+        padding: 14px;
+    }
+
+    .mobile-pos-progress-row .mobile-pos-bottom-bar {
+        max-width: 330px;
     }
 }
 
@@ -1284,11 +1445,19 @@
     }
 }
 
-/* SMALL PHONES */
+/* =========================================================
+   MOBILE RESPONSIVE
+========================================================= */
 
-@media (max-width: 420px) {
+@media (max-width: 767px) {
     .mobile-pos-page {
-        padding: 14px 11px 105px;
+        padding: 14px 11px 125px;
+    }
+
+    .mobile-pos-payment {
+        width: 100%;
+        padding-bottom: 115px !important;
+        overflow: visible !important;
     }
 
     .mobile-pos-brand-icon {
@@ -1343,8 +1512,6 @@
         margin: 0 10px;
     }
 
-    /* CART AND LIPA STAY ON THE SAME ROW */
-
     .mobile-pos-bottom-bar {
         flex-direction: row;
         flex-wrap: nowrap;
@@ -1382,186 +1549,122 @@
         white-space: nowrap;
     }
 
+    /* PAYMENT PORTAL FOOTER: FIXED TO VIEWPORT */
+    body > .mobile-pos-payment-actions,
+    body > div > .mobile-pos-payment-actions,
+    .mobile-pos-payment-actions-portal,
     .mobile-pos-payment-actions {
-        gap: 8px;
-        padding-right: 10px;
-        padding-left: 10px;
+        position: fixed !important;
+        top: auto !important;
+        right: 0 !important;
+        bottom: 0 !important;
+        left: 0 !important;
+
+        width: 100% !important;
+        max-width: none !important;
+        min-height: 76px !important;
+
+        display: flex !important;
+        flex-direction: row !important;
+        align-items: center !important;
+        justify-content: space-between !important;
+        flex-wrap: nowrap !important;
+
+        gap: 10px !important;
+        margin: 0 !important;
+
+        padding: 10px 14px !important;
+        padding-bottom: calc(10px + env(safe-area-inset-bottom, 0px)) !important;
+
+        background: #ffffff !important;
+        border-top: 1px solid #e5e7eb !important;
+        box-shadow: 0 -5px 20px rgba(0, 0, 0, 0.12) !important;
+
+        z-index: 2147483000 !important;
+        visibility: visible !important;
+        opacity: 1 !important;
+        transform: none !important;
+    }
+
+    .mobile-pos-payment-actions > button {
+        display: flex !important;
+        align-items: center !important;
+        justify-content: center !important;
+        min-height: 50px !important;
+        visibility: visible !important;
+        opacity: 1 !important;
     }
 
     .mobile-pos-payment-actions .mobile-pos-back-button {
-        padding: 10px;
-        font-size: 11px;
+        flex: 0 0 88px !important;
+        width: 88px !important;
+        min-width: 88px !important;
+        min-height: 50px !important;
+        padding: 8px !important;
+        font-size: 11px !important;
     }
 
-    .mobile-pos-confirm-button {
-        font-size: 11px;
+    .mobile-pos-payment-actions .mobile-pos-confirm-button {
+        flex: 1 1 0 !important;
+        width: auto !important;
+        min-width: 0 !important;
+        max-width: none !important;
+        min-height: 50px !important;
+        padding: 0 8px !important;
+        font-size: 12px !important;
+        white-space: nowrap !important;
+    }
+
+    .mobile-pos-progress-row {
         gap: 5px;
     }
-}
 
-/* VERY SMALL PHONES */
-
-@media (max-width: 350px) {
-    .mobile-pos-bottom-bar {
-        gap: 5px;
-        padding-right: 7px;
-        padding-left: 7px;
+    .mobile-pos-progress-row .mobile-pos-steps {
+        padding: 6px 0;
     }
 
-    .mobile-pos-cart-button {
-        gap: 5px;
-        padding: 7px 5px;
+    .mobile-pos-progress-row .mobile-pos-step-line {
+        width: 13px;
+        margin: 0 4px;
     }
 
-    .mobile-pos-cart-count {
-        width: 29px;
-        height: 29px;
+    .mobile-pos-progress-row .mobile-pos-steps > div:not(.mobile-pos-step-line) {
+        gap: 4px;
+        font-size: 10px;
     }
 
-    .mobile-pos-cart-button small {
+    .mobile-pos-progress-row .mobile-pos-steps > div:not(.mobile-pos-step-line) span {
+        width: 23px;
+        height: 23px;
+    }
+
+    .mobile-pos-progress-row .mobile-pos-bottom-bar {
+        gap: 4px;
+    }
+
+    .mobile-pos-progress-row .mobile-pos-cart-button {
+        padding: 4px;
+        gap: 4px;
+    }
+
+    .mobile-pos-progress-row .mobile-pos-cart-count {
+        width: 25px;
+        height: 25px;
+    }
+
+    .mobile-pos-progress-row .mobile-pos-cart-button small {
         font-size: 8px;
     }
 
-    .mobile-pos-cart-button strong {
+    .mobile-pos-progress-row .mobile-pos-cart-button strong {
+        font-size: 9px;
+    }
+
+    .mobile-pos-progress-row .mobile-pos-proceed-button {
+        min-height: 40px;
+        padding: 0 7px;
         font-size: 10px;
     }
-
-    .mobile-pos-proceed-button {
-        gap: 4px;
-        padding: 0 8px;
-        font-size: 10px;
-    }
-
-    .mobile-pos-steps {
-        padding: 9px;
-    }
-
-    .mobile-pos-steps > div:not(.mobile-pos-step-line) {
-        gap: 4px;
-        font-size: 10px;
-    }
-
-    .mobile-pos-step-line {
-        width: 30px;
-        margin: 0 7px;
-    }
-}
-
-/* ACCESSIBILITY */
-
-@media (prefers-reduced-motion: reduce) {
-    .mobile-pos-page *,
-    .mobile-pos-page *::before,
-    .mobile-pos-page *::after {
-        animation-duration: 0.01ms !important;
-        transition-duration: 0.01ms !important;
-    }
-}
-
-/* =========================================================
-   MOBILE POS - STEPS AND CART ACTIONS SAME ROW
-========================================================= */
-
-.mobile-pos-progress-row {
-    width: 100%;
-    display: flex;
-    flex-direction: row;
-    align-items: center;
-    justify-content: space-between;
-    gap: 8px;
-    margin-bottom: 22px;
-}
-
-.mobile-pos-progress-row .mobile-pos-steps {
-    flex: 0 0 auto;
-    width: auto;
-    max-width: none;
-    margin: 0;
-    padding: 8px 0;
-    border: 0;
-    background: transparent;
-}
-
-.mobile-pos-progress-row .mobile-pos-step-line {
-    width: 22px;
-    margin: 0 7px;
-}
-
-.mobile-pos-progress-row .mobile-pos-steps > div:not(.mobile-pos-step-line) {
-    gap: 5px;
-    font-size: 11px;
-    white-space: nowrap;
-}
-
-.mobile-pos-progress-row .mobile-pos-steps > div:not(.mobile-pos-step-line) span {
-    width: 26px;
-    height: 26px;
-    flex-shrink: 0;
-}
-
-/* CART AND LIPA */
-
-.mobile-pos-progress-row .mobile-pos-bottom-bar {
-    position: static;
-    z-index: auto;
-    flex: 1 1 auto;
-    min-width: 0;
-    width: auto;
-
-    display: flex;
-    flex-direction: row;
-    align-items: center;
-    justify-content: flex-end;
-    flex-wrap: nowrap;
-    gap: 6px;
-
-    margin: 0;
-    padding: 0;
-
-    background: transparent;
-    border: 0;
-    box-shadow: none;
-}
-
-.mobile-pos-progress-row .mobile-pos-cart-button {
-    flex: 1 1 0;
-    min-width: 0;
-    min-height: 43px;
-    gap: 5px;
-    padding: 5px 7px;
-    border-radius: 9px;
-}
-
-.mobile-pos-progress-row .mobile-pos-cart-count {
-    width: 29px;
-    height: 29px;
-    flex-shrink: 0;
-    border-radius: 8px;
-}
-
-.mobile-pos-progress-row .mobile-pos-cart-button > span:nth-child(2) {
-    min-width: 0;
-    gap: 2px;
-}
-
-.mobile-pos-progress-row .mobile-pos-cart-button small {
-    font-size: 9px;
-    white-space: nowrap;
-}
-
-.mobile-pos-progress-row .mobile-pos-cart-button strong {
-    font-size: 10px;
-    white-space: nowrap;
-}
-
-.mobile-pos-progress-row .mobile-pos-proceed-button {
-    flex: 0 0 auto;
-    min-height: 43px;
-    gap: 4px;
-    padding: 0 10px;
-    border-radius: 9px;
-    font-size: 11px;
-    white-space: nowrap;
 }
 
 /* SMALL PHONES */
@@ -1617,20 +1720,498 @@
         padding: 0 7px;
         font-size: 10px;
     }
+
+    .mobile-pos-payment-actions {
+        gap: 7px !important;
+        padding-right: 9px !important;
+        padding-left: 9px !important;
+    }
+
+    .mobile-pos-payment-actions .mobile-pos-back-button {
+        flex: 0 0 75px !important;
+        width: 75px !important;
+        min-width: 75px !important;
+        font-size: 11px !important;
+    }
+
+    .mobile-pos-payment-actions .mobile-pos-confirm-button {
+        gap: 5px !important;
+        font-size: 11px !important;
+    }
 }
 
-/* DESKTOP */
+/* VERY SMALL PHONES */
 
-@media (min-width: 768px) {
-    .mobile-pos-progress-row {
-        justify-content: space-between;
+@media (max-width: 320px) {
+    .mobile-pos-bottom-bar {
+        gap: 5px;
+        padding-right: 7px;
+        padding-left: 7px;
     }
 
-    .mobile-pos-progress-row .mobile-pos-steps {
-        padding: 14px;
+    .mobile-pos-cart-button {
+        gap: 5px;
+        padding: 7px 5px;
     }
 
-    .mobile-pos-progress-row .mobile-pos-bottom-bar {
-        max-width: 330px;
+    .mobile-pos-cart-count {
+        width: 29px;
+        height: 29px;
+    }
+
+    .mobile-pos-cart-button small {
+        font-size: 8px;
+    }
+
+    .mobile-pos-cart-button strong {
+        font-size: 10px;
+    }
+
+    .mobile-pos-proceed-button {
+        gap: 4px;
+        padding: 0 8px;
+        font-size: 10px;
+    }
+
+    .mobile-pos-steps {
+        padding: 9px;
+    }
+
+    .mobile-pos-steps > div:not(.mobile-pos-step-line) {
+        gap: 4px;
+        font-size: 10px;
+    }
+
+    .mobile-pos-step-line {
+        width: 30px;
+        margin: 0 7px;
+    }
+
+    .mobile-pos-payment-actions {
+        gap: 5px !important;
+        padding-right: 7px !important;
+        padding-left: 7px !important;
+    }
+
+    .mobile-pos-payment-actions .mobile-pos-back-button {
+        flex: 0 0 68px !important;
+        width: 68px !important;
+        min-width: 68px !important;
+        padding: 8px 5px !important;
+        font-size: 10px !important;
+    }
+
+    .mobile-pos-payment-actions .mobile-pos-confirm-button {
+        gap: 4px !important;
+        padding: 0 5px !important;
+        font-size: 10px !important;
+    }
+}
+
+/* ACCESSIBILITY */
+
+@media (prefers-reduced-motion: reduce) {
+    .mobile-pos-page *,
+    .mobile-pos-page *::before,
+    .mobile-pos-page *::after {
+        animation-duration: 0.01ms !important;
+        transition-duration: 0.01ms !important;
+    }
+}
+
+/* =========================================================
+   MAUZOVIBE POS - DEFINITIVE PAYMENT FOOTER FIX
+   Portal footer is a direct child of document.body
+========================================================= */
+
+body > .mobile-pos-payment-actions-portal {
+    box-sizing: border-box !important;
+    width: 100% !important;
+    max-width: 650px !important;
+
+    position: static !important;
+    display: flex !important;
+    flex-direction: row !important;
+    align-items: center !important;
+    justify-content: flex-start !important;
+    flex-wrap: nowrap !important;
+
+    gap: 12px !important;
+    margin: 18px auto 20px !important;
+    padding: 0 !important;
+
+    background: transparent !important;
+    border: 0 !important;
+    box-shadow: none !important;
+
+    visibility: visible !important;
+    opacity: 1 !important;
+    transform: none !important;
+}
+
+body > .mobile-pos-payment-actions-portal,
+body > .mobile-pos-payment-actions-portal *,
+body > .mobile-pos-payment-actions-portal *::before,
+body > .mobile-pos-payment-actions-portal *::after {
+    box-sizing: border-box !important;
+}
+
+body > .mobile-pos-payment-actions-portal .mobile-pos-back-button {
+    flex: 0 0 105px !important;
+    width: 105px !important;
+    min-width: 105px !important;
+    min-height: 52px !important;
+}
+
+body > .mobile-pos-payment-actions-portal .mobile-pos-confirm-button {
+    flex: 0 1 280px !important;
+    width: auto !important;
+    min-width: 200px !important;
+    min-height: 52px !important;
+    white-space: nowrap !important;
+}
+
+/* MOBILE FIXED FOOTER */
+@media screen and (max-width: 767px) {
+    body > .mobile-pos-payment-actions-portal {
+        position: fixed !important;
+        top: auto !important;
+        right: 0 !important;
+        bottom: 0 !important;
+        left: 0 !important;
+
+        width: 100% !important;
+        max-width: none !important;
+        min-height: 76px !important;
+
+        display: flex !important;
+        flex-direction: row !important;
+        align-items: center !important;
+        justify-content: flex-start !important;
+        flex-wrap: nowrap !important;
+
+        gap: 10px !important;
+        margin: 0 !important;
+
+        padding: 10px 14px !important;
+        padding-bottom: calc(10px + env(safe-area-inset-bottom, 0px)) !important;
+
+        background: #ffffff !important;
+        border-top: 1px solid #e5e7eb !important;
+        box-shadow: 0 -5px 20px rgba(0, 0, 0, 0.12) !important;
+
+        z-index: 2147483000 !important;
+
+        visibility: visible !important;
+        opacity: 1 !important;
+        transform: none !important;
+    }
+
+    body > .mobile-pos-payment-actions-portal .mobile-pos-back-button {
+        flex: 0 0 82px !important;
+        width: 82px !important;
+        min-width: 82px !important;
+        min-height: 50px !important;
+        padding: 8px !important;
+        font-size: 12px !important;
+    }
+
+    body > .mobile-pos-payment-actions-portal .mobile-pos-confirm-button {
+        flex: 1 1 auto !important;
+        width: auto !important;
+        min-width: 0 !important;
+        max-width: none !important;
+        min-height: 50px !important;
+        padding: 0 10px !important;
+        font-size: 12px !important;
+        white-space: nowrap !important;
+    }
+
+    .mobile-pos-page {
+        padding-bottom: 110px !important;
+    }
+
+    .mobile-pos-payment {
+        padding-bottom: 35px !important;
+        overflow: visible !important;
+    }
+}
+
+/* SMALL PHONES */
+@media screen and (max-width: 380px) {
+    body > .mobile-pos-payment-actions-portal {
+        gap: 7px !important;
+        padding-left: 9px !important;
+        padding-right: 9px !important;
+    }
+
+    body > .mobile-pos-payment-actions-portal .mobile-pos-back-button {
+        flex: 0 0 72px !important;
+        width: 72px !important;
+        min-width: 72px !important;
+        font-size: 11px !important;
+    }
+
+    body > .mobile-pos-payment-actions-portal .mobile-pos-confirm-button {
+        padding: 0 7px !important;
+        font-size: 11px !important;
+    }
+}
+
+/* VERY SMALL PHONES */
+@media screen and (max-width: 320px) {
+    body > .mobile-pos-payment-actions-portal {
+        gap: 5px !important;
+        padding-left: 7px !important;
+        padding-right: 7px !important;
+    }
+
+    body > .mobile-pos-payment-actions-portal .mobile-pos-back-button {
+        flex-basis: 65px !important;
+        width: 65px !important;
+        min-width: 65px !important;
+        font-size: 10px !important;
+    }
+
+    body > .mobile-pos-payment-actions-portal .mobile-pos-confirm-button {
+        padding: 0 5px !important;
+        font-size: 10px !important;
+        gap: 4px !important;
+    }
+}
+
+/* =========================================================
+   MOBILE POS - PAYMENT FOOTER FINAL FIX
+========================================================= */
+
+body > .mobile-pos-payment-actions-portal {
+    box-sizing: border-box !important;
+    width: 100% !important;
+    max-width: 650px !important;
+    position: static !important;
+    display: flex !important;
+    flex-direction: row !important;
+    align-items: center !important;
+    justify-content: flex-start !important;
+    flex-wrap: nowrap !important;
+    gap: 10px !important;
+    margin: 17px auto 20px !important;
+    padding: 0 !important;
+    background: transparent !important;
+    border: 0 !important;
+    box-shadow: none !important;
+    visibility: visible !important;
+    opacity: 1 !important;
+    transform: none !important;
+}
+
+body > .mobile-pos-payment-actions-portal .mobile-pos-back-button {
+    flex: 0 0 100px !important;
+    width: 100px !important;
+    min-width: 100px !important;
+    min-height: 52px !important;
+}
+
+body > .mobile-pos-payment-actions-portal .mobile-pos-confirm-button {
+    flex: 1 1 auto !important;
+    width: auto !important;
+    min-width: 190px !important;
+    min-height: 52px !important;
+    white-space: nowrap !important;
+}
+
+@media screen and (max-width: 767px) {
+    body > .mobile-pos-payment-actions-portal {
+        position: fixed !important;
+        top: auto !important;
+        right: 0 !important;
+        bottom: 0 !important;
+        left: 0 !important;
+        width: 100% !important;
+        max-width: none !important;
+        min-height: 76px !important;
+        display: flex !important;
+        flex-direction: row !important;
+        align-items: center !important;
+        justify-content: flex-start !important;
+        flex-wrap: nowrap !important;
+        gap: 10px !important;
+        margin: 0 !important;
+        padding: 10px 14px !important;
+        padding-bottom: calc(10px + env(safe-area-inset-bottom, 0px)) !important;
+        background: #ffffff !important;
+        border-top: 1px solid #e5e7eb !important;
+        box-shadow: 0 -5px 20px rgba(0, 0, 0, 0.12) !important;
+        z-index: 2147483000 !important;
+        visibility: visible !important;
+        opacity: 1 !important;
+        transform: none !important;
+    }
+
+    body > .mobile-pos-payment-actions-portal .mobile-pos-back-button {
+        flex: 0 0 85px !important;
+        width: 85px !important;
+        min-width: 85px !important;
+        min-height: 50px !important;
+        padding: 8px !important;
+        font-size: 11px !important;
+    }
+
+    body > .mobile-pos-payment-actions-portal .mobile-pos-confirm-button {
+        flex: 1 1 auto !important;
+        width: auto !important;
+        min-width: 0 !important;
+        max-width: none !important;
+        min-height: 50px !important;
+        padding: 0 10px !important;
+        font-size: 12px !important;
+        white-space: nowrap !important;
+    }
+
+    .mobile-pos-page {
+        padding-bottom: 115px !important;
+    }
+
+    .mobile-pos-payment {
+        padding-bottom: 25px !important;
+        overflow: visible !important;
+    }
+}
+
+@media screen and (max-width: 380px) {
+    body > .mobile-pos-payment-actions-portal {
+        gap: 7px !important;
+        padding-left: 9px !important;
+        padding-right: 9px !important;
+    }
+
+    body > .mobile-pos-payment-actions-portal .mobile-pos-back-button {
+        flex: 0 0 75px !important;
+        width: 75px !important;
+        min-width: 75px !important;
+    }
+
+    body > .mobile-pos-payment-actions-portal .mobile-pos-confirm-button {
+        padding: 0 7px !important;
+        font-size: 11px !important;
+    }
+}
+
+@media screen and (max-width: 320px) {
+    body > .mobile-pos-payment-actions-portal {
+        gap: 5px !important;
+        padding-left: 7px !important;
+        padding-right: 7px !important;
+    }
+
+    body > .mobile-pos-payment-actions-portal .mobile-pos-back-button {
+        flex-basis: 68px !important;
+        width: 68px !important;
+        min-width: 68px !important;
+        font-size: 10px !important;
+    }
+
+    body > .mobile-pos-payment-actions-portal .mobile-pos-confirm-button {
+        padding: 0 5px !important;
+        font-size: 10px !important;
+        gap: 4px !important;
+    }
+}
+
+/* =========================================================
+   PAYMENT SUMMARY - ACTION BUTTONS INSIDE CARD
+========================================================= */
+
+.mobile-pos-payment-summary {
+    position: relative !important;
+    width: 100%;
+    box-sizing: border-box;
+    overflow: visible !important;
+}
+
+.mobile-pos-payment-actions-inline {
+    position: static !important;
+    inset: auto !important;
+    z-index: auto !important;
+
+    display: flex !important;
+    flex-direction: row !important;
+    align-items: stretch;
+    gap: 10px;
+
+    width: 100%;
+    max-width: 100%;
+    min-height: 50px;
+
+    margin: 22px 0 0 !important;
+    padding: 16px 0 0 !important;
+
+    border-top: 1px solid #e5e7eb;
+    background: transparent !important;
+    box-shadow: none !important;
+    box-sizing: border-box;
+}
+
+.mobile-pos-payment-actions-inline button {
+    position: static !important;
+    inset: auto !important;
+
+    display: flex !important;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+
+    min-height: 50px;
+    border: 0;
+    border-radius: 10px;
+
+    font-size: 14px;
+    font-weight: 700;
+    cursor: pointer;
+    box-sizing: border-box;
+}
+
+.mobile-pos-payment-actions-inline .mobile-pos-back-button {
+    flex: 0 0 100px;
+    background: #f3f4f6;
+    color: #374151;
+}
+
+.mobile-pos-payment-actions-inline .mobile-pos-confirm-button {
+    flex: 1 1 auto;
+    min-width: 0;
+    padding: 0 14px;
+    background: #047857;
+    color: #ffffff;
+}
+
+.mobile-pos-payment-actions-inline .mobile-pos-confirm-button:disabled,
+.mobile-pos-payment-actions-inline .mobile-pos-back-button:disabled {
+    opacity: 0.55;
+    cursor: not-allowed;
+}
+
+@media screen and (max-width: 767px) {
+    .mobile-pos-payment {
+        padding-bottom: 25px !important;
+    }
+
+    .mobile-pos-payment-summary {
+        width: 100% !important;
+        max-width: 100% !important;
+        overflow: visible !important;
+    }
+
+    .mobile-pos-payment-actions-inline {
+        position: static !important;
+        display: flex !important;
+        width: 100% !important;
+        margin-top: 20px !important;
+        padding-top: 15px !important;
+    }
+
+    .mobile-pos-payment-actions-inline .mobile-pos-confirm-button {
+        flex: 1 1 auto !important;
+        white-space: normal !important;
     }
 }

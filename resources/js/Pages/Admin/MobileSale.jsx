@@ -164,6 +164,7 @@ export default function MobileSale({
 
     const clearCart = () => {
         setCart([]);
+
         form.setData({
             ...form.data,
             discount: 0,
@@ -171,6 +172,7 @@ export default function MobileSale({
             customer_id: "",
             payment_method: "cash",
         });
+
         setShowCart(false);
     };
 
@@ -234,7 +236,7 @@ export default function MobileSale({
                         aspectRatio: 1.5,
                     },
                     (decodedText) => {
-                        if (scanLockRef.current) return;
+                        if (cancelled || scanLockRef.current) return;
 
                         scanLockRef.current = true;
 
@@ -250,7 +252,9 @@ export default function MobileSale({
                             addToCartRef.current?.(product);
                             setScanning(false);
                         } else {
-                            setScanMessage(`Barcode "${decodedText}" haijatambulika.`);
+                            setScanMessage(
+                                `Barcode "${decodedText}" haijatambulika.`
+                            );
                             scanLockRef.current = false;
                         }
                     },
@@ -316,11 +320,19 @@ export default function MobileSale({
 
         form.clearErrors();
         form.setData("paid_amount", isCredit ? 0 : total);
+
         setStep("payment");
         setShowCart(false);
+
+        window.scrollTo({
+            top: 0,
+            behavior: "smooth",
+        });
     };
 
     const backToOrder = () => {
+        if (form.processing) return;
+
         setStep("order");
         form.clearErrors();
     };
@@ -331,17 +343,26 @@ export default function MobileSale({
         if (!cart.length || form.processing) return;
 
         if (discount > subtotal) {
-            form.setError("discount", "Punguzo haliwezi kuzidi jumla ya bidhaa.");
+            form.setError(
+                "discount",
+                "Punguzo haliwezi kuzidi jumla ya bidhaa."
+            );
             return;
         }
 
         if (isCredit && !form.data.customer_id) {
-            form.setError("customer_id", "Chagua mteja kwa mauzo ya mkopo.");
+            form.setError(
+                "customer_id",
+                "Chagua mteja kwa mauzo ya mkopo."
+            );
             return;
         }
 
         if (!isCredit && paidAmount < total) {
-            form.setError("paid_amount", "Kiasi kilicholipwa hakitoshi.");
+            form.setError(
+                "paid_amount",
+                "Kiasi kilicholipwa hakitoshi."
+            );
             return;
         }
 
@@ -363,36 +384,36 @@ export default function MobileSale({
             preserveScroll: true,
 
             onSuccess: (page) => {
-            const message =
-                page?.props?.flash?.success ||
-                "Mauzo yamehifadhiwa na malipo yamekamilika kikamilifu.";
+                const message =
+                    page?.props?.flash?.success ||
+                    "Mauzo yamehifadhiwa na malipo yamekamilika kikamilifu.";
 
-            setSuccessMessage(message);
+                setSuccessMessage(message);
 
-            setCart([]);
-            setSearch("");
-            setCategory("all");
-            setCustomerSearch("");
-            setStep("order");
-            setShowCart(false);
-            setScanMessage("");
+                setCart([]);
+                setSearch("");
+                setCategory("all");
+                setCustomerSearch("");
+                setStep("order");
+                setShowCart(false);
+                setScanMessage("");
 
-            form.reset();
+                form.reset();
 
-            form.setData({
-                items: [],
-                discount: 0,
-                payment_method: "cash",
-                paid_amount: 0,
-                customer_id: "",
-                return_to: "mobile-pos",
-            });
+                form.setData({
+                    items: [],
+                    discount: 0,
+                    payment_method: "cash",
+                    paid_amount: 0,
+                    customer_id: "",
+                    return_to: "mobile-pos",
+                });
 
-            window.scrollTo({
-                top: 0,
-                behavior: "smooth",
-            });
-        },
+                window.scrollTo({
+                    top: 0,
+                    behavior: "smooth",
+                });
+            },
         });
     };
 
@@ -402,6 +423,14 @@ export default function MobileSale({
         { value: "bank", label: "Bank", icon: Building2 },
         { value: "credit", label: "Credit", icon: User },
     ];
+
+    const canCompleteSale =
+        !form.processing &&
+        cart.length > 0 &&
+        discount <= subtotal &&
+        (isCredit
+            ? Boolean(form.data.customer_id)
+            : paidAmount >= total);
 
     return (
         <AdminLayout>
@@ -426,54 +455,52 @@ export default function MobileSale({
                     </div>
                 </header>
 
-                
-<div className="mobile-pos-progress-row">
-    <div className="mobile-pos-steps">
-        <div className={step === "order" ? "active" : "completed"}>
-            <span>1</span>
-            <strong>Bidhaa</strong>
-        </div>
+                <div className="mobile-pos-progress-row">
+                    <div className="mobile-pos-steps">
+                        <div className={step === "order" ? "active" : "completed"}>
+                            <span>1</span>
+                            <strong>Bidhaa</strong>
+                        </div>
 
-        <div className="mobile-pos-step-line" />
+                        <div className="mobile-pos-step-line" />
 
-        <div className={step === "payment" ? "active" : ""}>
-            <span>2</span>
-            <strong>Malipo</strong>
-        </div>
-    </div>
+                        <div className={step === "payment" ? "active" : ""}>
+                            <span>2</span>
+                            <strong>Malipo</strong>
+                        </div>
+                    </div>
 
-    {step === "order" && (
-        <div className="mobile-pos-bottom-bar">
-            <button
-                type="button"
-                className="mobile-pos-cart-button"
-                onClick={() => setShowCart(true)}
-                disabled={!cart.length}
-            >
-                <span className="mobile-pos-cart-count">
-                    <ShoppingCart size={18} />
-                    {totalItems}
-                </span>
+                    {step === "order" && (
+                        <div className="mobile-pos-bottom-bar">
+                            <button
+                                type="button"
+                                className="mobile-pos-cart-button"
+                                onClick={() => setShowCart(true)}
+                                disabled={!cart.length}
+                            >
+                                <span className="mobile-pos-cart-count">
+                                    <ShoppingCart size={18} />
+                                    {totalItems}
+                                </span>
 
-                <span>
-                    <small>Angalia Cart</small>
-                    <strong>{formatPrice(total)}</strong>
-                </span>
-            </button>
+                                <span>
+                                    <small>Angalia Cart</small>
+                                    <strong>{formatPrice(total)}</strong>
+                                </span>
+                            </button>
 
-            <button
-                type="button"
-                className="mobile-pos-proceed-button"
-                onClick={goToPayment}
-                disabled={!cart.length || discount > subtotal}
-            >
-                LIPA
-                <ArrowRight size={17} />
-            </button>
-        </div>
-    )}
-</div>
-
+                            <button
+                                type="button"
+                                className="mobile-pos-proceed-button"
+                                onClick={goToPayment}
+                                disabled={!cart.length || discount > subtotal}
+                            >
+                                LIPA
+                                <ArrowRight size={17} />
+                            </button>
+                        </div>
+                    )}
+                </div>
 
                 {step === "order" && (
                     <>
@@ -485,10 +512,14 @@ export default function MobileSale({
                                     onClick={openScanner}
                                 >
                                     <ScanLine size={27} />
+
                                     <span>
                                         <strong>SCAN BIDHAA</strong>
-                                        <small>Fungua kamera na scan barcode</small>
+                                        <small>
+                                            Fungua kamera na scan barcode
+                                        </small>
                                     </span>
+
                                     <ArrowRight size={22} />
                                 </button>
                             ) : (
@@ -498,7 +529,9 @@ export default function MobileSale({
                                             <strong>
                                                 <Camera size={18} /> Barcode Scanner
                                             </strong>
-                                            <small>Elekeza kamera kwenye barcode ya bidhaa</small>
+                                            <small>
+                                                Elekeza kamera kwenye barcode ya bidhaa
+                                            </small>
                                         </div>
 
                                         <button
@@ -582,7 +615,9 @@ export default function MobileSale({
                         <section className="mobile-pos-products-heading">
                             <div>
                                 <h2>Chagua Bidhaa</h2>
-                                <p>{filteredProducts.length} bidhaa zinapatikana</p>
+                                <p>
+                                    {filteredProducts.length} bidhaa zinapatikana
+                                </p>
                             </div>
 
                             <span>
@@ -623,9 +658,12 @@ export default function MobileSale({
 
                                         <div className="mobile-pos-product-info">
                                             <strong>{product.name}</strong>
-                                            <b>{formatPrice(product.selling_price)}</b>
+                                            <b>
+                                                {formatPrice(product.selling_price)}
+                                            </b>
                                             <small>
-                                                Stock: {product.quantity} {product.unit || ""}
+                                                Stock: {product.quantity}{" "}
+                                                {product.unit || ""}
                                             </small>
                                         </div>
 
@@ -646,7 +684,6 @@ export default function MobileSale({
                             </div>
                         )}
 
-
                         {showCart && (
                             <div
                                 className="mobile-pos-overlay"
@@ -659,7 +696,9 @@ export default function MobileSale({
                                     <div className="mobile-pos-drawer-heading">
                                         <div>
                                             <h2>Cart Yako</h2>
-                                            <p>{totalItems} bidhaa zimechaguliwa</p>
+                                            <p>
+                                                {totalItems} bidhaa zimechaguliwa
+                                            </p>
                                         </div>
 
                                         <button
@@ -677,14 +716,19 @@ export default function MobileSale({
                                                 key={item.product.id}
                                             >
                                                 <div className="mobile-pos-cart-item-info">
-                                                    <strong>{item.product.name}</strong>
+                                                    <strong>
+                                                        {item.product.name}
+                                                    </strong>
                                                     <small>
-                                                        {formatPrice(item.product.selling_price)}
+                                                        {formatPrice(
+                                                            item.product.selling_price
+                                                        )}
                                                     </small>
                                                     <b>
                                                         {formatPrice(
-                                                            Number(item.product.selling_price) *
-                                                            item.quantity
+                                                            Number(
+                                                                item.product.selling_price
+                                                            ) * item.quantity
                                                         )}
                                                     </b>
                                                 </div>
@@ -693,7 +737,10 @@ export default function MobileSale({
                                                     <button
                                                         type="button"
                                                         onClick={() =>
-                                                            updateQuantity(item.product.id, -1)
+                                                            updateQuantity(
+                                                                item.product.id,
+                                                                -1
+                                                            )
                                                         }
                                                     >
                                                         <Minus size={16} />
@@ -704,7 +751,10 @@ export default function MobileSale({
                                                     <button
                                                         type="button"
                                                         onClick={() =>
-                                                            updateQuantity(item.product.id, 1)
+                                                            updateQuantity(
+                                                                item.product.id,
+                                                                1
+                                                            )
                                                         }
                                                         disabled={
                                                             item.quantity >=
@@ -718,7 +768,9 @@ export default function MobileSale({
                                                         type="button"
                                                         className="delete"
                                                         onClick={() =>
-                                                            removeFromCart(item.product.id)
+                                                            removeFromCart(
+                                                                item.product.id
+                                                            )
                                                         }
                                                     >
                                                         <Trash2 size={17} />
@@ -770,6 +822,7 @@ export default function MobileSale({
                             type="button"
                             className="mobile-pos-back-button"
                             onClick={backToOrder}
+                            disabled={form.processing}
                         >
                             <ArrowLeft size={18} />
                             Rudi kwenye bidhaa
@@ -812,7 +865,9 @@ export default function MobileSale({
                                         >
                                             <Icon size={23} />
                                             <span>{method.label}</span>
-                                            {active && <CheckCircle2 size={18} />}
+                                            {active && (
+                                                <CheckCircle2 size={18} />
+                                            )}
                                         </button>
                                     );
                                 })}
@@ -837,14 +892,23 @@ export default function MobileSale({
                                     className="mobile-pos-input"
                                     value={form.data.customer_id}
                                     onChange={(event) =>
-                                        form.setData("customer_id", event.target.value)
+                                        form.setData(
+                                            "customer_id",
+                                            event.target.value
+                                        )
                                     }
                                 >
                                     <option value="">Chagua mteja</option>
 
                                     {filteredCustomers.map((customer) => (
-                                        <option key={customer.id} value={customer.id}>
-                                            {customer.name} {customer.phone ? `- ${customer.phone}` : ""}
+                                        <option
+                                            key={customer.id}
+                                            value={customer.id}
+                                        >
+                                            {customer.name}{" "}
+                                            {customer.phone
+                                                ? `- ${customer.phone}`
+                                                : ""}
                                         </option>
                                     ))}
                                 </select>
@@ -888,21 +952,29 @@ export default function MobileSale({
 
                             {!isCredit && (
                                 <div className="mobile-pos-quick-amounts">
-                                    {[total, Math.ceil(total / 1000) * 1000,
-                                        Math.ceil(total / 5000) * 5000].filter(
-                                        (amount, index, array) =>
-                                            array.indexOf(amount) === index
-                                    ).map((amount, index) => (
-                                        <button
-                                            type="button"
-                                            key={`${amount}-${index}`}
-                                            onClick={() =>
-                                                form.setData("paid_amount", amount)
-                                            }
-                                        >
-                                            {formatPrice(amount)}
-                                        </button>
-                                    ))}
+                                    {[
+                                        total,
+                                        Math.ceil(total / 1000) * 1000,
+                                        Math.ceil(total / 5000) * 5000,
+                                    ]
+                                        .filter(
+                                            (amount, index, array) =>
+                                                array.indexOf(amount) === index
+                                        )
+                                        .map((amount, index) => (
+                                            <button
+                                                type="button"
+                                                key={`${amount}-${index}`}
+                                                onClick={() =>
+                                                    form.setData(
+                                                        "paid_amount",
+                                                        amount
+                                                    )
+                                                }
+                                            >
+                                                {formatPrice(amount)}
+                                            </button>
+                                        ))}
                                 </div>
                             )}
 
@@ -913,7 +985,7 @@ export default function MobileSale({
                             )}
                         </div>
 
-                        <div className="mobile-pos-payment-card">
+                        <div className="mobile-pos-payment-card mobile-pos-payment-summary">
                             <h2>Muhtasari wa Malipo</h2>
 
                             <div className="mobile-pos-summary-row">
@@ -933,7 +1005,10 @@ export default function MobileSale({
                                     max={subtotal}
                                     value={form.data.discount}
                                     onChange={(event) =>
-                                        form.setData("discount", event.target.value)
+                                        form.setData(
+                                            "discount",
+                                            event.target.value
+                                        )
                                     }
                                 />
                             </div>
@@ -956,7 +1031,9 @@ export default function MobileSale({
 
                             <div className="mobile-pos-summary-row">
                                 <span>Chenji</span>
-                                <strong className="positive">{formatPrice(change)}</strong>
+                                <strong className="positive">
+                                    {formatPrice(change)}
+                                </strong>
                             </div>
 
                             <div className="mobile-pos-summary-row">
@@ -977,96 +1054,92 @@ export default function MobileSale({
                                     {form.errors.items}
                                 </p>
                             )}
-                        </div>
 
-                        <div className="mobile-pos-payment-actions">
-                            <button
-                                type="button"
-                                className="mobile-pos-back-button"
-                                onClick={backToOrder}
-                                disabled={form.processing}
-                            >
-                                <ArrowLeft size={18} />
-                                Rudi
-                            </button>
+                            {/* ACTION BUTTONS INSIDE PAYMENT SUMMARY CARD */}
+                            <div className="mobile-pos-payment-actions mobile-pos-payment-actions-inline">
+                                <button
+                                    type="button"
+                                    className="mobile-pos-back-button"
+                                    onClick={backToOrder}
+                                    disabled={form.processing}
+                                >
+                                    <ArrowLeft size={18} />
+                                    Rudi
+                                </button>
 
-                            <button
-                                type="button"
-                                className="mobile-pos-confirm-button"
-                                onClick={completeSale}
-                                disabled={
-                                    form.processing ||
-                                    !cart.length ||
-                                    discount > subtotal ||
-                                    (!isCredit && paidAmount < total) ||
-                                    (isCredit && !form.data.customer_id)
-                                }
-                            >
-                                {form.processing ? (
-                                    <>
-                                        <LoaderCircle className="spin" size={20} />
-                                        Inachakata...
-                                    </>
-                                ) : (
-                                    <>
-                                        <CheckCircle2 size={20} />
-                                        Thibitisha Mauzo
-                                    </>
-                                )}
-                            </button>
+                                <button
+                                    type="button"
+                                    className="mobile-pos-confirm-button"
+                                    onClick={completeSale}
+                                    disabled={!canCompleteSale}
+                                >
+                                    {form.processing ? (
+                                        <>
+                                            <LoaderCircle className="spin" size={20} />
+                                            Inachakata...
+                                        </>
+                                    ) : (
+                                        <>
+                                            <CheckCircle2 size={20} />
+                                            Thibitisha Mauzo
+                                        </>
+                                    )}
+                                </button>
+                            </div>
                         </div>
                     </section>
                 )}
+
                 {successMessage && (
-    <div className="mobile-pos-success-overlay">
-        <div
-            className="mobile-pos-success-modal"
-            role="dialog"
-            aria-modal="true"
-            aria-labelledby="mobile-pos-success-title"
-        >
-            <div className="mobile-pos-success-icon">
-                <CheckCircle2 size={48} />
-            </div>
+                    <div className="mobile-pos-success-overlay">
+                        <div
+                            className="mobile-pos-success-modal"
+                            role="dialog"
+                            aria-modal="true"
+                            aria-labelledby="mobile-pos-success-title"
+                        >
+                            <div className="mobile-pos-success-icon">
+                                <CheckCircle2 size={48} />
+                            </div>
 
-            <span className="mobile-pos-success-label">
-                MALIPO YAMEPOKELEWA
-            </span>
+                            <span className="mobile-pos-success-label">
+                                MALIPO YAMEPOKELEWA
+                            </span>
 
-            <h2 id="mobile-pos-success-title">
-                Mauzo Yamekamilika!
-            </h2>
+                            <h2 id="mobile-pos-success-title">
+                                Mauzo Yamekamilika!
+                            </h2>
 
-            <p>{successMessage}</p>
+                            <p>{successMessage}</p>
 
-            <div className="mobile-pos-success-status">
-                <CheckCircle2 size={17} />
-                TRANSACTION SUCCESSFUL
-            </div>
+                            <div className="mobile-pos-success-status">
+                                <CheckCircle2 size={17} />
+                                TRANSACTION SUCCESSFUL
+                            </div>
 
-            <button
-                type="button"
-                className="mobile-pos-success-again"
-                onClick={() => {
-                    setSuccessMessage("");
-                    setStep("order");
-                    setCart([]);
-                }}
-            >
-                <ShoppingCart size={19} />
-                UZA TENA
-            </button>
+                            <button
+                                type="button"
+                                className="mobile-pos-success-again"
+                                onClick={() => {
+                                    setSuccessMessage("");
+                                    setStep("order");
+                                    setCart([]);
+                                }}
+                            >
+                                <ShoppingCart size={19} />
+                                UZA TENA
+                            </button>
 
-            <button
-                type="button"
-                className="mobile-pos-success-close"
-                onClick={() => setSuccessMessage("")}
-            >
-                Funga
-            </button>
-        </div>
-    </div>
-)}
+                            <button
+                                type="button"
+                                className="mobile-pos-success-close"
+                                onClick={() => setSuccessMessage("")}
+                            >
+                                Funga
+                            </button>
+                        </div>
+                    </div>
+                )}
             </div>
         </AdminLayout>
     );
