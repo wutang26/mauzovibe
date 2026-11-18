@@ -105,14 +105,15 @@
     font-size: 17px;
 }
 
-/* STEPS */
+/* STEPS - LEFT ALIGNMENT */
 
 .mobile-pos-steps {
     display: flex;
     align-items: center;
-    justify-content: center;
-    max-width: 430px;
-    margin: 0 auto 22px;
+    justify-content: flex-start;
+    width: fit-content;
+    max-width: 100%;
+    margin: 0 0 22px;
     padding: 14px;
     background: white;
     border: 1px solid var(--mp-border);
@@ -156,6 +157,7 @@
 .mobile-pos-step-line {
     width: 75px;
     height: 2px;
+    flex-shrink: 0;
     margin: 0 15px;
     background: #e5e7eb;
 }
@@ -496,7 +498,6 @@
     font-size: 12px;
     font-weight: 700;
     line-height: 1.4;
-
     line-clamp: 2;
     -webkit-line-clamp: 2;
     -webkit-box-orient: vertical;
@@ -548,7 +549,7 @@
     font-size: 12px;
 }
 
-/* BOTTOM BAR */
+/* BOTTOM BAR - CART AND LIPA SAME ROW */
 
 .mobile-pos-bottom-bar {
     position: fixed;
@@ -556,21 +557,28 @@
     right: 0;
     bottom: 0;
     left: 0;
+
     display: flex;
+    flex-direction: row;
+    align-items: stretch;
+    justify-content: flex-end;
+    flex-wrap: nowrap;
+
     gap: 10px;
     padding: 12px 16px;
     padding-bottom: max(12px, env(safe-area-inset-bottom));
+
     background: white;
     border-top: 1px solid var(--mp-border);
     box-shadow: 0 -5px 20px rgba(0, 0, 0, 0.06);
 }
 
 .mobile-pos-cart-button {
-    flex: 1;
+    flex: 1 1 0;
     min-width: 0;
     display: flex;
     align-items: center;
-    gap: 10px;
+    gap: 8px;
     padding: 9px 11px;
     color: var(--mp-text);
     background: #f9fafb;
@@ -609,6 +617,7 @@
     overflow: hidden;
     font-size: 13px;
     text-overflow: ellipsis;
+    white-space: nowrap;
 }
 
 .mobile-pos-proceed-button,
@@ -625,6 +634,11 @@
     border-radius: 12px;
     font-size: 13px;
     font-weight: 800;
+}
+
+.mobile-pos-proceed-button {
+    flex: 0 0 auto;
+    white-space: nowrap;
 }
 
 .mobile-pos-proceed-button:hover,
@@ -818,6 +832,7 @@
 .mobile-pos-payment {
     max-width: 650px;
     margin: 0 auto;
+    padding-bottom: 100px;
 }
 
 .mobile-pos-back-button {
@@ -1044,18 +1059,41 @@
     font-size: 11px;
 }
 
+/* PAYMENT ACTIONS - FIXED ON MOBILE */
+
 .mobile-pos-payment-actions {
+    position: fixed;
+    z-index: 150;
+    right: 0;
+    bottom: 0;
+    left: 0;
+
     display: flex;
+    flex-direction: row;
+    align-items: center;
+    flex-wrap: nowrap;
     gap: 10px;
-    margin-top: 17px;
+
+    margin: 0;
+    padding: 12px 16px;
+    padding-bottom: max(12px, env(safe-area-inset-bottom));
+
+    background: #ffffff;
+    border-top: 1px solid #e5e7eb;
+    box-shadow: 0 -5px 20px rgba(0, 0, 0, 0.08);
 }
 
 .mobile-pos-payment-actions > button:first-child {
     flex-shrink: 0;
 }
 
+.mobile-pos-payment-actions .mobile-pos-back-button {
+    min-height: 52px;
+}
+
 .mobile-pos-confirm-button {
-    flex: 1;
+    flex: 1 1 0;
+    min-width: 0;
     min-height: 52px;
 }
 
@@ -1071,6 +1109,124 @@
     to {
         transform: rotate(360deg);
     }
+}
+
+/* SUCCESS NOTIFICATION */
+
+.mobile-pos-success-overlay {
+    position: fixed;
+    z-index: 300;
+    inset: 0;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 20px;
+    background: rgba(15, 23, 42, 0.72);
+    backdrop-filter: blur(5px);
+}
+
+.mobile-pos-success-modal {
+    width: 100%;
+    max-width: 390px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    padding: 30px 22px;
+    text-align: center;
+    background: #ffffff;
+    border-radius: 24px;
+    box-shadow: 0 20px 60px rgba(0, 0, 0, 0.2);
+    animation: mobilePosSuccessIn 0.3s ease-out;
+}
+
+@keyframes mobilePosSuccessIn {
+    from {
+        transform: translateY(25px) scale(0.95);
+        opacity: 0;
+    }
+
+    to {
+        transform: translateY(0) scale(1);
+        opacity: 1;
+    }
+}
+
+.mobile-pos-success-icon {
+    width: 85px;
+    height: 85px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: #059669;
+    background: #d1fae5;
+    border-radius: 50%;
+    margin-bottom: 18px;
+}
+
+.mobile-pos-success-label {
+    color: #059669;
+    font-size: 10px;
+    font-weight: 900;
+    letter-spacing: 1.5px;
+}
+
+.mobile-pos-success-modal h2 {
+    margin: 10px 0;
+    color: #064e3b;
+    font-size: 23px;
+    font-weight: 900;
+}
+
+.mobile-pos-success-modal p {
+    margin: 0 0 17px;
+    color: #6b7280;
+    font-size: 13px;
+    line-height: 1.6;
+}
+
+.mobile-pos-success-status {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 7px;
+    margin-bottom: 22px;
+    padding: 9px 14px;
+    color: #047857;
+    background: #ecfdf5;
+    border: 1px solid #a7f3d0;
+    border-radius: 30px;
+    font-size: 10px;
+    font-weight: 900;
+    letter-spacing: 0.5px;
+}
+
+.mobile-pos-success-again {
+    width: 100%;
+    min-height: 53px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 9px;
+    color: #ffffff;
+    background: #047857;
+    border: 0;
+    border-radius: 12px;
+    font-size: 14px;
+    font-weight: 900;
+}
+
+.mobile-pos-success-again:hover {
+    background: #065f46;
+}
+
+.mobile-pos-success-close {
+    margin-top: 12px;
+    padding: 8px 15px;
+    color: #6b7280;
+    background: transparent;
+    border: 0;
+    font-size: 12px;
+    font-weight: 700;
 }
 
 /* TABLET AND DESKTOP */
@@ -1106,6 +1262,19 @@
     .mobile-pos-cart-drawer {
         max-height: 85vh;
         border-radius: 20px;
+    }
+
+    .mobile-pos-payment {
+        padding-bottom: 0;
+    }
+
+    .mobile-pos-payment-actions {
+        position: static;
+        padding: 0;
+        margin-top: 17px;
+        background: transparent;
+        border: 0;
+        box-shadow: none;
     }
 }
 
@@ -1174,8 +1343,107 @@
         margin: 0 10px;
     }
 
+    /* CART AND LIPA STAY ON THE SAME ROW */
+
+    .mobile-pos-bottom-bar {
+        flex-direction: row;
+        flex-wrap: nowrap;
+        gap: 7px;
+        padding-right: 10px;
+        padding-left: 10px;
+    }
+
+    .mobile-pos-cart-button {
+        flex: 1 1 0;
+        min-width: 0;
+        gap: 6px;
+        padding: 8px;
+    }
+
+    .mobile-pos-cart-count {
+        width: 32px;
+        height: 32px;
+    }
+
+    .mobile-pos-cart-button small {
+        font-size: 9px;
+    }
+
+    .mobile-pos-cart-button strong {
+        font-size: 11px;
+    }
+
     .mobile-pos-proceed-button {
-        padding: 0 13px;
+        flex: 0 0 auto;
+        min-height: 48px;
+        gap: 5px;
+        padding: 0 11px;
+        font-size: 11px;
+        white-space: nowrap;
+    }
+
+    .mobile-pos-payment-actions {
+        gap: 8px;
+        padding-right: 10px;
+        padding-left: 10px;
+    }
+
+    .mobile-pos-payment-actions .mobile-pos-back-button {
+        padding: 10px;
+        font-size: 11px;
+    }
+
+    .mobile-pos-confirm-button {
+        font-size: 11px;
+        gap: 5px;
+    }
+}
+
+/* VERY SMALL PHONES */
+
+@media (max-width: 350px) {
+    .mobile-pos-bottom-bar {
+        gap: 5px;
+        padding-right: 7px;
+        padding-left: 7px;
+    }
+
+    .mobile-pos-cart-button {
+        gap: 5px;
+        padding: 7px 5px;
+    }
+
+    .mobile-pos-cart-count {
+        width: 29px;
+        height: 29px;
+    }
+
+    .mobile-pos-cart-button small {
+        font-size: 8px;
+    }
+
+    .mobile-pos-cart-button strong {
+        font-size: 10px;
+    }
+
+    .mobile-pos-proceed-button {
+        gap: 4px;
+        padding: 0 8px;
+        font-size: 10px;
+    }
+
+    .mobile-pos-steps {
+        padding: 9px;
+    }
+
+    .mobile-pos-steps > div:not(.mobile-pos-step-line) {
+        gap: 4px;
+        font-size: 10px;
+    }
+
+    .mobile-pos-step-line {
+        width: 30px;
+        margin: 0 7px;
     }
 }
 
@@ -1189,193 +1457,180 @@
         transition-duration: 0.01ms !important;
     }
 }
+
 /* =========================================================
-   MOBILE PAYMENT ACTIONS - ALWAYS VISIBLE
+   MOBILE POS - STEPS AND CART ACTIONS SAME ROW
 ========================================================= */
 
-.mobile-pos-payment {
-    padding-bottom: 100px;
+.mobile-pos-progress-row {
+    width: 100%;
+    display: flex;
+    flex-direction: row;
+    align-items: center;
+    justify-content: space-between;
+    gap: 8px;
+    margin-bottom: 22px;
 }
 
-.mobile-pos-payment-actions {
-    position: fixed;
-    z-index: 150;
-    right: 0;
-    bottom: 0;
-    left: 0;
+.mobile-pos-progress-row .mobile-pos-steps {
+    flex: 0 0 auto;
+    width: auto;
+    max-width: none;
+    margin: 0;
+    padding: 8px 0;
+    border: 0;
+    background: transparent;
+}
+
+.mobile-pos-progress-row .mobile-pos-step-line {
+    width: 22px;
+    margin: 0 7px;
+}
+
+.mobile-pos-progress-row .mobile-pos-steps > div:not(.mobile-pos-step-line) {
+    gap: 5px;
+    font-size: 11px;
+    white-space: nowrap;
+}
+
+.mobile-pos-progress-row .mobile-pos-steps > div:not(.mobile-pos-step-line) span {
+    width: 26px;
+    height: 26px;
+    flex-shrink: 0;
+}
+
+/* CART AND LIPA */
+
+.mobile-pos-progress-row .mobile-pos-bottom-bar {
+    position: static;
+    z-index: auto;
+    flex: 1 1 auto;
+    min-width: 0;
+    width: auto;
 
     display: flex;
-    gap: 10px;
+    flex-direction: row;
+    align-items: center;
+    justify-content: flex-end;
+    flex-wrap: nowrap;
+    gap: 6px;
 
     margin: 0;
-    padding: 12px 16px;
-    padding-bottom: max(12px, env(safe-area-inset-bottom));
+    padding: 0;
 
-    background: #ffffff;
-    border-top: 1px solid #e5e7eb;
-    box-shadow: 0 -5px 20px rgba(0, 0, 0, 0.08);
-}
-
-.mobile-pos-payment-actions .mobile-pos-back-button {
-    min-height: 52px;
-}
-
-.mobile-pos-confirm-button {
-    min-height: 52px;
-    flex: 1;
-}
-
-/* =========================================================
-   SUCCESS NOTIFICATION
-========================================================= */
-
-.mobile-pos-success-overlay {
-    position: fixed;
-    z-index: 300;
-    inset: 0;
-
-    display: flex;
-    align-items: center;
-    justify-content: center;
-
-    padding: 20px;
-    background: rgba(15, 23, 42, 0.72);
-    backdrop-filter: blur(5px);
-}
-
-.mobile-pos-success-modal {
-    width: 100%;
-    max-width: 390px;
-
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-
-    padding: 30px 22px;
-    text-align: center;
-
-    background: #ffffff;
-    border-radius: 24px;
-    box-shadow: 0 20px 60px rgba(0, 0, 0, 0.2);
-
-    animation: mobilePosSuccessIn 0.3s ease-out;
-}
-
-@keyframes mobilePosSuccessIn {
-    from {
-        transform: translateY(25px) scale(0.95);
-        opacity: 0;
-    }
-
-    to {
-        transform: translateY(0) scale(1);
-        opacity: 1;
-    }
-}
-
-.mobile-pos-success-icon {
-    width: 85px;
-    height: 85px;
-
-    display: flex;
-    align-items: center;
-    justify-content: center;
-
-    color: #059669;
-    background: #d1fae5;
-    border-radius: 50%;
-
-    margin-bottom: 18px;
-}
-
-.mobile-pos-success-label {
-    color: #059669;
-    font-size: 10px;
-    font-weight: 900;
-    letter-spacing: 1.5px;
-}
-
-.mobile-pos-success-modal h2 {
-    margin: 10px 0;
-    color: #064e3b;
-    font-size: 23px;
-    font-weight: 900;
-}
-
-.mobile-pos-success-modal p {
-    margin: 0 0 17px;
-    color: #6b7280;
-    font-size: 13px;
-    line-height: 1.6;
-}
-
-.mobile-pos-success-status {
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    gap: 7px;
-
-    margin-bottom: 22px;
-    padding: 9px 14px;
-
-    color: #047857;
-    background: #ecfdf5;
-    border: 1px solid #a7f3d0;
-    border-radius: 30px;
-
-    font-size: 10px;
-    font-weight: 900;
-    letter-spacing: 0.5px;
-}
-
-.mobile-pos-success-again {
-    width: 100%;
-    min-height: 53px;
-
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    gap: 9px;
-
-    color: #ffffff;
-    background: #047857;
-    border: 0;
-    border-radius: 12px;
-
-    font-size: 14px;
-    font-weight: 900;
-}
-
-.mobile-pos-success-again:hover {
-    background: #065f46;
-}
-
-.mobile-pos-success-close {
-    margin-top: 12px;
-    padding: 8px 15px;
-
-    color: #6b7280;
     background: transparent;
     border: 0;
-
-    font-size: 12px;
-    font-weight: 700;
+    box-shadow: none;
 }
 
-/* DESKTOP PAYMENT ACTIONS */
+.mobile-pos-progress-row .mobile-pos-cart-button {
+    flex: 1 1 0;
+    min-width: 0;
+    min-height: 43px;
+    gap: 5px;
+    padding: 5px 7px;
+    border-radius: 9px;
+}
 
-@media (min-width: 768px) {
-    .mobile-pos-payment {
-        padding-bottom: 0;
+.mobile-pos-progress-row .mobile-pos-cart-count {
+    width: 29px;
+    height: 29px;
+    flex-shrink: 0;
+    border-radius: 8px;
+}
+
+.mobile-pos-progress-row .mobile-pos-cart-button > span:nth-child(2) {
+    min-width: 0;
+    gap: 2px;
+}
+
+.mobile-pos-progress-row .mobile-pos-cart-button small {
+    font-size: 9px;
+    white-space: nowrap;
+}
+
+.mobile-pos-progress-row .mobile-pos-cart-button strong {
+    font-size: 10px;
+    white-space: nowrap;
+}
+
+.mobile-pos-progress-row .mobile-pos-proceed-button {
+    flex: 0 0 auto;
+    min-height: 43px;
+    gap: 4px;
+    padding: 0 10px;
+    border-radius: 9px;
+    font-size: 11px;
+    white-space: nowrap;
+}
+
+/* SMALL PHONES */
+
+@media (max-width: 380px) {
+    .mobile-pos-progress-row {
+        gap: 5px;
     }
 
-    .mobile-pos-payment-actions {
-        position: static;
-        padding: 0;
-        margin-top: 17px;
+    .mobile-pos-progress-row .mobile-pos-steps {
+        padding: 6px 0;
+    }
 
-        background: transparent;
-        border: 0;
-        box-shadow: none;
+    .mobile-pos-progress-row .mobile-pos-step-line {
+        width: 13px;
+        margin: 0 4px;
+    }
+
+    .mobile-pos-progress-row .mobile-pos-steps > div:not(.mobile-pos-step-line) {
+        gap: 4px;
+        font-size: 10px;
+    }
+
+    .mobile-pos-progress-row .mobile-pos-steps > div:not(.mobile-pos-step-line) span {
+        width: 23px;
+        height: 23px;
+    }
+
+    .mobile-pos-progress-row .mobile-pos-bottom-bar {
+        gap: 4px;
+    }
+
+    .mobile-pos-progress-row .mobile-pos-cart-button {
+        padding: 4px;
+        gap: 4px;
+    }
+
+    .mobile-pos-progress-row .mobile-pos-cart-count {
+        width: 25px;
+        height: 25px;
+    }
+
+    .mobile-pos-progress-row .mobile-pos-cart-button small {
+        font-size: 8px;
+    }
+
+    .mobile-pos-progress-row .mobile-pos-cart-button strong {
+        font-size: 9px;
+    }
+
+    .mobile-pos-progress-row .mobile-pos-proceed-button {
+        min-height: 40px;
+        padding: 0 7px;
+        font-size: 10px;
+    }
+}
+
+/* DESKTOP */
+
+@media (min-width: 768px) {
+    .mobile-pos-progress-row {
+        justify-content: space-between;
+    }
+
+    .mobile-pos-progress-row .mobile-pos-steps {
+        padding: 14px;
+    }
+
+    .mobile-pos-progress-row .mobile-pos-bottom-bar {
+        max-width: 330px;
     }
 }

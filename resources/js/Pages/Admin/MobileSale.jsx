@@ -426,19 +426,54 @@ export default function MobileSale({
                     </div>
                 </header>
 
-                <div className="mobile-pos-steps">
-                    <div className={step === "order" ? "active" : "completed"}>
-                        <span>1</span>
-                        <strong>Bidhaa</strong>
-                    </div>
+                
+<div className="mobile-pos-progress-row">
+    <div className="mobile-pos-steps">
+        <div className={step === "order" ? "active" : "completed"}>
+            <span>1</span>
+            <strong>Bidhaa</strong>
+        </div>
 
-                    <div className="mobile-pos-step-line" />
+        <div className="mobile-pos-step-line" />
 
-                    <div className={step === "payment" ? "active" : ""}>
-                        <span>2</span>
-                        <strong>Malipo</strong>
-                    </div>
-                </div>
+        <div className={step === "payment" ? "active" : ""}>
+            <span>2</span>
+            <strong>Malipo</strong>
+        </div>
+    </div>
+
+    {step === "order" && (
+        <div className="mobile-pos-bottom-bar">
+            <button
+                type="button"
+                className="mobile-pos-cart-button"
+                onClick={() => setShowCart(true)}
+                disabled={!cart.length}
+            >
+                <span className="mobile-pos-cart-count">
+                    <ShoppingCart size={18} />
+                    {totalItems}
+                </span>
+
+                <span>
+                    <small>Angalia Cart</small>
+                    <strong>{formatPrice(total)}</strong>
+                </span>
+            </button>
+
+            <button
+                type="button"
+                className="mobile-pos-proceed-button"
+                onClick={goToPayment}
+                disabled={!cart.length || discount > subtotal}
+            >
+                LIPA
+                <ArrowRight size={17} />
+            </button>
+        </div>
+    )}
+</div>
+
 
                 {step === "order" && (
                     <>
@@ -611,36 +646,6 @@ export default function MobileSale({
                             </div>
                         )}
 
-                        <div className="mobile-pos-bottom-bar">
-                            <button
-                                type="button"
-                                className="mobile-pos-cart-button"
-                                onClick={() => setShowCart(true)}
-                                disabled={!cart.length}
-                            >
-                                <span className="mobile-pos-cart-count">
-                                    <ShoppingCart size={21} />
-                                    {totalItems}
-                                </span>
-
-                                <span>
-                                    <small>Angalia Cart</small>
-                                    <strong>{formatPrice(total)}</strong>
-                                </span>
-
-                                <ArrowRight size={22} />
-                            </button>
-
-                            <button
-                                type="button"
-                                className="mobile-pos-proceed-button"
-                                onClick={goToPayment}
-                                disabled={!cart.length || discount > subtotal}
-                            >
-                                LIPA
-                                <ArrowRight size={19} />
-                            </button>
-                        </div>
 
                         {showCart && (
                             <div
