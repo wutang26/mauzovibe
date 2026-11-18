@@ -16,18 +16,18 @@ const quickActions = [
         featured: true,
     },
     {
-        title: "BIDHAA",
-        description: "Angalia na simamia bidhaa",
-        icon: "📦",
-        href: "/admin/products",
-        color: "quick-action-blue",
-    },
-    {
         title: "UZA KWA SIMU",
         description: "Chagua bidhaa, scan barcode na uza kwa simu",
         icon: "📱",
         href: "/admin/sales/mobile-pos",
         color: "quick-action-indigo",
+    },
+     {
+        title: "BIDHAA",
+        description: "Angalia na simamia bidhaa",
+        icon: "📦",
+        href: "/admin/products",
+        color: "quick-action-blue",
     },
     {
         title: "INGIZA STOCK",
