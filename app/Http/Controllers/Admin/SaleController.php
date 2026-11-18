@@ -126,6 +126,60 @@ public function quickSale()
     ]);
 }
 
+/**
+ * Display the Mobile POS screen.
+ */
+public function mobilePos()
+{
+    $branchId = session('branch_id');
+
+    if (!$branchId) {
+        abort(403, 'No active branch selected.');
+    }
+
+    $products = Product::with('category:id,name')
+        ->where('branch_id', $branchId)
+        ->where('status', 'active')
+        ->where('quantity', '>', 0)
+        ->orderBy('name')
+        ->get([
+            'id',
+            'category_id',
+            'name',
+            'sku',
+            'barcode',
+            'selling_price',
+            'quantity',
+            'unit',
+            'image',
+        ]);
+
+    $categories = $products
+        ->pluck('category')
+        ->filter()
+        ->unique('id')
+        ->values()
+        ->map(fn ($category) => [
+            'id' => $category->id,
+            'name' => $category->name,
+        ]);
+
+    $customers = Customer::where('branch_id', $branchId)
+        ->orderBy('name')
+        ->get([
+            'id',
+            'name',
+            'phone',
+            'email',
+        ]);
+
+    return Inertia::render('Admin/MobileSale', [
+        'products' => $products,
+        'categories' => $categories,
+        'customers' => $customers,
+    ]);
+}
+
     /**
      * Store a new sale.
      */
@@ -493,6 +547,15 @@ public function quickSale()
 | Return Response
 |--------------------------------------------------------------------------
 */
+
+if ($request->input('return_to') === 'mobile-pos') {
+    return redirect()
+        ->route('admin.sales.mobile-pos')
+        ->with(
+            'success',
+            "Sale {$sale->invoice_number} completed successfully."
+        );
+}
 
 if ($request->input('return_to') === 'quick-sale') {
     return redirect()

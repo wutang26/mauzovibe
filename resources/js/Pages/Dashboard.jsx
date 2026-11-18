@@ -23,10 +23,10 @@ const quickActions = [
         color: "quick-action-blue",
     },
     {
-        title: "ONGEZA BIDHAA",
-        description: "Sajili bidhaa mpya",
-        icon: "➕",
-        href: "/admin/products/create",
+        title: "UZA KWA SIMU",
+        description: "Chagua bidhaa, scan barcode na uza kwa simu",
+        icon: "📱",
+        href: "/admin/sales/mobile-pos",
         color: "quick-action-indigo",
     },
     {
@@ -151,19 +151,7 @@ export default function Dashboard({
                     </div>
                 </section>
 
-                {/* FOOTER */}
-                {/* <footer className="dashboard-footer">
-                    <p>
-                        <strong>MauzoVibe</strong>
-                        {" "}• Smart Sales Management
-                    </p>
-
-                    <p>Powered by NAC Technologies</p>
-
-                    <p>
-                        © {new Date().getFullYear()} MauzoVibe. All rights reserved.
-                    </p>
-                </footer> */}
+               
 
             </div>
         </AdminLayout>

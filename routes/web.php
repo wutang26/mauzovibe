@@ -461,6 +461,12 @@ Route::middleware('auth')->group(function () {
                 [SaleController::class, 'quickSale']
             )->name('quick-sale');
 
+                      
+            Route::get(
+            '/mobile-pos',
+            [SaleController::class, 'mobilePos']
+        )->name('mobile-pos');
+
             Route::get(
                 '/',
                 [SaleController::class, 'index']
@@ -504,7 +510,7 @@ Route::middleware('auth')->group(function () {
                 '/returns',
                 [SaleReturnController::class, 'index']
             )->name('returns.index');
-
+  
             Route::get(
                 '/sales/{sale}/return',
                 [SaleReturnController::class, 'create']
