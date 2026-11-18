@@ -329,27 +329,24 @@ export default function Sidebar({ open = true, setOpen = () => {} }) {
     | Automatically expand active menu group
     |--------------------------------------------------------------------------
     */
-    useEffect(() => {
-        const activeGroups = {};
+   useEffect(() => {
+    const activeGroups = {};
 
-        menu.forEach((item) => {
-            if (item.children && isChildActive(item)) {
-                activeGroups[item.name] = true;
-            }
-        });
+    menu.forEach((item) => {
+        if (item.children && isChildActive(item)) {
+            activeGroups[item.name] = true;
+        }
+    });
 
-        setOpenMenus((previous) => ({
-            ...previous,
-            ...activeGroups,
-        }));
-    }, [currentUrl, menu]);
+    setOpenMenus(activeGroups);
+}, [currentUrl, menu]);
 
     const toggleMenu = (name) => {
-        setOpenMenus((previous) => ({
-            ...previous,
-            [name]: !previous[name],
-        }));
-    };
+    setOpenMenus((previous) => ({
+        ...previous,
+        [name]: !previous[name],
+    }));
+};
 
     /*
     |--------------------------------------------------------------------------
@@ -416,7 +413,9 @@ export default function Sidebar({ open = true, setOpen = () => {} }) {
             }
 
             // Menu group
-            const expanded = Boolean(openMenus[item.name] || active);
+            // const expanded = Boolean(openMenus[item.name] || active);
+
+            const expanded = Boolean(openMenus[item.name]);
 
             return (
                 <div
