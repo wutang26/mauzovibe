@@ -1,5 +1,4 @@
-
-import { useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { Link, usePage } from "@inertiajs/react";
 
 import {
@@ -17,565 +16,591 @@ import {
     ClipboardDocumentListIcon,
     ArrowPathRoundedSquareIcon,
     DocumentMagnifyingGlassIcon,
-    FlagIcon,
     NewspaperIcon,
     BoltIcon,
+    EllipsisHorizontalCircleIcon,
+    XMarkIcon,
 } from "@heroicons/react/24/outline";
 
-export default function Sidebar({ open }) {
+import "./Sidebar.css";
+
+export default function Sidebar({ open = true, setOpen = () => {} }) {
+    const [isMobile, setIsMobile] = useState(false);
     const [openMenus, setOpenMenus] = useState({});
 
-    const { auth } = usePage().props;
-    const user = auth?.user;
+    const { url, props } = usePage();
+
+    const user = props.auth?.user;
+    const currentUrl = url || "/";
 
     /*
     |--------------------------------------------------------------------------
-    | ADMIN ACCESS
+    | Screen detection
     |--------------------------------------------------------------------------
+    | Mobile: chini ya 768px
+    | Tablet/Desktop: 768px na kuendelea
     */
+    useEffect(() => {
+        const updateScreen = () => {
+            const mobile = window.innerWidth < 768;
 
-    const isAdmin =
-        user?.roles?.some((role) =>
-            ["Admin", "Super Admin"].includes(
-                typeof role === "string" ? role : role?.name
-            )
-        ) ?? false;
+            setIsMobile(mobile);
+
+            // Tunapoingia mobile, sidebar inaanza ikiwa imefungwa.
+            if (mobile) {
+                setOpen(false);
+            }
+        };
+
+        updateScreen();
+
+        window.addEventListener("resize", updateScreen);
+
+        return () => {
+            window.removeEventListener("resize", updateScreen);
+        };
+    }, [setOpen]);
 
     /*
     |--------------------------------------------------------------------------
-    | TOGGLE MENU
+    | Close mobile sidebar after navigation
     |--------------------------------------------------------------------------
     */
+    useEffect(() => {
+        if (isMobile) {
+            setOpen(false);
+        }
+    }, [currentUrl, isMobile, setOpen]);
 
-    const toggleMenu = (menuName) => {
+    /*
+    |--------------------------------------------------------------------------
+    | Close sidebar using Escape key
+    |--------------------------------------------------------------------------
+    */
+    useEffect(() => {
+        const handleEscape = (event) => {
+            if (event.key === "Escape" && isMobile && open) {
+                setOpen(false);
+            }
+        };
+
+        window.addEventListener("keydown", handleEscape);
+
+        return () => {
+            window.removeEventListener("keydown", handleEscape);
+        };
+    }, [isMobile, open, setOpen]);
+
+    /*
+    |--------------------------------------------------------------------------
+    | User roles
+    |--------------------------------------------------------------------------
+    */
+    const userRoles = Array.isArray(user?.roles)
+        ? user.roles.map((role) =>
+              typeof role === "string" ? role : role?.name
+          )
+        : [];
+
+    const isAdmin = userRoles.some((role) =>
+        ["Admin", "Super Admin"].includes(role)
+    );
+
+    /*
+    |--------------------------------------------------------------------------
+    | Menu configuration
+    |--------------------------------------------------------------------------
+    */
+    const menu = useMemo(
+        () => [
+            {
+                name: "Dashboard",
+                icon: HomeIcon,
+                link: route("dashboard"),
+            },
+            {
+                name: "Mauzo (POS)",
+                icon: ShoppingCartIcon,
+                children: [
+                    {
+                        name: "Quick Sale",
+                        icon: BoltIcon,
+                        link: route("admin.sales.quick-sale"),
+                    },
+                    {
+                        name: "New Sale",
+                        icon: ShoppingCartIcon,
+                        link: route("admin.sales.create"),
+                    },
+                    {
+                        name: "Sales History",
+                        icon: ClipboardDocumentListIcon,
+                        link: route("admin.sales.index"),
+                    },
+                    {
+                        name: "Returns",
+                        icon: ArrowPathRoundedSquareIcon,
+                        link: route("admin.returns.index"),
+                    },
+                ],
+            },
+            {
+                name: "Inventory",
+                icon: CubeIcon,
+                children: [
+                    {
+                        name: "Categories",
+                        icon: ArchiveBoxIcon,
+                        link: route("admin.categories.index"),
+                    },
+                    {
+                        name: "Products",
+                        icon: CubeIcon,
+                        link: route("admin.products.index"),
+                    },
+                    {
+                        name: "Stock In",
+                        icon: BuildingStorefrontIcon,
+                        link: route("admin.stockin.index"),
+                    },
+                    {
+                        name: "Stock Out",
+                        icon: BuildingStorefrontIcon,
+                        link: route("admin.stockout.index"),
+                    },
+                    {
+                        name: "Low Stock",
+                        icon: CubeIcon,
+                        link: route("admin.lowstock.index"),
+                    },
+                ],
+            },
+            {
+                name: "Customers",
+                icon: UsersIcon,
+                children: [
+                    {
+                        name: "Customer List",
+                        icon: UsersIcon,
+                        link: route("admin.customers.index"),
+                    },
+                    {
+                        name: "Credit Sales",
+                        icon: ShoppingCartIcon,
+                        link: route("admin.credit-sales.index"),
+                    },
+                    {
+                        name: "Debtors",
+                        icon: UsersIcon,
+                        link: route("admin.debtors.index"),
+                    },
+                    {
+                        name: "Payment History",
+                        icon: ClipboardDocumentListIcon,
+                        link: route("admin.payment-history.index"),
+                    },
+                ],
+            },
+            {
+                name: "Reports",
+                icon: ChartBarIcon,
+                children: [
+                    {
+                        name: "Daily Report",
+                        icon: DocumentChartBarIcon,
+                        link: route("admin.reports.daily"),
+                    },
+                    {
+                        name: "Weekly Report",
+                        icon: DocumentChartBarIcon,
+                        link: route("admin.reports.weekly"),
+                    },
+                    {
+                        name: "Monthly Report",
+                        icon: DocumentChartBarIcon,
+                        link: route("admin.reports.monthly"),
+                    },
+                    {
+                        name: "Yearly Report",
+                        icon: DocumentChartBarIcon,
+                        link: route("admin.reports.yearly"),
+                    },
+                    {
+                        name: "Profit Report",
+                        icon: ChartBarIcon,
+                        link: route("admin.reports.profit"),
+                    },
+                    {
+                        name: "Stock Report",
+                        icon: CubeIcon,
+                        link: route("admin.reports.stock"),
+                    },
+                ],
+            },
+
+            ...(isAdmin
+                ? [
+                      {
+                          name: "Daily Posts",
+                          icon: NewspaperIcon,
+                          children: [
+                              {
+                                  name: "All Daily Posts",
+                                  icon: NewspaperIcon,
+                                  link: route("admin.daily-posts.index"),
+                              },
+                              {
+                                  name: "Add Daily Post",
+                                  icon: ClipboardDocumentListIcon,
+                                  link: route("admin.daily-posts.create"),
+                              },
+                          ],
+                      },
+                  ]
+                : []),
+
+            {
+                name: "Settings",
+                icon: Cog6ToothIcon,
+                children: [
+                    {
+                        name: "Branches",
+                        icon: BuildingStorefrontIcon,
+                        link: route("admin.branches.index"),
+                    },
+
+                    ...(isAdmin
+                        ? [
+                              {
+                                  name: "Users",
+                                  icon: UserGroupIcon,
+                                  link: route("admin.users.index"),
+                              },
+                              {
+                                  name: "System Audit",
+                                  icon: DocumentMagnifyingGlassIcon,
+                                  link: route("admin.audit.index"),
+                              },
+                              {
+                                  name: "Subscriptions",
+                                  icon: DocumentMagnifyingGlassIcon,
+                                  link: route("subscription.index"),
+                              },
+                          ]
+                        : []),
+                ],
+            },
+        ],
+        [isAdmin]
+    );
+
+    /*
+    |--------------------------------------------------------------------------
+    | Active route detection
+    |--------------------------------------------------------------------------
+    */
+    const isActive = (link) => {
+        if (!link) return false;
+
+        try {
+            const targetPath =
+                new URL(link, window.location.origin).pathname.replace(
+                    /\/+$/,
+                    ""
+                ) || "/";
+
+            const activePath =
+                currentUrl.split("?")[0].replace(/\/+$/, "") || "/";
+
+            return (
+                activePath === targetPath ||
+                activePath.startsWith(targetPath + "/")
+            );
+        } catch {
+            return false;
+        }
+    };
+
+    const isChildActive = (item) =>
+        item.children?.some((child) => isActive(child.link)) ?? false;
+
+    /*
+    |--------------------------------------------------------------------------
+    | Automatically expand active menu group
+    |--------------------------------------------------------------------------
+    */
+    useEffect(() => {
+        const activeGroups = {};
+
+        menu.forEach((item) => {
+            if (item.children && isChildActive(item)) {
+                activeGroups[item.name] = true;
+            }
+        });
+
         setOpenMenus((previous) => ({
             ...previous,
-            [menuName]: !previous[menuName],
+            ...activeGroups,
+        }));
+    }, [currentUrl, menu]);
+
+    const toggleMenu = (name) => {
+        setOpenMenus((previous) => ({
+            ...previous,
+            [name]: !previous[name],
         }));
     };
 
     /*
     |--------------------------------------------------------------------------
-    | SIDEBAR MENU
+    | Sidebar controls
     |--------------------------------------------------------------------------
     */
+    const closeMobileMenu = () => {
+        if (isMobile) {
+            setOpen(false);
+        }
+    };
 
-    const menu = [
-        {
-            name: "Dashboard",
-            icon: HomeIcon,
-            link: route("dashboard"),
-        },
+    const toggleMobileMenu = () => {
+        setOpen(!open);
+    };
 
-        /*
-        |--------------------------------------------------------------------------
-        | SALES / POS
-        |--------------------------------------------------------------------------
-        */
+    // Desktop: open controls expanded/collapsed.
+    // Mobile: open controls visible/hidden.
+    const showLabels = isMobile ? true : open;
 
-        {
-            name: "Mauzo (POS)",
-            icon: ShoppingCartIcon,
-            children: [
-                {
-                    name: "Quick Sale",
-                    icon: BoltIcon,
-                    link: route("admin.sales.quick-sale"),
-                },
-                {
-                    name: "New Sale",
-                    icon: ShoppingCartIcon,
-                    link: route("admin.sales.create"),
-                },
-                {
-                    name: "Sales History",
-                    icon: ClipboardDocumentListIcon,
-                    link: route("admin.sales.index"),
-                },
-                {
-                    name: "Returns",
-                    icon: ArrowPathRoundedSquareIcon,
-                    link: route("admin.returns.index"),
-                },
-            ],
-        },
-
-        /*
-        |--------------------------------------------------------------------------
-        | INVENTORY
-        |--------------------------------------------------------------------------
-        */
-
-        {
-            name: "Inventory",
-            icon: CubeIcon,
-            children: [
-                {
-                    name: "Categories",
-                    icon: ArchiveBoxIcon,
-                    link: route("admin.categories.index"),
-                },
-                {
-                    name: "Products",
-                    icon: CubeIcon,
-                    link: route("admin.products.index"),
-                },
-                {
-                    name: "Stock In",
-                    icon: BuildingStorefrontIcon,
-                    link: route("admin.stockin.index"),
-                },
-                {
-                    name: "Stock Out",
-                    icon: BuildingStorefrontIcon,
-                    link: route("admin.stockout.index"),
-                },
-                {
-                    name: "Low Stock",
-                    icon: CubeIcon,
-                    link: route("admin.lowstock.index"),
-                },
-            ],
-        },
-
-        /*
-        |--------------------------------------------------------------------------
-        | CUSTOMERS
-        |--------------------------------------------------------------------------
-        */
-
-        {
-            name: "Customers",
-            icon: UsersIcon,
-            children: [
-                {
-                    name: "Customer List",
-                    icon: UsersIcon,
-                    link: route("admin.customers.index"),
-                },
-                {
-                    name: "Credit Sales",
-                    icon: ShoppingCartIcon,
-                    link: route("admin.credit-sales.index"),
-                },
-                {
-                    name: "Debtors",
-                    icon: UsersIcon,
-                    link: route("admin.debtors.index"),
-                },
-                {
-                    name: "Payment History",
-                    icon: ClipboardDocumentListIcon,
-                    link: route("admin.payment-history.index"),
-                },
-            ],
-        },
-
-        /*
-        |--------------------------------------------------------------------------
-        | REPORTS
-        |--------------------------------------------------------------------------
-        */
-
-        {
-            name: "Reports",
-            icon: ChartBarIcon,
-            children: [
-                {
-                    name: "Daily Report",
-                    icon: DocumentChartBarIcon,
-                    link: route("admin.reports.daily"),
-                },
-                {
-                    name: "Weekly Report",
-                    icon: DocumentChartBarIcon,
-                    link: route("admin.reports.weekly"),
-                },
-                {
-                    name: "Monthly Report",
-                    icon: DocumentChartBarIcon,
-                    link: route("admin.reports.monthly"),
-                },
-                {
-                    name: "Yearly Report",
-                    icon: DocumentChartBarIcon,
-                    link: route("admin.reports.yearly"),
-                },
-                {
-                    name: "Profit Report",
-                    icon: ChartBarIcon,
-                    link: route("admin.reports.profit"),
-                },
-                {
-                    name: "Stock Report",
-                    icon: CubeIcon,
-                    link: route("admin.reports.stock"),
-                },
-                // {
-                //     name: "Marketplace Reports",
-                //     icon: FlagIcon,
-                //     link: route("admin.reports.marketplace"),
-                // },
-            ],
-        },
-
-        /*
-        |--------------------------------------------------------------------------
-        | DAILY POSTS - ADMIN & SUPER ADMIN ONLY
-        |--------------------------------------------------------------------------
-        */
-
-        ...(isAdmin
-            ? [
-                  {
-                      name: "Daily Posts",
-                      icon: NewspaperIcon,
-                      children: [
-                          {
-                              name: "All Daily Posts",
-                              icon: NewspaperIcon,
-                              link: route("admin.daily-posts.index"),
-                          },
-                          {
-                              name: "Add Daily Post",
-                              icon: ClipboardDocumentListIcon,
-                              link: route("admin.daily-posts.create"),
-                          },
-                      ],
-                  },
-              ]
-            : []),
-
-        /*
-        |--------------------------------------------------------------------------
-        | MARKETPLACE
-        |--------------------------------------------------------------------------
-        */
-
-        // {
-        //     name: "Marketplace",
-        //     icon: BuildingStorefrontIcon,
-        //     children: [
-        //         {
-        //             name: "Browse Marketplace",
-        //             icon: ShoppingCartIcon,
-        //             link: route("marketplace.index"),
-        //         },
-        //     ],
-        // },
-
-        /*
-        |--------------------------------------------------------------------------
-        | SETTINGS
-        |--------------------------------------------------------------------------
-        */
-
-        {
-            name: "Settings",
-            icon: Cog6ToothIcon,
-            children: [
-                {
-                    name: "Branches",
-                    icon: BuildingStorefrontIcon,
-                    link: route("admin.branches.index"),
-                },
-
-                /*
-                |--------------------------------------------------------------------------
-                | USERS - ADMIN & SUPER ADMIN ONLY
-                |--------------------------------------------------------------------------
-                */
-
-                ...(isAdmin
-                    ? [
-                          {
-                              name: "Users",
-                              icon: UserGroupIcon,
-                              link: route("admin.users.index"),
-                          },
-                      ]
-                    : []),
-
-                /*
-                |--------------------------------------------------------------------------
-                | SYSTEM AUDIT & SUBSCRIPTIONS - ADMIN ONLY
-                |--------------------------------------------------------------------------
-                */
-
-                ...(isAdmin
-                    ? [
-                          {
-                              name: "System Audit",
-                              icon: DocumentMagnifyingGlassIcon,
-                              link: route("admin.audit.index"),
-                          },
-                          {
-                              name: "Subscriptions",
-                              icon: DocumentMagnifyingGlassIcon,
-                              link: route("subscription.index"),
-                          },
-                      ]
-                    : []),
-            ],
-        },
-    ];
+    const sidebarClass = [
+        "mauzo-sidebar",
+        !isMobile && (open ? "sidebar-expanded" : "sidebar-collapsed"),
+        isMobile && "sidebar-mobile",
+        isMobile && open && "sidebar-mobile-open",
+    ]
+        .filter(Boolean)
+        .join(" ");
 
     /*
     |--------------------------------------------------------------------------
-    | SIDEBAR UI
+    | Render menu
     |--------------------------------------------------------------------------
     */
+    const renderMenu = () =>
+        menu.map((item) => {
+            const Icon = item.icon || HomeIcon;
+
+            const active = item.children
+                ? isChildActive(item)
+                : isActive(item.link);
+
+            // Menu item without submenu
+            if (!item.children) {
+                return (
+                    <Link
+                        key={item.name}
+                        href={item.link}
+                        onClick={closeMobileMenu}
+                        title={!showLabels ? item.name : undefined}
+                        className={`sidebar-link ${
+                            active ? "active" : ""
+                        }`}
+                    >
+                        <Icon className="sidebar-icon" />
+
+                        {showLabels && (
+                            <span className="sidebar-link-text">
+                                {item.name}
+                            </span>
+                        )}
+                    </Link>
+                );
+            }
+
+            // Menu group
+            const expanded = Boolean(openMenus[item.name] || active);
+
+            return (
+                <div
+                    key={item.name}
+                    className={`sidebar-group ${
+                        expanded ? "group-expanded" : ""
+                    }`}
+                >
+                    <button
+                        type="button"
+                        onClick={() => toggleMenu(item.name)}
+                        title={!showLabels ? item.name : undefined}
+                        aria-expanded={expanded}
+                        className={`sidebar-link sidebar-group-button ${
+                            active ? "active" : ""
+                        }`}
+                    >
+                        <Icon className="sidebar-icon" />
+
+                        {showLabels && (
+                            <>
+                                <span className="sidebar-link-text">
+                                    {item.name}
+                                </span>
+
+                                <ChevronDownIcon
+                                    className={`sidebar-chevron ${
+                                        expanded ? "rotated" : ""
+                                    }`}
+                                />
+                            </>
+                        )}
+                    </button>
+
+                    {expanded && (
+                        <div className="sidebar-submenu">
+                            {item.children.map((child) => {
+                                const ChildIcon = child.icon || HomeIcon;
+                                const childActive = isActive(child.link);
+
+                                return (
+                                    <Link
+                                        key={child.name}
+                                        href={child.link}
+                                        onClick={closeMobileMenu}
+                                        className={`sidebar-sublink ${
+                                            childActive ? "active" : ""
+                                        }`}
+                                    >
+                                        <ChildIcon className="sidebar-subicon" />
+                                        <span>{child.name}</span>
+                                    </Link>
+                                );
+                            })}
+                        </div>
+                    )}
+                </div>
+            );
+        });
+
+    /*
+    |--------------------------------------------------------------------------
+    | Quick mobile navigation links
+    |--------------------------------------------------------------------------
+    */
+    const dashboardLink = route("dashboard");
+    const quickSaleLink = route("admin.sales.quick-sale");
+    const productsLink = route("admin.products.index");
+    const customersLink = route("admin.customers.index");
 
     return (
-        <aside
-            className={`
-                fixed
-                left-0
-                top-0
-                h-screen
-                bg-emerald-950
-                text-white
-                shadow-xl
-                transition-all
-                duration-300
-                z-50
-                ${open ? "w-64" : "w-20"}
-            `}
-        >
-            {/* Logo */}
+        <>
+            {/* Mobile overlay */}
+            {isMobile && open && (
+                <button
+                    type="button"
+                    className="sidebar-mobile-overlay"
+                    onClick={closeMobileMenu}
+                    aria-label="Close navigation menu"
+                />
+            )}
 
-            <div
-                className="
-                    h-16
-                    flex
-                    items-center
-                    justify-center
-                    border-b
-                    border-emerald-800
-                    bg-emerald-900
-                "
-            >
-                <h1
-                    className="
-                        text-xl
-                        font-bold
-                        tracking-wide
-                        text-white
-                    "
-                >
-                    {open ? (
-                        <>
-                            Mauzo
-                            <span className="text-emerald-300">
-                                Vibe
-                            </span>
-                        </>
-                    ) : (
-                        <span className="text-emerald-300">
-                            MV
-                        </span>
-                    )}
-                </h1>
-            </div>
+            {/* Main sidebar */}
+            <aside className={sidebarClass}>
+                <div className="sidebar-brand">
+                    <h1>
+                        {showLabels ? (
+                            <>
+                                Mauzo<span>Vibe</span>
+                            </>
+                        ) : (
+                            <span>MV</span>
+                        )}
+                    </h1>
 
-            {/* Navigation */}
-
-            <nav
-                className="
-                    mt-4
-                    overflow-y-auto
-                    h-[calc(100vh-100px)]
-                    px-2
-                "
-            >
-                {menu.map((item) => {
-                    const Icon = item.icon || HomeIcon;
-
-                    /*
-                    |--------------------------------------------------------------------------
-                    | NORMAL LINK
-                    |--------------------------------------------------------------------------
-                    */
-
-                    if (!item.children) {
-                        return (
-                            <Link
-                                key={item.name}
-                                href={item.link}
-                                className="
-                                    flex
-                                    items-center
-                                    gap-3
-                                    rounded-lg
-                                    px-4
-                                    py-3
-                                    mb-1
-                                    text-emerald-50
-                                    hover:bg-emerald-700
-                                    hover:text-white
-                                    transition-all
-                                    duration-200
-                                    group
-                                "
-                            >
-                                <Icon
-                                    className="
-                                        h-5
-                                        w-5
-                                        text-emerald-300
-                                        group-hover:text-white
-                                    "
-                                />
-
-                                {open && (
-                                    <span>
-                                        {item.name}
-                                    </span>
-                                )}
-                            </Link>
-                        );
-                    }
-
-                    /*
-                    |--------------------------------------------------------------------------
-                    | DROPDOWN MENU
-                    |--------------------------------------------------------------------------
-                    */
-
-                    return (
-                        <div
-                            key={item.name}
-                            className="mb-1"
+                    {isMobile && open && (
+                        <button
+                            type="button"
+                            className="sidebar-close"
+                            onClick={closeMobileMenu}
+                            aria-label="Close navigation"
                         >
-                            <button
-                                type="button"
-                                onClick={() => toggleMenu(item.name)}
-                                className="
-                                    w-full
-                                    flex
-                                    items-center
-                                    justify-between
-                                    rounded-lg
-                                    px-4
-                                    py-3
-                                    text-emerald-50
-                                    hover:bg-emerald-700
-                                    hover:text-white
-                                    transition-all
-                                    duration-200
-                                    group
-                                "
-                            >
-                                <div className="flex items-center gap-3">
-                                    <Icon
-                                        className="
-                                            h-5
-                                            w-5
-                                            text-emerald-300
-                                            group-hover:text-white
-                                        "
-                                    />
+                            <XMarkIcon />
+                        </button>
+                    )}
+                </div>
 
-                                    {open && (
-                                        <span>
-                                            {item.name}
-                                        </span>
-                                    )}
-                                </div>
+                <nav className="sidebar-navigation">
+                    {renderMenu()}
+                </nav>
 
-                                {open && (
-                                    <ChevronDownIcon
-                                        className={`
-                                            h-4
-                                            w-4
-                                            text-emerald-300
-                                            transition-transform
-                                            duration-300
-                                            ${
-                                                openMenus[item.name]
-                                                    ? "rotate-180"
-                                                    : ""
-                                            }
-                                        `}
-                                    />
-                                )}
-                            </button>
+                <div className="sidebar-footer">
+                    {showLabels && <span>MauzoVibe v1.0</span>}
+                </div>
+            </aside>
 
-                            {/* Dropdown Children */}
+            {/* Mobile bottom navigation */}
+            {isMobile && (
+                <nav className="mobile-bottom-nav">
+                    <Link
+                        href={dashboardLink}
+                        onClick={closeMobileMenu}
+                        className={`mobile-nav-item ${
+                            isActive(dashboardLink) ? "active" : ""
+                        }`}
+                    >
+                        <HomeIcon />
+                        <span>Home</span>
+                    </Link>
 
-                            {open && openMenus[item.name] && (
-                                <div
-                                    className="
-                                        ml-6
-                                        mt-1
-                                        border-l
-                                        border-emerald-700
-                                        pl-1
-                                    "
-                                >
-                                    {item.children.map((child) => {
-                                        const ChildIcon =
-                                            child.icon || HomeIcon;
+                    <Link
+                        href={quickSaleLink}
+                        onClick={closeMobileMenu}
+                        className={`mobile-nav-item ${
+                            isActive(quickSaleLink) ? "active" : ""
+                        }`}
+                    >
+                        <BoltIcon />
+                        <span>Sale</span>
+                    </Link>
 
-                                        return (
-                                            <Link
-                                                key={child.name}
-                                                href={child.link || "#"}
-                                                className="
-                                                    flex
-                                                    items-center
-                                                    gap-3
-                                                    py-2.5
-                                                    px-4
-                                                    text-sm
-                                                    text-emerald-200
-                                                    rounded-r-lg
-                                                    hover:bg-emerald-800
-                                                    hover:text-white
-                                                    transition-all
-                                                    duration-200
-                                                    group
-                                                "
-                                            >
-                                                <ChildIcon
-                                                    className="
-                                                        h-4
-                                                        w-4
-                                                        text-emerald-400
-                                                        group-hover:text-white
-                                                    "
-                                                />
+                    <Link
+                        href={productsLink}
+                        onClick={closeMobileMenu}
+                        className={`mobile-nav-item ${
+                            isActive(productsLink) ? "active" : ""
+                        }`}
+                    >
+                        <CubeIcon />
+                        <span>Products</span>
+                    </Link>
 
-                                                {child.name}
-                                            </Link>
-                                        );
-                                    })}
-                                </div>
-                            )}
-                        </div>
-                    );
-                })}
-            </nav>
+                    <Link
+                        href={customersLink}
+                        onClick={closeMobileMenu}
+                        className={`mobile-nav-item ${
+                            isActive(customersLink) ? "active" : ""
+                        }`}
+                    >
+                        <UsersIcon />
+                        <span>Customers</span>
+                    </Link>
 
-            {/* Footer */}
+                    <button
+                        type="button"
+                        onClick={toggleMobileMenu}
+                        className={`mobile-nav-item ${
+                            open ? "active" : ""
+                        }`}
+                        aria-expanded={open}
+                        aria-label={
+                            open ? "Close more menu" : "Open more menu"
+                        }
+                    >
+                        {open ? (
+                            <XMarkIcon />
+                        ) : (
+                            <EllipsisHorizontalCircleIcon />
+                        )}
 
-            <div
-                className="
-                    absolute
-                    bottom-0
-                    left-0m
-                    w-full
-                    border-t
-                    border-emerald-800
-                    bg-emerald-950
-                    p-4
-                    text-center
-                    text-xs
-                    text-emerald-400
-                "
-            >
-                {open && "MauzoVibe v1.0"}
-            </div>
-        </aside>
+                        <span>{open ? "Funga" : "Zaidi"}</span>
+                    </button>
+                </nav>
+            )}
+        </>
     );
 }

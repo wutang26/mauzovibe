@@ -1,52 +1,39 @@
+
 import React, { useState } from "react";
+
 import Sidebar from "@/Components/Sidebar";
 import Topbar from "@/Components/Topbar";
 import Footer from "@/Components/Footer";
 
+import "./AdminLayout.css";
 
 export default function AdminLayout({ children }) {
-
     const [sidebarOpen, setSidebarOpen] = useState(true);
 
-
     return (
-
-        <div className="min-h-screen bg-gray-100 flex">
-
-            {/* Sidebar */}
-
-            <Sidebar 
+        <div
+            className={`admin-layout ${
+                sidebarOpen ? "sidebar-is-open" : "sidebar-is-collapsed"
+            }`}
+        >
+            <Sidebar
                 open={sidebarOpen}
                 setOpen={setSidebarOpen}
             />
 
-
-            {/* Main Area */}
-
-            <div 
-                className={`flex-1 flex flex-col transition-all duration-300 
-                ${sidebarOpen ? "ml-64" : "ml-20"}`}
-            >
-
-
-                <Topbar 
-                    toggleSidebar={() => setSidebarOpen(!sidebarOpen)}
+            <div className="admin-main">
+                <Topbar
+                    toggleSidebar={() =>
+                        setSidebarOpen((previous) => !previous)
+                    }
                 />
 
-
-                <main className="flex-1 p-6">
-
+                <main className="admin-content">
                     {children}
-
                 </main>
 
-
                 <Footer />
-
             </div>
-
-
         </div>
-
     );
 }

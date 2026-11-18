@@ -1,145 +1,171 @@
+
+import { Link } from "@inertiajs/react";
+
 import AdminLayout from "@/Layouts/AdminLayout";
 import SummaryCards from "@/Components/Dashboard/SummaryCards";
-import SalesChart from "@/Components/Dashboard/SalesChart";
-import StockAlerts from "@/Components/Dashboard/StockAlerts";
-import DebtorsSummary from "@/Components/Dashboard/DebtorsSummary";
-import RecentSales from "@/Components/Dashboard/RecentSales";
-import QuickStats from "@/Components/Dashboard/QuickStats";
+
+import "./Dashboard.css";
+
+const quickActions = [
+    {
+        title: "FANYA MAUZO",
+        description: "Anza kuuza bidhaa kwa mteja",
+        icon: "🛒",
+        href: "/admin/sales/quick-sale",
+        color: "quick-action-green",
+        featured: true,
+    },
+    {
+        title: "BIDHAA",
+        description: "Angalia na simamia bidhaa",
+        icon: "📦",
+        href: "/admin/products",
+        color: "quick-action-blue",
+    },
+    {
+        title: "ONGEZA BIDHAA",
+        description: "Sajili bidhaa mpya",
+        icon: "➕",
+        href: "/admin/products/create",
+        color: "quick-action-indigo",
+    },
+    {
+        title: "INGIZA STOCK",
+        description: "Ongeza bidhaa zilizopokelewa",
+        icon: "📥",
+        href: "/admin/stockin/create",
+        color: "quick-action-purple",
+    },
+    {
+        title: "WATEJA",
+        description: "Angalia na simamia wateja",
+        icon: "👥",
+        href: "/admin/customers",
+        color: "quick-action-orange",
+    },
+    {
+        title: "MALIPO",
+        description: "Angalia historia ya malipo",
+        icon: "💳",
+        href: "/admin/payment-history",
+        color: "quick-action-teal",
+    },
+    {
+        title: "HISTORIA YA MAUZO",
+        description: "Angalia mauzo yote yaliyofanyika",
+        icon: "🧾",
+        href: "/admin/sales",
+        color: "quick-action-pink",
+    },
+    {
+        title: "RIPOTI YA LEO",
+        description: "Angalia ripoti ya mauzo ya leo",
+        icon: "📊",
+        href: "/admin/reports/daily",
+        color: "quick-action-slate",
+    },
+];
 
 export default function Dashboard({
     branch,
     stats = {},
-    salesTrend = [],
-    stockAlerts = [],
-    recentSales = [],
-    debtors = {},
-    quickStats = {},
 }) {
     return (
         <AdminLayout>
+            <div className="dashboard-container">
 
-            <div className="mx-auto w-full max-w-[1700px]">
+                {/* HEADER */}
+                <header className="dashboard-header">
+                    <div>
+                        <h1>MauzoVibe Dashboard</h1>
 
-                {/* =====================================================
-                    HEADER
-                ===================================================== */}
+                        <p className="dashboard-branch">
+                            🏪{" "}
+                            <span className="branch-name">
+                                {branch?.name ?? "No Branch Selected"}
+                            </span>
 
-                <div className="mb-5">
+                            {branch?.location && (
+                                <> — {branch.location}</>
+                            )}
+                        </p>
 
-                    <h1 className="text-2xl font-black tracking-tight text-slate-900 sm:text-3xl">
-                        MauzoVibe Dashboard
-                    </h1>
+                        <p className="dashboard-welcome">
+                            Karibu MauzoVibe. Simamia biashara yako kwa urahisi.
+                        </p>
+                    </div>
+                </header>
 
-                    <p className="mt-1 text-sm text-slate-500">
+                {/* MUHTASARI WA BIASHARA */}
+                <section className="dashboard-section">
+                    <h2 className="dashboard-section-title">
+                        Muhtasari wa Biashara
+                    </h2>
 
-                        🏪{" "}
+                    <SummaryCards stats={stats} />
+                </section>
 
-                        <span className="font-semibold text-slate-700">
-                            {branch?.name ?? "No Branch Selected"}
+                {/* QUICK ACTIONS */}
+                <section className="quick-actions-section">
+
+                    <div className="dashboard-section-heading">
+                        <div>
+                            <h2>Huduma za Haraka</h2>
+                            <p>
+                                Chagua huduma unayotaka kutumia kwenye biashara yako
+                            </p>
+                        </div>
+
+                        <span className="quick-actions-count">
+                            {quickActions.length} Huduma
                         </span>
+                    </div>
 
-                        {branch?.location && (
-                            <>
-                                {" "}— {branch.location}
-                            </>
-                        )}
+                    <div className="quick-actions-grid">
+                        {quickActions.map((action) => (
+                            <Link
+                                key={action.href}
+                                href={action.href}
+                                className={`
+                                    quick-action-card
+                                    ${action.color}
+                                    ${action.featured ? "quick-action-featured" : ""}
+                                `}
+                            >
+                                <div className="quick-action-top">
+                                    <span className="quick-action-icon">
+                                        {action.icon}
+                                    </span>
 
-                    </p>
+                                    <span className="quick-action-arrow">
+                                        →
+                                    </span>
+                                </div>
 
-                </div>
+                                <div className="quick-action-content">
+                                    <h3>{action.title}</h3>
+                                    <p>{action.description}</p>
+                                </div>
+                            </Link>
+                        ))}
+                    </div>
+                </section>
 
-
-                {/* =====================================================
-                    SUMMARY CARDS
-                ===================================================== */}
-
-                <SummaryCards stats={stats} />
-
-
-                {/* =====================================================
-                    SALES + STOCK ALERTS + DEBTORS
-                ===================================================== */}
-
-             
-{/* =====================================================
-    SALES + STOCK ALERTS + DEBTORS
-===================================================== */}
-
-<div className="mt-4 grid w-full grid-cols-1 gap-4 lg:grid-cols-12">
-
-    {/* =================================================
-        SALES TREND — 50%
-    ================================================= */}
-
-    <div className="min-w-0 lg:col-span-6">
-        <SalesChart data={salesTrend} />
-    </div>
-
-
-    {/* =================================================
-        STOCK ALERTS — 25%
-    ================================================= */}
-
-    <div className="min-w-0 lg:col-span-3">
-        <StockAlerts alerts={stockAlerts} />
-    </div>
-
-
-    {/* =================================================
-        DEBTORS SUMMARY — 25%
-    ================================================= */}
-
-    <div className="min-w-0 lg:col-span-3">
-        <DebtorsSummary debtors={debtors} />
-    </div>
-
-</div>
-
-
-
-
-                {/* =====================================================
-                    RECENT SALES
-                ===================================================== */}
-
-                <div className="mt-4">
-
-                    <RecentSales sales={recentSales} />
-
-                </div>
-
-
-                {/* =====================================================
-                    QUICK STATS
-                ===================================================== */}
-
-                <div className="mt-4">
-
-                    <QuickStats stats={quickStats} />
-
-                </div>
-
-
-                {/* =====================================================
-                    FOOTER
-                ===================================================== */}
-
-                <div className="mt-7 border-t border-slate-200 pt-4 text-center">
-
-                    <p className="text-xs text-slate-400">
-
-                        <span className="font-black text-slate-600">
-                            MauzoVibe
-                        </span>
-
+                {/* FOOTER */}
+                <footer className="dashboard-footer">
+                    <p>
+                        <strong>MauzoVibe</strong>
                         {" "}• Smart Sales Management
-
                     </p>
 
-                </div>
+                    <p>Powered by NAC Technologies</p>
+
+                    <p>
+                        © {new Date().getFullYear()} MauzoVibe. All rights reserved.
+                    </p>
+                </footer>
 
             </div>
-
         </AdminLayout>
     );
 }

@@ -1,0 +1,154 @@
+
+/* =========================================
+   MAUZOVIBE ADMIN RESPONSIVE LAYOUT
+========================================= */
+
+*,
+*::before,
+*::after {
+    box-sizing: border-box;
+}
+
+html,
+body,
+#app {
+    width: 100%;
+    min-height: 100%;
+    margin: 0;
+}
+
+body {
+    overflow-x: hidden;
+}
+
+/* MAIN LAYOUT */
+
+.admin-layout {
+    --sidebar-width: 300px;
+
+    display: flex;
+    width: 100%;
+    min-height: 100vh;
+    min-height: 100dvh;
+
+    background: #f1f5f9;
+}
+
+/* MAIN CONTENT AREA */
+
+.admin-main {
+    flex: 1 1 auto;
+
+    width: calc(100% - var(--sidebar-width));
+    min-width: 0;
+    min-height: 100vh;
+
+    margin-left: var(--sidebar-width);
+
+    display: flex;
+    flex-direction: column;
+
+    transition: margin-left 0.25s ease,
+                width 0.25s ease;
+}
+
+/* DESKTOP SIDEBAR OPEN */
+
+.admin-layout.sidebar-is-open {
+    --sidebar-width: 300px;
+}
+
+/* DESKTOP SIDEBAR COLLAPSED */
+
+.admin-layout.sidebar-is-collapsed {
+    --sidebar-width: 82px;
+}
+
+/* MAIN PAGE CONTENT */
+
+.admin-content {
+    flex: 1 0 auto;
+
+    width: 100%;
+    min-width: 0;
+
+    padding: 28px;
+
+    overflow-wrap: break-word;
+}
+
+/* FOOTER */
+
+.admin-main footer {
+    width: 100%;
+    min-width: 0;
+}
+
+/* =========================================
+   TABLET
+========================================= */
+
+@media (min-width: 768px) and (max-width: 1024px) {
+
+    .admin-layout {
+        --sidebar-width: 280px !important;
+    }
+
+    .admin-main {
+        width: calc(100% - 280px);
+        margin-left: 280px;
+    }
+
+    .admin-content {
+        padding: 22px;
+    }
+}
+
+/* =========================================
+   MOBILE
+========================================= */
+
+@media (max-width: 767px) {
+
+    .admin-layout {
+        display: block;
+
+        width: 100%;
+        min-height: 100vh;
+        min-height: 100dvh;
+
+        --sidebar-width: 0px !important;
+    }
+
+    .admin-main {
+        display: flex;
+        flex-direction: column;
+
+        width: 100%;
+        min-width: 0;
+        min-height: 100vh;
+
+        margin-left: 0 !important;
+    }
+
+    .admin-content {
+        width: 100%;
+        min-width: 0;
+
+        padding: 16px 12px 105px;
+    }
+
+    .admin-main footer {
+        padding-bottom: 90px;
+    }
+}
+
+/* VERY SMALL PHONES */
+
+@media (max-width: 380px) {
+
+    .admin-content {
+        padding-left: 10px;
+        padding-right: 10px;
+    }
+}
