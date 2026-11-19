@@ -55,17 +55,28 @@ class ProductController extends Controller
      */
     public function store(Request $request)
     {
-        $request->validate([
-            'name'          => 'required|string|max:255',
-            'category_id'   => 'required|exists:categories,id',
-            'sku'           => 'nullable|string|max:255',
-            'barcode'       => 'nullable|string|max:255',
-            'image'         => 'nullable|image|max:2048',
-            'selling_price' => 'required|numeric',
-            'cost_price'    => 'nullable|numeric',
-            'quantity'      => 'nullable|integer',
-            'unit'          => 'nullable|string',
-        ]);
+            $request->validate([
+                'name'          => 'required|string|max:255',
+                'category_id'   => 'required|exists:categories,id',
+                'sku'           => 'nullable|string|max:255',
+                'barcode'       => 'nullable|string|max:255',
+                'image'         => 'nullable|image|max:2048',
+                'selling_price' => 'required|numeric|min:0',
+                'cost_price'    => 'nullable|numeric|min:0',
+                'quantity'      => 'nullable|numeric|min:0',
+                'unit'          => 'nullable|string|max:50',
+    ]);
+        // $request->validate([
+        //     'name'          => 'required|string|max:255',
+        //     'category_id'   => 'required|exists:categories,id',
+        //     'sku'           => 'nullable|string|max:255',
+        //     'barcode'       => 'nullable|string|max:255',
+        //     'image'         => 'nullable|image|max:2048',
+        //     'selling_price' => 'required|numeric',
+        //     'cost_price'    => 'nullable|numeric',
+        //     'quantity'      => 'nullable|integer',
+        //     'unit'          => 'nullable|string',
+        // ]);
 
         /*
         |--------------------------------------------------------------------------
